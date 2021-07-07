@@ -1,4 +1,4 @@
-# terraform-cloud-aws
+# terraform-aws-cloud
 
 This repository contains Terraform modules used to deploy and configure an AWS EKS cluster for the StreamNative Platform. It is currently underpinned by the [`terraform-aws-eks`](https://github.com/terraform-aws-modules/terraform-aws-eks) module. 
 

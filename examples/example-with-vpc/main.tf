@@ -66,7 +66,7 @@ provider "kubernetes" {
 }
 
 module "vpc" {
-  source   = "streamnative/cloud/aws//vpc"
+  source   = "streamnative/cloud/aws//modules/vpc"
   vpc_cidr = "10.80.0.0/16"
 
   region = var.region
