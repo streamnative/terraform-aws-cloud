@@ -18,15 +18,26 @@
 #
 
 module "function_mesh_operator" {
-  count  = var.enable_function_mesh_operator ? 1 : 0
+  count  = var.enable_function_mesh_operator && var.disable_olm ? 1 : 0
   source = "./modules/function-mesh-operator"
 
-  namespace = kubernetes_namespace.sn_system.id
+  chart_name       = var.function_mesh_operator_chart_name
+  chart_repository = var.function_mesh_operator_chart_repository
+  chart_version    = var.function_mesh_operator_chart_version
+  cleanup_on_fail  = var.function_mesh_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.function_mesh_operator_release_name
+  settings         = var.function_mesh_operator_settings
+  timeout          = var.function_mesh_operator_timeout
 }
 
 module "olm" {
-  count  = var.enable_olm ? 1 : 0
+  count  = var.disable_olm ? 0 : 1
   source = "./modules/operator-lifecycle-manager"
+
+  olm_namespace           = var.olm_namespace
+  olm_operators_namespace = var.olm_operators_namespace
+  settings                = var.olm_settings
 
   depends_on = [
     kubernetes_namespace.sn_system
@@ -34,26 +45,56 @@ module "olm" {
 }
 
 module "olm_subscriptions" {
-  count  = var.enable_olm && var.enable_olm_subscriptions ? 1 : 0
+  count  = var.disable_olm ? 0 : 1
   source = "./modules/olm-subscriptions"
 
-  namespace = "olm"
+  catalog_namespace = var.olm_namespace
+  namespace         = kubernetes_namespace.sn_system.id
+  settings          = merge(var.olm_subscription_settings, { "components.vault" = "false" }) // Note: the vault subscription isn't working, so we're opting for a helm install instead
 
   depends_on = [
     module.olm
   ]
 }
 
+module "prometheus_operator" {
+  count  = var.enable_prometheus_operator && var.disable_olm ? 1 : 0
+  source = "./modules/prometheus-operator"
+
+  chart_name       = var.prometheus_operator_chart_name
+  chart_repository = var.prometheus_operator_chart_repository
+  chart_version    = var.prometheus_operator_chart_version
+  cleanup_on_fail  = var.prometheus_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.prometheus_operator_release_name
+  settings         = var.prometheus_operator_settings
+  timeout          = var.prometheus_operator_timeout
+}
+
 module "pulsar_operator" {
-  count  = var.enable_pulsar_operator ? 1 : 0
+  count  = var.enable_pulsar_operator && var.disable_olm ? 1 : 0
   source = "./modules/pulsar-operator"
 
-  namespace = kubernetes_namespace.sn_system.id
+  chart_name       = var.pulsar_operator_chart_name
+  chart_repository = var.pulsar_operator_chart_repository
+  chart_version    = var.pulsar_operator_chart_version
+  cleanup_on_fail  = var.pulsar_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.pulsar_operator_release_name
+  settings         = var.pulsar_operator_settings
+  timeout          = var.pulsar_operator_timeout
 }
 
 module "vault_operator" {
-  count  = var.enable_vault_operator ? 1 : 0
+  count  = var.enable_vault ? 1 : 0
   source = "./modules/vault-operator"
 
-  namespace = kubernetes_namespace.sn_system.id
+  chart_name       = var.vault_operator_chart_name
+  chart_repository = var.vault_operator_chart_repository
+  chart_version    = var.vault_operator_chart_version
+  cleanup_on_fail  = var.vault_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.vault_operator_release_name
+  settings         = var.vault_operator_settings
+  timeout          = var.vault_operator_timeout
 }

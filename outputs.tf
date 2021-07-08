@@ -17,6 +17,14 @@
 # under the License.
 #
 
+output "cert_manager_role_arn" {
+  value = aws_iam_role.cert_manager.arn
+}
+
+output "cluster_autoscaler_role_arn" {
+  value = aws_iam_role.cluster_autoscaler.arn
+}
+
 output "eks_cluster_arn" {
   value = module.eks.cluster_arn
 }
@@ -31,4 +39,16 @@ output "eks_cluster_identity_oidc_issuer_url" {
 
 output "eks_cluster_identity_oidc_issuer_arn" {
   value = module.eks.oidc_provider_arn
+}
+
+output "external_dns_role_arn" {
+  value = aws_iam_role.external_dns.arn
+}
+
+output "function_pool_role_arn" {
+  value = aws_iam_role.func_pool[0].arn
+}
+
+output "vault_role_arn" {
+  value = aws_iam_role.vault[0].arn
 }
