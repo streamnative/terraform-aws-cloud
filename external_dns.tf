@@ -113,6 +113,11 @@ resource "helm_release" "external_dns" {
     type  = "string"
   }
 
+  set {
+    name = "sources"
+    value = "{service,ingress,istio-gateway,istio-virtualservice}"
+  }
+
   dynamic "set" {
     for_each = var.external_dns_settings
     content {
