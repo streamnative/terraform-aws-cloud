@@ -10,10 +10,10 @@ The [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) com
 
 Although not specific to using this module, we use [Helm](https://helm.sh/docs/intro/install/) for deploying the [StreamNative Platform charts](https://github.com/streamnative/charts) on the cluster.
 
-Your caller identity must also have the necessary AWS IAM permissions to create and work with EC2 (EKS, VPCs, etc) and Route53.
+Your caller identity must also have the necessary AWS IAM permissions to create and work with EC2 (EKS, VPCs, etc.) and Route53.
 
 ### Other Recommendations for AWS
-- [`aws`](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) command line tool
+- [`aws`](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) command-line tool
 - [`aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html) command line tool 
 
 ## Getting Started
@@ -41,7 +41,7 @@ terraform {
 
 
 #######
-### These data sources are required by the Kubernetes and Helm providers in order to connect to the newly provisioned cluster
+### These data sources are required by the Kubernetes and Helm providers to connect to the newly provisioned cluster
 #######
 data "aws_eks_cluster" "cluster" {
   name = module.eks_cluster.eks_cluster_id
@@ -103,7 +103,7 @@ module "sn_platform_cluster" {
 
 *Important Note: You will notice that a [Terraform Backend](https://www.terraform.io/docs/language/settings/backends/index.html) configuration is absent in this example, and a `local` backend (Terraform's default) will be used. For production deployments, we highly recommend using a `remote` backend with proper versioning and access controls, such as [Terraform Cloud](https://www.terraform.io/docs/cloud/index.html) or [S3](https://www.terraform.io/docs/language/settings/backends/s3.html).*
 
-In the example `main.tf` above, we create a StreamNative Platform EKS cluster using kubernetes version `1.19`, with a desired node pool size of `3` `m4.large` instances and an auto-scaling capacity to `5`.
+In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.19`, with a desired node pool size of `3` `m4.large` instances and an auto-scaling capacity to `5`.
 
 It also adds the role `arn:aws:iam::123456789012:role/my-aws-admin-role` to the EKS auth config map, granting the identity access to manage the cluster via [IRSA](https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/).
 
@@ -140,7 +140,7 @@ sn-platform \
 --set initialize=true
 --kubeconfig=/path/to/my-sn-platform-cluster-config 
 ```
-*Important Note: If this is your first time installing the helm chart, you must override the intialize value to `true` (e.g `--set initialize=true`)*
+*Important Note: If this is your first time installing the helm chart, you must override the initialize value to `true` (e.g. `--set initialize=true`)*
 
 ## Requirements
 
