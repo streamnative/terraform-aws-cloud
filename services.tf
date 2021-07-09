@@ -67,8 +67,16 @@ module "prometheus_operator" {
   cleanup_on_fail  = var.prometheus_operator_cleanup_on_fail
   namespace        = kubernetes_namespace.sn_system.id
   release_name     = var.prometheus_operator_release_name
-  settings         = var.prometheus_operator_settings
-  timeout          = var.prometheus_operator_timeout
+
+  settings = merge(var.prometheus_operator_settings, {
+    "alertmanager.enabled"     = "false"
+    "grafana.enabled"          = "false"
+    "kubeStateMetrics.enabled" = "false"
+    "nodeExporter.enabled"     = "false"
+    "prometheus.enabled"       = "false"
+  })
+  
+  timeout = var.prometheus_operator_timeout
 }
 
 module "pulsar_operator" {
