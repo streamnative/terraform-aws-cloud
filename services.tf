@@ -27,7 +27,7 @@ module "function_mesh_operator" {
   cleanup_on_fail  = var.function_mesh_operator_cleanup_on_fail
   namespace        = kubernetes_namespace.sn_system.id
   release_name     = var.function_mesh_operator_release_name
-  settings         = var.function_mesh_operator_settings
+  settings         = coalesce(var.function_mesh_operator_settings, {}) # The empty map is a placeholder value, reserved for future defaults
   timeout          = var.function_mesh_operator_timeout
 }
 
@@ -37,7 +37,7 @@ module "olm" {
 
   olm_namespace           = var.olm_namespace
   olm_operators_namespace = var.olm_operators_namespace
-  settings                = var.olm_settings
+  settings                = coalesce(var.olm_settings, {}) # The empty map is a placeholder value, reserved for future default
 
   depends_on = [
     kubernetes_namespace.sn_system
@@ -50,7 +50,7 @@ module "olm_subscriptions" {
 
   catalog_namespace = var.olm_namespace
   namespace         = kubernetes_namespace.sn_system.id
-  settings          = merge(var.olm_subscription_settings, { "components.vault" = "false" }) // Note: the vault subscription isn't working, so we're opting for a helm install instead
+  settings          = coalesce(var.olm_subscription_settings, { "components.vault" = "false" })
 
   depends_on = [
     module.olm
@@ -68,7 +68,7 @@ module "prometheus_operator" {
   namespace        = kubernetes_namespace.sn_system.id
   release_name     = var.prometheus_operator_release_name
 
-  settings = merge(var.prometheus_operator_settings, {
+  settings = coalesce(var.prometheus_operator_settings, { # Defaults are set to the right. Passing input via var.prometheus_operator_settings will override
     "alertmanager.enabled"     = "false"
     "grafana.enabled"          = "false"
     "kubeStateMetrics.enabled" = "false"
@@ -89,7 +89,7 @@ module "pulsar_operator" {
   cleanup_on_fail  = var.pulsar_operator_cleanup_on_fail
   namespace        = kubernetes_namespace.sn_system.id
   release_name     = var.pulsar_operator_release_name
-  settings         = var.pulsar_operator_settings
+  settings         = coalesce(var.pulsar_operator_settings, {}) # The empty map is a placeholder value, reserved for future default
   timeout          = var.pulsar_operator_timeout
 }
 
@@ -103,6 +103,6 @@ module "vault_operator" {
   cleanup_on_fail  = var.vault_operator_cleanup_on_fail
   namespace        = kubernetes_namespace.sn_system.id
   release_name     = var.vault_operator_release_name
-  settings         = var.vault_operator_settings
+  settings         = coalesce(var.vault_operator_settings, {}) # The empty map is a placeholder value, reserved for future default
   timeout          = var.vault_operator_timeout
 }

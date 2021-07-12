@@ -153,7 +153,7 @@ variable "function_mesh_operator_release_name" {
 }
 
 variable "function_mesh_operator_settings" {
-  default     = {}
+  default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
 }
@@ -316,13 +316,13 @@ variable "olm_operators_namespace" {
 }
 
 variable "olm_settings" {
-  default     = {}
+  default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
 }
 
 variable "olm_subscription_settings" {
-  default     = {}
+  default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
 }
@@ -363,7 +363,7 @@ variable "prometheus_operator_release_name" {
   type        = string
 }
 variable "prometheus_operator_settings" {
-  default     = {}
+  default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
 }
@@ -415,7 +415,7 @@ variable "pulsar_operator_release_name" {
 }
 
 variable "pulsar_operator_settings" {
-  default     = {}
+  default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
 }
@@ -469,7 +469,7 @@ variable "vault_operator_release_name" {
 }
 
 variable "vault_operator_settings" {
-  default     = {}
+  default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
 }
