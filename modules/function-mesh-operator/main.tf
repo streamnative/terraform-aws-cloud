@@ -30,14 +30,14 @@ terraform {
 
 resource "helm_release" "function_mesh_operator" {
   atomic           = true
-  chart            = "function-mesh-operator"
-  cleanup_on_fail  = true
+  chart            = var.chart_name
+  cleanup_on_fail  = var.cleanup_on_fail
   create_namespace = false
-  name             = "function-mesh-operator"
+  name             = var.release_name
   namespace        = var.namespace
-  repository       = "https://charts.streamnative.io"
-  timeout          = 600
-  wait             = true
+  repository       = var.chart_repository
+  timeout          = var.timeout
+  version          = var.chart_version
 
   dynamic "set" {
     for_each = var.settings

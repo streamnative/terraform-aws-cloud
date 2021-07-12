@@ -17,6 +17,12 @@
 # under the License.
 #
 
+variable "catalog_namespace" {
+  default     = "olm"
+  description = "The namespace used by OLM and its resources"
+  type        = string
+}
+
 variable "namespace" {
   description = "The namespace used for the pulsar operator deployment"
   type        = string

@@ -17,20 +17,33 @@
 # under the License.
 #
 
-variable "olm_namespace" {
-  default     = "olm"
-  description = "The namespace used by OLM and its resources"
-  type        = string
+terraform {
+  required_version = ">=1.0.0"
+
+  required_providers {
+    helm = {
+      source  = "hashicorp/helm"
+      version = "2.2.0"
+    }
+  }
 }
 
-variable "olm_operators_namespace" {
-  default     = "operators"
-  description = "The namespace where OLM will install the operators"
-  type        = string
-}
+resource "helm_release" "prometheus_operator" {
+  atomic           = true
+  chart            = var.chart_name
+  cleanup_on_fail  = var.cleanup_on_fail
+  create_namespace = false
+  name             = var.release_name
+  namespace        = var.namespace
+  repository       = var.chart_repository
+  timeout          = var.timeout
+  version          = var.chart_version
 
-variable "settings" {
-  default     = {}
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
+  dynamic "set" {
+    for_each = var.settings
+    content {
+      name  = set.key
+      value = set.value
+    }
+  }
 }

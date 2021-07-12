@@ -17,8 +17,38 @@
 # under the License.
 #
 
+variable "chart_name" {
+  default     = "function-mesh-operator"
+  description = "The name of the Helm chart to install"
+  type        = string
+}
+
+variable "chart_repository" {
+  default     = "https://charts.streamnative.io"
+  description = "The repository containing the Helm chart to install"
+  type        = string
+}
+
+variable "chart_version" {
+  default     = "0.1.7"
+  description = "The version of the Helm chart to install"
+  type        = string
+}
+
+variable "cleanup_on_fail" {
+  default     = true
+  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
+  type        = bool
+}
+
 variable "namespace" {
-  description = "The namespace used for the function-mesh operator deployment"
+  description = "The namespace used for the operator deployment"
+  type        = string
+}
+
+variable "release_name" {
+  default     = "function-mesh-operator"
+  description = "The name of the helm release"
   type        = string
 }
 
@@ -26,4 +56,10 @@ variable "settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
+}
+
+variable "timeout" {
+  default     = 600
+  description = "Time in seconds to wait for any individual kubernetes operation"
+  type        = number
 }

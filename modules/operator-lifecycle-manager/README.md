@@ -3,58 +3,43 @@ This module installs the operator lifecycle management framework using a somewha
 
 The most recent version can be found in the `operator-framework/operator-lifecycle-manager` repo in github, [linked here](https://github.com/operator-framework/operator-lifecycle-manager/tree/master/deploy/chart).
 
-## Usage
-
-1. Add the cluster config to your `~/.kube/config` file, referencing the `snconf.yaml` file specific to the managed cluster you are working with _(this should be located in the customer's corresponding `managed-cluster` directory)_.
-
-```shell
-./<repo_root>/customer_env/load_env.sh snconf.yaml
-```
-
-2. Create a new `main.tf` file (or add to an existing one) and instatiate the module in the desired location _(i.e. `github.com/managed-clusters/tree/master/clusters/managed-clusters/<customer>/<cluster>/k8s-cluster-autoscaler`)_:
-
-```hcl
-
-provider "helm" {
-  kubernetes {
-    config_path = pathexpand(~/.kube/config)
-  }
-}
-
-provider "kubernetes" {
-  config_path = pathexpand(~/.kube/config)
-}
-
-module "operator-lifecycle-manager" {
-  source       = "git@github.com:streamnative/managed-clusters.git//terraform_modules/services/operator-lifecycle-manager"
-}
-```
-
-3. Initialize and apply
-
-```shell
-terraform init
-terraform apply
-```
-
-4. Connect to the cluster and verify that OLM has been deployed and is healthy
-
+## Notable Changes
+If updating the charts, please note to omit the file `0000_50_olm_00-namespace.yaml`, as Helm should not really be used for managing namespaces.
 ## Requirements
-### Providers
+
 | Name | Version |
 |------|---------|
-| [terraform](https://www.terraform.io/downloads.html) | >= 0.15 |
-| [kubernetes](https://registry.terraform.io/providers/hashicorp/kubernetes/latest) | >= 2.2.0 |
-| [helm](https://registry.terraform.io/providers/hashicorp/helm/latest) | >= 2.1.2 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.0.0 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.2.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.2.0 |
 
-### Variables
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_helm"></a> [helm](#provider\_helm) | 2.2.0 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.2.0 |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [helm_release.operator_lifecycle_manager](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [kubernetes_namespace.olm](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
+| [kubernetes_namespace.operators](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
+
+## Inputs
+
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| atomic | Purge the chart on failed installation. Automatically enables `var.wait` if set to true | bool | `true` | no
-| chart | The name of the helm chart to use. Defaults to the `chart` directory local to this module | string | `./chart` | no
-| cleanup_on_fail | Allow deletion of new resources created in this upgrade when an upgrade fails | bool | `true` | no
-| config_path | The location of your kubernetes configuration file | string | `~/.kube/config` | no
-| name | The name given for the helm release being deployed | string | `operator-lifecycle-manager` | no
-| namespace | The k8s namespace to be used by cluster-autoscaler | string | `operator-lifecycle-manager` | no
-| timeout | Time (in seconds) to wait for any individual kubernetes operations | number | `600` | no
-| wait | Wait until all resources are in a ready state before making the release as successful, per the length of `var.timeout` | bool | `true` | no
+| <a name="input_olm_namespace"></a> [olm\_namespace](#input\_olm\_namespace) | The namespace used by OLM and its resources | `string` | `"olm"` | no |
+| <a name="input_olm_operators_namespace"></a> [olm\_operators\_namespace](#input\_olm\_operators\_namespace) | The namespace where OLM will install the operators | `string` | `"operators"` | no |
+| <a name="input_settings"></a> [settings](#input\_settings) | Additional settings which will be passed to the Helm chart values | `map(any)` | `{}` | no |
+
+## Outputs
+
+No outputs.

@@ -32,13 +32,56 @@ terraform {
   }
 }
 
+resource "kubernetes_namespace" "olm" {
+  metadata {
+    name = var.olm_namespace
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata[0].labels
+    ]
+  }
+}
+
+resource "kubernetes_namespace" "operators" {
+  metadata {
+    name = var.olm_operators_namespace
+  }
+  lifecycle {
+    ignore_changes = [
+      metadata[0].labels
+    ]
+  }
+}
+
 resource "helm_release" "operator_lifecycle_manager" {
-  name            = "operator-lifecycle-manager"
-  chart           = "${path.module}/chart"
-  wait            = true
-  timeout         = 600
   atomic          = true
+  chart           = "${path.module}/chart"
   cleanup_on_fail = true
+  create_namespace = false
+  name            = "operator-lifecycle-manager"
+  namespace       = kubernetes_namespace.olm.id
+  timeout         = 600
+  wait            = true
+
+  set {
+    name  = "namespace"
+    value = kubernetes_namespace.olm.id
+    type  = "string"
+  }
+
+  set {
+    name  = "catalog_namespace"
+    value = kubernetes_namespace.olm.id
+    type  = "string"
+  }
+
+  set {
+    name  = "operator_namespace"
+    value = kubernetes_namespace.operators.id
+    type  = "string"
+  }
 
   dynamic "set" {
     for_each = var.settings

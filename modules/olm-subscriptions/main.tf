@@ -37,10 +37,16 @@ resource "helm_release" "olm_subscriptions" {
   name             = "olm-subscriptions"
   timeout          = 300
   wait             = true
+  set {
+    name  = "catalog_namespace"
+    value = var.catalog_namespace
+    type  = "string"
+  }
 
   set {
-    name  = "components.vault"
-    value = false
+    name  = "install_namespace"
+    value = var.namespace
+    type  = "string"
   }
 
   dynamic "set" {

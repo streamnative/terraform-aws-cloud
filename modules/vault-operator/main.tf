@@ -30,15 +30,14 @@ terraform {
 
 resource "helm_release" "vault_operator" {
   atomic           = true
-  chart            = "vault-operator"
-  cleanup_on_fail  = true
+  chart            = var.chart_name
+  cleanup_on_fail  = var.cleanup_on_fail
   create_namespace = false
-  name             = "vault-operator"
+  name             = var.release_name
   namespace        = var.namespace
-  repository       = "https://kubernetes-charts.banzaicloud.com"
-  timeout          = 600
-  version          = "1.13.0"
-  wait             = true
+  repository       = var.chart_repository
+  timeout          = var.timeout
+  version          = var.chart_version
 
   dynamic "set" {
     for_each = var.settings

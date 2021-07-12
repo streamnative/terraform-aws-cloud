@@ -18,15 +18,26 @@
 #
 
 module "function_mesh_operator" {
-  count  = var.enable_function_mesh_operator ? 1 : 0
+  count  = var.enable_function_mesh_operator && var.disable_olm ? 1 : 0
   source = "./modules/function-mesh-operator"
 
-  namespace = kubernetes_namespace.sn_system.id
+  chart_name       = var.function_mesh_operator_chart_name
+  chart_repository = var.function_mesh_operator_chart_repository
+  chart_version    = var.function_mesh_operator_chart_version
+  cleanup_on_fail  = var.function_mesh_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.function_mesh_operator_release_name
+  settings         = coalesce(var.function_mesh_operator_settings, {}) # The empty map is a placeholder value, reserved for future defaults
+  timeout          = var.function_mesh_operator_timeout
 }
 
 module "olm" {
-  count  = var.enable_olm ? 1 : 0
+  count  = var.disable_olm ? 0 : 1
   source = "./modules/operator-lifecycle-manager"
+
+  olm_namespace           = var.olm_namespace
+  olm_operators_namespace = var.olm_operators_namespace
+  settings                = coalesce(var.olm_settings, {}) # The empty map is a placeholder value, reserved for future default
 
   depends_on = [
     kubernetes_namespace.sn_system
@@ -34,26 +45,64 @@ module "olm" {
 }
 
 module "olm_subscriptions" {
-  count  = var.enable_olm && var.enable_olm_subscriptions ? 1 : 0
+  count  = var.disable_olm ? 0 : 1
   source = "./modules/olm-subscriptions"
 
-  namespace = "olm"
+  catalog_namespace = var.olm_namespace
+  namespace         = kubernetes_namespace.sn_system.id
+  settings          = coalesce(var.olm_subscription_settings, { "components.vault" = "false" })
 
   depends_on = [
     module.olm
   ]
 }
 
+module "prometheus_operator" {
+  count  = var.enable_prometheus_operator && var.disable_olm ? 1 : 0
+  source = "./modules/prometheus-operator"
+
+  chart_name       = var.prometheus_operator_chart_name
+  chart_repository = var.prometheus_operator_chart_repository
+  chart_version    = var.prometheus_operator_chart_version
+  cleanup_on_fail  = var.prometheus_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.prometheus_operator_release_name
+
+  settings = coalesce(var.prometheus_operator_settings, { # Defaults are set to the right. Passing input via var.prometheus_operator_settings will override
+    "alertmanager.enabled"     = "false"
+    "grafana.enabled"          = "false"
+    "kubeStateMetrics.enabled" = "false"
+    "nodeExporter.enabled"     = "false"
+    "prometheus.enabled"       = "false"
+  })
+  
+  timeout = var.prometheus_operator_timeout
+}
+
 module "pulsar_operator" {
-  count  = var.enable_pulsar_operator ? 1 : 0
+  count  = var.enable_pulsar_operator && var.disable_olm ? 1 : 0
   source = "./modules/pulsar-operator"
 
-  namespace = kubernetes_namespace.sn_system.id
+  chart_name       = var.pulsar_operator_chart_name
+  chart_repository = var.pulsar_operator_chart_repository
+  chart_version    = var.pulsar_operator_chart_version
+  cleanup_on_fail  = var.pulsar_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.pulsar_operator_release_name
+  settings         = coalesce(var.pulsar_operator_settings, {}) # The empty map is a placeholder value, reserved for future default
+  timeout          = var.pulsar_operator_timeout
 }
 
 module "vault_operator" {
-  count  = var.enable_vault_operator ? 1 : 0
+  count  = var.enable_vault ? 1 : 0
   source = "./modules/vault-operator"
 
-  namespace = kubernetes_namespace.sn_system.id
+  chart_name       = var.vault_operator_chart_name
+  chart_repository = var.vault_operator_chart_repository
+  chart_version    = var.vault_operator_chart_version
+  cleanup_on_fail  = var.vault_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.sn_system.id
+  release_name     = var.vault_operator_release_name
+  settings         = coalesce(var.vault_operator_settings, {}) # The empty map is a placeholder value, reserved for future default
+  timeout          = var.vault_operator_timeout
 }

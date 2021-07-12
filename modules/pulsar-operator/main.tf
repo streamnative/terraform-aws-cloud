@@ -30,15 +30,14 @@ terraform {
 
 resource "helm_release" "pulsar_operator" {
   atomic           = true
-  chart            = "pulsar-operator"
-  cleanup_on_fail  = true
+  chart            = var.chart_name
+  cleanup_on_fail  = var.cleanup_on_fail
   create_namespace = false
   namespace        = var.namespace
-  name             = "pulsar-operator"
-  repository       = "https://charts.streamnative.io"
-  timeout          = 300
-  version          = "0.7.2"
-  wait             = true
+  name             = var.release_name
+  repository       = var.chart_repository
+  timeout          = var.timeout
+  version          = var.chart_version
 
   set {
     name  = "initialize"

@@ -1,5 +1,6 @@
-# Vault Operator
-A simple module that installs a Vault operator via helm
+# Prometheus 
+A simple module that installs a the `kube-prometheus-stack` operator via helm
+
 ## Requirements
 
 | Name | Version |
@@ -21,18 +22,18 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [helm_release.vault_operator](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [helm_release.prometheus_operator](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_chart_name"></a> [chart\_name](#input\_chart\_name) | The name of the Helm chart to install | `string` | `"vault-operator"` | no |
-| <a name="input_chart_repository"></a> [chart\_repository](#input\_chart\_repository) | The repository containing the Helm chart to install | `string` | `"https://kubernetes-charts.banzaicloud.com"` | no |
-| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | The version of the Helm chart to install | `string` | `"1.13.0"` | no |
+| <a name="input_chart_name"></a> [chart\_name](#input\_chart\_name) | The name of the Helm chart to install | `string` | `"kube-prometheus-stack"` | no |
+| <a name="input_chart_repository"></a> [chart\_repository](#input\_chart\_repository) | The repository containing the Helm chart to install | `string` | `"https://prometheus-community.github.io/helm-charts"` | no |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | The version of the Helm chart to install | `string` | `"16.12.1"` | no |
 | <a name="input_cleanup_on_fail"></a> [cleanup\_on\_fail](#input\_cleanup\_on\_fail) | Allow deletion of new resources created in this upgrade when upgrade fails | `bool` | `true` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | The namespace used for the operator deployment | `string` | n/a | yes |
-| <a name="input_release_name"></a> [release\_name](#input\_release\_name) | The name of the helm release | `string` | `"vault-operator"` | no |
+| <a name="input_release_name"></a> [release\_name](#input\_release\_name) | The name of the helm release | `string` | `"kube-prometheus-stack"` | no |
 | <a name="input_settings"></a> [settings](#input\_settings) | Additional settings which will be passed to the Helm chart values | `map(any)` | `{}` | no |
 | <a name="input_timeout"></a> [timeout](#input\_timeout) | Time in seconds to wait for any individual kubernetes operation | `number` | `600` | no |
 

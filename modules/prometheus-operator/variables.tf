@@ -18,19 +18,19 @@
 #
 
 variable "chart_name" {
-  default     = "vault-operator"
+  default     = "kube-prometheus-stack"
   description = "The name of the Helm chart to install"
   type        = string
 }
 
 variable "chart_repository" {
-  default     = "https://kubernetes-charts.banzaicloud.com"
+  default     = "https://prometheus-community.github.io/helm-charts"
   description = "The repository containing the Helm chart to install"
   type        = string
 }
 
 variable "chart_version" {
-  default     = "1.13.0"
+  default     = "16.12.1"
   description = "The version of the Helm chart to install"
   type        = string
 }
@@ -47,7 +47,7 @@ variable "namespace" {
 }
 
 variable "release_name" {
-  default     = "vault-operator"
+  default     = "kube-prometheus-stack"
   description = "The name of the helm release"
   type        = string
 }

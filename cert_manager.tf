@@ -121,14 +121,6 @@ resource "helm_release" "cert_manager" {
   }
 
   dynamic "set" {
-    for_each = var.cert_manager_service_account_annotations
-    content {
-      name  = "serviceAccount.annotations.${set.key}"
-      value = set.value
-    }
-  }
-
-  dynamic "set" {
     for_each = var.cert_manager_settings
     content {
       name  = set.key
