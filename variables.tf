@@ -380,8 +380,14 @@ variable "public_subnet_ids" {
 }
 
 variable "pulsar_namespace" {
+  description = "The Kubernetes namespace that will be used for the Pulsar workload. This does not get created automatically, but is needed in order to create the scoped access policies in AWS. Can be enabled by setting `var.pulsar_namespace_create` to `true`."
   type        = string
-  description = "The Kubernetes namespace used for the Pulsar workload"
+}
+
+variable "pulsar_namespace_create" {
+  default = false
+  description = "Whether to create the Pulsar namespace if it doesn't already exist"
+  type = bool
 }
 
 variable "pulsar_operator_chart_name" {
