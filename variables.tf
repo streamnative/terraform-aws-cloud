@@ -385,9 +385,9 @@ variable "pulsar_namespace" {
 }
 
 variable "pulsar_namespace_create" {
-  default = false
+  default     = false
   description = "Whether to create the Pulsar namespace if it doesn't already exist"
-  type = bool
+  type        = bool
 }
 
 variable "pulsar_operator_chart_name" {

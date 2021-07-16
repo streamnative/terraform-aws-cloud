@@ -56,14 +56,14 @@ resource "kubernetes_namespace" "operators" {
 }
 
 resource "helm_release" "operator_lifecycle_manager" {
-  atomic          = true
-  chart           = "${path.module}/chart"
-  cleanup_on_fail = true
+  atomic           = true
+  chart            = "${path.module}/chart"
+  cleanup_on_fail  = true
   create_namespace = false
-  name            = "operator-lifecycle-manager"
-  namespace       = kubernetes_namespace.olm.id
-  timeout         = 600
-  wait            = true
+  name             = "operator-lifecycle-manager"
+  namespace        = kubernetes_namespace.olm.id
+  timeout          = 600
+  wait             = true
 
   set {
     name  = "namespace"
