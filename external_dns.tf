@@ -114,7 +114,7 @@ resource "helm_release" "external_dns" {
   }
 
   set {
-    name = "sources"
+    name  = "sources"
     value = "{service,ingress,istio-gateway,istio-virtualservice}"
   }
 

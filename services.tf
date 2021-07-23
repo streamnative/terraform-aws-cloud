@@ -75,7 +75,7 @@ module "prometheus_operator" {
     "nodeExporter.enabled"     = "false"
     "prometheus.enabled"       = "false"
   })
-  
+
   timeout = var.prometheus_operator_timeout
 }
 

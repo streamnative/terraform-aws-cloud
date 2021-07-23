@@ -70,29 +70,29 @@ provider "kubernetes" {
 ### Create the StreamNative Platform Cluster
 #######
 module "sn_platform_cluster" {
-  source          = "streamnative/cloud/aws"
+  source = "streamnative/cloud/aws"
 
-  cluster_name                 = "my-sn-platform-cluster"
-  cluster_version              = "1.19"
-  kubeconfig_output_path       = "/path/to/my-sn-platform-cluster-config" # add this path to the provider configs above
+  cluster_name           = "my-sn-platform-cluster"
+  cluster_version        = "1.19"
+  kubeconfig_output_path = "/path/to/my-sn-platform-cluster-config" # add this path to the provider configs above
 
   map_additional_iam_roles = [
     {
-      rolearn  = "arn:aws:iam::123456789012:role/my-aws-admin-role" 
+      rolearn  = "arn:aws:iam::123456789012:role/my-aws-admin-role"
       username = "management-admin"
       groups   = ["system:masters"]
     }
   ]
 
-  node_pool_instance_types     = ["m4.large"]
-  node_pool_desired_size       = 3
-  node_pool_min_size           = 3
-  node_pool_max_size           = 5
-  pulsar_namespace             = "pulsar-demo"
+  node_pool_instance_types = ["m4.large"]
+  node_pool_desired_size   = 3
+  node_pool_min_size       = 3
+  node_pool_max_size       = 5
+  pulsar_namespace         = "pulsar-demo"
 
-  hosted_zone_id               = "Z04554535IN8Z31SKDVQ2"
-  public_subnet_ids            = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
-  private_subnet_ids           = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
-  region                       = "us-west-2"
-  vpc_id                       = "vpc-1234556abcdef"
+  hosted_zone_id     = "Z04554535IN8Z31SKDVQ2"
+  public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
+  private_subnet_ids = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
+  region             = "us-west-2"
+  vpc_id             = "vpc-1234556abcdef"
 }
