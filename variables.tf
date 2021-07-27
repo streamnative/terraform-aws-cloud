@@ -87,6 +87,12 @@ variable "disable_olm" {
   type        = bool
 }
 
+variable "enable_istio_operator" {
+  default     = true
+  description = "Enables the Istio operator on the EKS cluster. Enabled by default."
+  type        = bool
+}
+
 variable "enable_irsa" {
   default     = true
   description = "Enables the OpenID Connect Provider for EKS to use IAM Roles for Service Accounts (IRSA)"
@@ -230,6 +236,48 @@ variable "hosted_zone_id" {
   default     = ""
   description = "The ID of the Route53 hosted zone used by the cluster's external-dns configuration"
   type        = string
+}
+
+variable "istio_operator_chart_name" {
+  default     = "istio-operator"
+  description = "The name of the Helm chart to install"
+  type        = string
+}
+
+variable "istio_operator_chart_repository" {
+  default     = "https://kubernetes-charts.banzaicloud.com"
+  description = "The repository containing the Helm chart to install"
+  type        = string
+}
+
+variable "istio_operator_chart_version" {
+  default     = "0.0.88"
+  description = "The version of the Helm chart to install"
+  type        = string
+}
+
+variable "istio_operator_cleanup_on_fail" {
+  default     = true
+  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
+  type        = bool
+}
+
+variable "istio_operator_release_name" {
+  default     = "istio-operator"
+  description = "The name of the helm release"
+  type        = string
+}
+
+variable "istio_operator_settings" {
+  default     = null
+  description = "Additional settings which will be passed to the Helm chart values"
+  type        = map(any)
+}
+
+variable "istio_operator_timeout" {
+  default     = 600
+  description = "Time in seconds to wait for any individual kubernetes operation"
+  type        = number
 }
 
 variable "kubeconfig_output_path" {

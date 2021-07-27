@@ -62,3 +62,13 @@ resource "kubernetes_namespace" "pulsar" {
     module.eks
   ]
 }
+
+resource "kubernetes_namespace" "istio" {
+  count = var.enable_istio_operator ? 1 : 0
+  metadata {
+    name = "istio-system"
+  }
+  depends_on = [
+    module.eks
+  ]
+}

@@ -31,6 +31,20 @@ module "function_mesh_operator" {
   timeout          = var.function_mesh_operator_timeout
 }
 
+module "istio_operator" {
+  count = var.enable_istio_operator ? 1 : 0
+  source = "./modules/istio-operator"
+
+  chart_name       = var.istio_operator_chart_name
+  chart_repository = var.istio_operator_chart_repository
+  chart_version    = var.istio_operator_chart_version
+  cleanup_on_fail  = var.istio_operator_cleanup_on_fail
+  namespace        = kubernetes_namespace.istio[0].id
+  release_name     = var.istio_operator_release_name
+  settings         = coalesce(var.istio_operator_settings, {}) # The empty map is a placeholder value, reserved for future default
+  timeout          = var.istio_operator_timeout
+}
+
 module "olm" {
   count  = var.disable_olm ? 0 : 1
   source = "./modules/operator-lifecycle-manager"
