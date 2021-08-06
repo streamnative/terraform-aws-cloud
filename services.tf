@@ -19,7 +19,7 @@
 
 module "function_mesh_operator" {
   count  = var.enable_function_mesh_operator && var.disable_olm ? 1 : 0
-  source = "./modules/function-mesh-operator"
+  source = "streamnative/charts/helm//modules/function-mesh-operator"
 
   chart_name       = var.function_mesh_operator_chart_name
   chart_repository = var.function_mesh_operator_chart_repository
@@ -32,8 +32,8 @@ module "function_mesh_operator" {
 }
 
 module "istio_operator" {
-  count = var.enable_istio_operator ? 1 : 0
-  source = "./modules/istio-operator"
+  count  = var.enable_istio_operator ? 1 : 0
+  source = "streamnative/charts/helm//modules/istio-operator"
 
   chart_name       = var.istio_operator_chart_name
   chart_repository = var.istio_operator_chart_repository
@@ -41,17 +41,17 @@ module "istio_operator" {
   cleanup_on_fail  = var.istio_operator_cleanup_on_fail
   namespace        = kubernetes_namespace.istio[0].id
   release_name     = var.istio_operator_release_name
-  settings         = coalesce(var.istio_operator_settings, {}) # The empty map is a placeholder value, reserved for future default
+  settings         = coalesce(var.istio_operator_settings, {}) # The empty map is a placeholder value, reserved for future defaults
   timeout          = var.istio_operator_timeout
 }
 
 module "olm" {
   count  = var.disable_olm ? 0 : 1
-  source = "./modules/operator-lifecycle-manager"
+  source = "streamnative/charts/helm//modules/operator-lifecycle-manager"
 
   olm_namespace           = var.olm_namespace
   olm_operators_namespace = var.olm_operators_namespace
-  settings                = coalesce(var.olm_settings, {}) # The empty map is a placeholder value, reserved for future default
+  settings                = coalesce(var.olm_settings, {}) # The empty map is a placeholder value, reserved for future defaults
 
   depends_on = [
     kubernetes_namespace.sn_system
@@ -60,11 +60,12 @@ module "olm" {
 
 module "olm_subscriptions" {
   count  = var.disable_olm ? 0 : 1
-  source = "./modules/olm-subscriptions"
+  source = "streamnative/charts/helm//modules/olm-subscriptions"
 
   catalog_namespace = var.olm_namespace
   namespace         = kubernetes_namespace.sn_system.id
-  settings          = coalesce(var.olm_subscription_settings, { "components.vault" = "false" })
+  settings          = coalesce(var.olm_subscription_settings, {}) # The empty map is a placeholder value, reserved for future defaults
+  sn_image          = var.olm_sn_image
 
   depends_on = [
     module.olm
@@ -73,7 +74,7 @@ module "olm_subscriptions" {
 
 module "prometheus_operator" {
   count  = var.enable_prometheus_operator && var.disable_olm ? 1 : 0
-  source = "./modules/prometheus-operator"
+  source = "streamnative/charts/helm//modules/prometheus-operator"
 
   chart_name       = var.prometheus_operator_chart_name
   chart_repository = var.prometheus_operator_chart_repository
@@ -95,7 +96,7 @@ module "prometheus_operator" {
 
 module "pulsar_operator" {
   count  = var.enable_pulsar_operator && var.disable_olm ? 1 : 0
-  source = "./modules/pulsar-operator"
+  source = "streamnative/charts/helm//modules/pulsar-operator"
 
   chart_name       = var.pulsar_operator_chart_name
   chart_repository = var.pulsar_operator_chart_repository
@@ -108,8 +109,8 @@ module "pulsar_operator" {
 }
 
 module "vault_operator" {
-  count  = var.enable_vault ? 1 : 0
-  source = "./modules/vault-operator"
+  count  = var.enable_vault_operator ? 1 : 0
+  source = "streamnative/charts/helm//modules/vault-operator"
 
   chart_name       = var.vault_operator_chart_name
   chart_repository = var.vault_operator_chart_repository

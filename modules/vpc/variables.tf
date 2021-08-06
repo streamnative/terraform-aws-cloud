@@ -17,10 +17,15 @@
 # under the License.
 #
 
-variable "num_azs" {
-  type        = number
-  description = "The number of availability zones to provision"
-  default     = 2
+variable "cluster_name" {
+  default     = ""
+  description = "The name of your EKS cluster and associated resources. Required if input \"enable_eks_tags\" Must be 16 characters or less"
+  type        = string
+
+  validation {
+    condition     = can(length(var.cluster_name) <= 16)
+    error_message = "The value for variable \"cluster_name\" must be a string of 16 characters or less."
+  }
 }
 
 variable "region" {
@@ -29,6 +34,17 @@ variable "region" {
     condition     = can(regex("^(us|af|ap|ca|eu|me|sa)\\-(east|west|south|northeast|southeast|central|north)\\-(1|2|3)$", var.region))
     error_message = "The region must be a proper AWS region."
   }
+}
+
+variable "vpc_name" {
+  description = "The name used for the VPC and associated resources"
+  type        = string
+}
+
+variable "num_azs" {
+  type        = number
+  description = "The number of availability zones to provision"
+  default     = 2
 }
 
 variable "private_subnet_start" {

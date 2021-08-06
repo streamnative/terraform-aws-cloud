@@ -17,9 +17,15 @@
 # under the License.
 #
 
+variable "additional_tags" {
+  default     = {}
+  description = "Additional tags to be added to the resources created by this module."
+  type        = map(any)
+}
+
 variable "add_vpc_tags" {
-  default     = false
-  description = "Indicate whether the eks tags should be added to vpc and subnets"
+  default     = true
+  description = "Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to \"true\". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module."
   type        = bool
 }
 
@@ -29,15 +35,51 @@ variable "aws_partition" {
   type        = string
 }
 
+variable "cert_manager_helm_chart_name" {
+  default     = "cert-manager"
+  description = "The name of the Helm chart in the repository for cert-manager."
+  type        = string
+}
+
+variable "cert_manager_helm_chart_repository" {
+  default     = "https://charts.jetstack.io"
+  description = "The repository containing the cert-manager helm chart."
+  type        = string
+}
+
+variable "cert_manager_helm_chart_version" {
+  default     = "1.4.0"
+  description = "Helm chart version for the cert-manager. Defaults to \"1.4.0\". See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases."
+  type        = string
+}
+
 variable "cert_manager_settings" {
   default     = {}
-  description = "Additional settings which will be passed to the Helm chart values"
+  description = "Additional settings which will be passed to the Helm chart values. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for available options."
   type        = map(any)
+}
+
+variable "cluster_autoscaler_helm_chart_name" {
+  default     = "cluster-autoscaler"
+  description = "The name of the Helm chart in the repository for cluster-autoscaler."
+  type        = string
+}
+
+variable "cluster_autoscaler_helm_chart_repository" {
+  default     = "https://kubernetes.github.io/autoscaler"
+  description = "The repository containing the cluster-autoscaler helm chart."
+  type        = string
+}
+
+variable "cluster_autoscaler_helm_chart_version" {
+  default     = "9.10.4"
+  description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
+  type        = string
 }
 
 variable "cluster_autoscaler_settings" {
   default     = {}
-  description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns"
+  description = "Additional settings which will be passed to the Helm chart values for cluster-autoscaler, see https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for options."
   type        = map(any)
 }
 
@@ -56,12 +98,6 @@ variable "cluster_name" {
     condition     = can(length(var.cluster_name) <= 16)
     error_message = "The value for variable \"cluster_name\" must be a string of 16 characters or less."
   }
-}
-
-variable "cluster_subnet_ids" {
-  default     = []
-  description = "A list of subnet IDs to place the EKS cluster and workers within"
-  type        = list(string)
 }
 
 variable "cluster_version" {
@@ -93,9 +129,21 @@ variable "enable_istio_operator" {
   type        = bool
 }
 
+variable "enable_istio_sources" {
+  default     = true
+  description = "Enables the Istio sources when deploying ExternalDNS. Automatically enabled if input \"enable_istio_operator\" is set to  \"true\", but can be explicitly disabled by setting this input to \"false\" and should only be changed for debugging purposes."
+  type        = bool
+}
+
 variable "enable_irsa" {
   default     = true
   description = "Enables the OpenID Connect Provider for EKS to use IAM Roles for Service Accounts (IRSA)"
+  type        = bool
+}
+
+variable "enable_func_pool" {
+  default     = true
+  description = "Enable an additional dedicated function pool"
   type        = bool
 }
 
@@ -117,10 +165,28 @@ variable "enable_pulsar_operator" {
   type        = bool
 }
 
-variable "enable_vault" {
+variable "enable_vault_operator" {
   default     = true
   description = "Enables Hashicorp Vault on the EKS cluster."
   type        = bool
+}
+
+variable "external_dns_helm_chart_name" {
+  default     = "external-dns"
+  description = "The name of the Helm chart in the repository for ExternalDNS."
+  type        = string
+}
+
+variable "external_dns_helm_chart_repository" {
+  default     = "https://charts.bitnami.com/bitnami"
+  description = "The repository containing the ExternalDNS helm chart."
+  type        = string
+}
+
+variable "external_dns_helm_chart_version" {
+  default     = "4.9.0"
+  description = "Helm chart version for ExternalDNS. Defaults to \"4.9.0\". See https://hub.helm.sh/charts/bitnami/external-dns for updates."
+  type        = string
 }
 
 variable "external_dns_settings" {
@@ -128,6 +194,7 @@ variable "external_dns_settings" {
   description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns"
   type        = map(any)
 }
+
 variable "function_mesh_operator_chart_name" {
   default     = "function-mesh-operator"
   description = "The name of the Helm chart to install"
@@ -190,15 +257,17 @@ variable "func_pool_disk_size" {
   type        = number
 }
 
-variable "func_pool_enabled" {
-  default     = false
-  description = "Enable an additional dedicated function pool"
-  type        = bool
+variable "func_pool_disk_type" {
+  default     = "gp3"
+  description = "Disk type for function worker nodes. Defaults to gp3"
+  type        = string
 }
 
+
+
 variable "func_pool_instance_types" {
-  default     = ["t3.medium"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided"
+  default     = ["t3.large"]
+  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.large\"]. Terraform will only perform drift detection if a configuration value is provided"
   type        = list(string)
 }
 
@@ -286,18 +355,6 @@ variable "kubeconfig_output_path" {
   type        = string
 }
 
-variable "manage_cluster_iam_resources" {
-  default     = true
-  description = "Whether to let the module manage worker IAM reosurces. If set to false, cluster_iam_role_name must be specified for workers"
-  type        = bool
-}
-
-variable "manage_worker_iam_resources" {
-  default     = false
-  description = "Whether to let the module manage worker IAM reosurces. If set to false, cluster_iam_role_name must be specified for workers"
-  type        = bool
-}
-
 variable "map_additional_aws_accounts" {
   default     = []
   description = "Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap"
@@ -335,6 +392,12 @@ variable "node_pool_disk_size" {
   type        = number
 }
 
+variable "node_pool_disk_type" {
+  default     = "gp3"
+  description = "Disk type for worker nodes in the node pool. Defaults to gp3"
+  type        = string
+}
+
 variable "node_pool_instance_types" {
   default     = ["t3.medium"]
   description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided"
@@ -367,6 +430,12 @@ variable "olm_settings" {
   default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
+}
+
+variable "olm_sn_image" {
+  default     = ""
+  description = "The registry containing StreamNative's operator catalog image"
+  type        = string
 }
 
 variable "olm_subscription_settings" {
@@ -421,6 +490,7 @@ variable "prometheus_operator_timeout" {
   description = "Time in seconds to wait for any individual kubernetes operation"
   type        = number
 }
+
 variable "public_subnet_ids" {
   default     = []
   description = "The ids of existing public subnets"

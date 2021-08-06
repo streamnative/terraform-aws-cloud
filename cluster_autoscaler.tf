@@ -91,15 +91,14 @@ resource "aws_iam_role" "cluster_autoscaler" {
 }
 
 resource "helm_release" "cluster_autoscaler" {
-  name            = "cluster-autoscaler"
-  repository      = "https://kubernetes.github.io/autoscaler"
-  chart           = "cluster-autoscaler"
-  namespace       = "kube-system"
-  version         = "9.9.2"
-  wait            = true
-  timeout         = 600
   atomic          = true
+  chart           = var.cluster_autoscaler_helm_chart_name 
   cleanup_on_fail = true
+  name            = "cluster-autoscaler"
+  namespace       = "kube-system"
+  repository      = var.cluster_autoscaler_helm_chart_repository 
+  timeout         = 600
+  version         = var.cluster_autoscaler_helm_chart_version
 
   dynamic "set" {
     for_each = var.cluster_autoscaler_settings
@@ -109,6 +108,8 @@ resource "helm_release" "cluster_autoscaler" {
     }
   }
 
+  # Keep this issue in mind when running autoscaler, especially if you are seeing OOMKilled errors.
+  # https://github.com/kubernetes/autoscaler/issues/3506
   values = [
     yamlencode({
       "autoDiscovery" : {
@@ -119,13 +120,9 @@ resource "helm_release" "cluster_autoscaler" {
       "extraArgs" : {
         "balance-similar-node-groups" : true,
         "expander" : "least-waste",
-        "skip-nodes-with-system-pods" : false,
-        "logtostderr" : true,
-        "stderrthreshold" : "info"
-        "v" : "4",
-        "skip-nodes-with-local-storage" : false,
-        "expander" : "least-waste",
         "node-group-auto-discovery" : "asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${module.eks.cluster_id}"
+        "skip-nodes-with-system-pods" : false,
+        "skip-nodes-with-local-storage" : false,
       }
       "extraVolumes" : [
         {
@@ -158,11 +155,11 @@ resource "helm_release" "cluster_autoscaler" {
       "resources" : {
         "limits" : {
           "cpu" : "100m",
-          "memory" : "300Mi"
+          "memory" : "500Mi"
         },
         "requests" : {
           "cpu" : "100m",
-          "memory" : "300Mi"
+          "memory" : "500Mi"
         }
       }
     })

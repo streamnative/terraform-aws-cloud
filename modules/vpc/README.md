@@ -1,5 +1,17 @@
 # VPC Module
-A basic module used to create an AWS VPC
+A basic module used to create an AWS VPC with public and private subnets, intended to be used specifically by an EKS cluster that is publically addressable on the internet.
+
+### Note on Tags
+
+Adding a lifecycle `ignore_changes` block to resource tags in this module prevents cycling when managing them seperately via the Terraform `aws_ec2_tag` resource.
+
+Per the `aws_ec2_tag` [resource documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_tag):
+
+"..using `aws_vpc` and `aws_ec2_tag` to manage tags of the same VPC will cause a perpetual difference where the aws_vpc resource will try to remove the tag being added by the aws_ec2_tag resource."
+
+In order for [subnet auto discovery](https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/8db51cb82370fba5e25e470829520e1da219776f/docs/deploy/subnet_discovery.md) in EKS to work properly, certain VPC resources need to be tagged with values specific to the EKS cluster they are associated with. These tags are often applied _after_ cluster creation, creating circular dependencies if trying to manage them within the actual VPC resouce.
+
+For this reason, we recommend managing the tags externally of the resource itself, and have thus added the `ignore_changes` block to any resource using a tag which makes the default tags applied by this module static, rather than being able to dynamically provide additional tags to this module.
 ## Requirements
 
 No requirements.
@@ -36,12 +48,14 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of your EKS cluster and associated resources. Required if input "enable\_eks\_tags" Must be 16 characters or less | `string` | `""` | no |
 | <a name="input_num_azs"></a> [num\_azs](#input\_num\_azs) | The number of availability zones to provision | `number` | `2` | no |
 | <a name="input_private_subnet_start"></a> [private\_subnet\_start](#input\_private\_subnet\_start) | n/a | `number` | `10` | no |
 | <a name="input_public_subnet_auto_ip"></a> [public\_subnet\_auto\_ip](#input\_public\_subnet\_auto\_ip) | n/a | `bool` | `false` | no |
 | <a name="input_public_subnet_start"></a> [public\_subnet\_start](#input\_public\_subnet\_start) | n/a | `number` | `20` | no |
 | <a name="input_region"></a> [region](#input\_region) | n/a | `string` | n/a | yes |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | n/a | `any` | n/a | yes |
+| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | The name used for the VPC and associated resources | `string` | n/a | yes |
 
 ## Outputs
 

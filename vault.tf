@@ -18,11 +18,11 @@
 #
 
 module "vault" {
-  count   = var.enable_vault ? 1 : 0
+  count   = var.enable_vault_operator ? 1 : 0
   source  = "streamnative/managed-cloud/aws//modules/vault_resources"
   version = "0.4.1"
 
-  prefix = coalesce(var.vault_prefix_override, module.this.id)
+  prefix = var.vault_prefix_override
 }
 
 data "aws_iam_policy_document" "vault_base_policy" {
@@ -54,7 +54,7 @@ data "aws_iam_policy_document" "vault" {
 }
 
 resource "aws_iam_role" "vault" {
-  count              = var.enable_vault ? 1 : 0
+  count              = var.enable_vault_operator ? 1 : 0
   name               = format("%s-vault-role", module.eks.cluster_id)
   description        = format("Role assumed by EKS ServiceAccount %s", local.vault_sa_id)
   assume_role_policy = data.aws_iam_policy_document.vault.json
@@ -66,7 +66,7 @@ resource "aws_iam_role" "vault" {
 }
 
 resource "aws_iam_role_policy_attachment" "vault" {
-  count      = var.enable_vault ? 1 : 0
+  count      = var.enable_vault_operator ? 1 : 0
   role       = aws_iam_role.vault[0].name
   policy_arn = module.vault[0].policy_arn
 }

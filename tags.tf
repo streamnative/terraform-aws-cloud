@@ -17,38 +17,12 @@
 # under the License.
 #
 
-module "label" {
-  source     = "cloudposse/label/null"
-  version    = "0.24.1"
-  attributes = ["cluster"]
+module "vpc_tags" {
+  source = "./modules/eks-vpc-tags"
+  count  = var.add_vpc_tags ? 1 : 0
 
-  context = module.this.context
-}
-
-resource "aws_ec2_tag" "vpc_tag" {
-  count       = var.add_vpc_tags == true ? 1 : 0
-  resource_id = var.vpc_id
-  key         = local.cluster_label
-  value       = "shared"
-}
-
-resource "aws_ec2_tag" "subnet_tag" {
-  count       = var.add_vpc_tags == true ? length(local.cluster_subnet_ids) : 0
-  resource_id = local.cluster_subnet_ids[count.index]
-  key         = local.cluster_label
-  value       = "shared"
-}
-
-resource "aws_ec2_tag" "private_subnet_tag" {
-  count       = var.add_vpc_tags == true ? length(var.private_subnet_ids) : 0
-  resource_id = var.private_subnet_ids[count.index]
-  key         = "kubernetes.io/role/internal-elb"
-  value       = "1"
-}
-
-resource "aws_ec2_tag" "public_subnet_tag" {
-  count       = var.add_vpc_tags == true ? length(var.public_subnet_ids) : 0
-  resource_id = var.public_subnet_ids[count.index]
-  key         = "kubernetes.io/role/elb"
-  value       = "1"
+  cluster_name       = var.cluster_name
+  vpc_id             = var.vpc_id
+  public_subnet_ids  = var.public_subnet_ids
+  private_subnet_ids = var.private_subnet_ids
 }
