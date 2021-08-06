@@ -17,21 +17,22 @@
 # under the License.
 #
 
-module "tiered_storage_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.24.1"
-  attributes = ["offload"]
+# module "tiered_storage_label" {
+#   source     = "cloudposse/label/null"
+#   version    = "0.24.1"
+#   attributes = ["offload"]
 
-  context = module.this.context
-}
+#   context = module.this.context
+# }
+
 
 ### The way we reference this module, disparate from the ones local to these eks modules, feels like spaghetti. We need to unify all of our modules and our references.
 module "tiered_storage" {
   source  = "streamnative/managed-cloud/aws//modules/tiered_storage"
   version = "0.4.1"
 
-  bucket_name = coalesce(var.s3_bucket_name_override, module.tiered_storage_label.id)
-  bucket_tags = module.tiered_storage_label.tags
+  bucket_name = var.s3_bucket_name_override
+  bucket_tags = merge(local.bucket_tags, var.additional_tags)
 }
 
 data "aws_iam_policy_document" "tiered_storage" {
@@ -56,7 +57,7 @@ resource "aws_iam_role" "tiered_storage" {
   name               = format("%s-tiered-storage-role", module.eks.cluster_id)
   description        = format("Role assumed by EKS ServiceAccount %s", local.tiered_storage_sa_id)
   assume_role_policy = data.aws_iam_policy_document.tiered_storage.json
-  tags               = module.tiered_storage_label.tags
+  tags               = merge(local.bucket_tags, var.additional_tags)
 }
 
 resource "aws_iam_role_policy_attachment" "tiered_storage" {

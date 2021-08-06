@@ -28,43 +28,35 @@ variable "cluster_name" {
   }
 }
 
-variable "region" {
-  type = string
+variable "private_subnet_ids" {
+  default     = []
+  description = "The ids of existing private subnets"
+  type        = list(string)
+
   validation {
-    condition     = can(regex("^(us|af|ap|ca|eu|me|sa)\\-(east|west|south|northeast|southeast|central|north)\\-(1|2|3)$", var.region))
-    error_message = "The region must be a proper AWS region."
+    condition     = length(var.private_subnet_ids[0]) > 7 && substr(var.private_subnet_ids[0], 0, 7) == "subnet-"
+    error_message = "The value for variable \"private_subnet_ids\" must be a valid subnet id, starting with \"subnet-\"."
   }
 }
 
-variable "vpc_name" {
-  description = "The name used for the VPC and associated resources"
-  type        = string
-}
+variable "public_subnet_ids" {
+  default     = []
+  description = "The ids of existing public subnets"
+  type        = list(string)
 
-variable "num_azs" {
-  type        = number
-  description = "The number of availability zones to provision"
-  default     = 2
-}
-
-variable "private_subnet_start" {
-  type    = number
-  default = 10
-}
-
-variable "public_subnet_start" {
-  type    = number
-  default = 20
-}
-
-variable "public_subnet_auto_ip" {
-  type    = bool
-  default = false
-}
-
-variable "vpc_cidr" {
   validation {
-    condition     = can(regex("^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}/16", var.vpc_cidr))
-    error_message = "The vpc_cidr must be a 10.x.x.x range with /16 CIDR."
+    condition     = length(var.public_subnet_ids[0]) > 7 && substr(var.public_subnet_ids[0], 0, 7) == "subnet-"
+    error_message = "The value for variable \"public_subnet_ids\" must be a valid subnet id, starting with \"subnet-\"."
+  }
+}
+
+variable "vpc_id" {
+  default     = ""
+  description = "The ID of the AWS VPC to use"
+  type        = string
+
+  validation {
+    condition     = length(var.vpc_id) > 4 && substr(var.vpc_id, 0, 4) == "vpc-"
+    error_message = "The value for variable \"vpc_id\" must be a valid VPC id, starting with \"vpc-\"."
   }
 }

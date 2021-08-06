@@ -17,10 +17,10 @@
 # under the License.
 #
 
-variable "add_vpc_tags" {
-  default     = false
-  description = "Indicate whether the eks tags should be added to vpc and subnets"
-  type        = bool
+variable "additional_tags" {
+  default     = {}
+  description = "Additional tags to be added to the resources created by this module"
+  type        = map
 }
 
 variable "aws_partition" {
@@ -58,12 +58,6 @@ variable "cluster_name" {
   }
 }
 
-variable "cluster_subnet_ids" {
-  default     = []
-  description = "A list of subnet IDs to place the EKS cluster and workers within"
-  type        = list(string)
-}
-
 variable "cluster_version" {
   default     = "1.18"
   description = "The version of Kubernetes to be installed"
@@ -93,9 +87,21 @@ variable "enable_istio_operator" {
   type        = bool
 }
 
+variable "enable_istio_sources" {
+  default     = true
+  description = "Enables the Istio sources when deploying ExternalDNS. Automatically enabled if input \"enable_istio_operator\" is set to  \"true\", but can be explicitly disabled by setting this input to \"false\" and should only be changed for debugging purposes."
+  type        = bool
+}
+
 variable "enable_irsa" {
   default     = true
   description = "Enables the OpenID Connect Provider for EKS to use IAM Roles for Service Accounts (IRSA)"
+  type        = bool
+}
+
+variable "enable_func_pool" {
+  default     = true
+  description = "Enable an additional dedicated function pool"
   type        = bool
 }
 
@@ -117,7 +123,7 @@ variable "enable_pulsar_operator" {
   type        = bool
 }
 
-variable "enable_vault" {
+variable "enable_vault_operator" {
   default     = true
   description = "Enables Hashicorp Vault on the EKS cluster."
   type        = bool
@@ -190,15 +196,17 @@ variable "func_pool_disk_size" {
   type        = number
 }
 
-variable "func_pool_enabled" {
-  default     = false
-  description = "Enable an additional dedicated function pool"
-  type        = bool
+variable "func_pool_disk_type" {
+  default     = "gp3"
+  description = "Disk type for function worker nodes. Defaults to gp3"
+  type        = string
 }
 
+
+
 variable "func_pool_instance_types" {
-  default     = ["t3.medium"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided"
+  default     = ["t3.large"]
+  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.large\"]. Terraform will only perform drift detection if a configuration value is provided"
   type        = list(string)
 }
 
@@ -286,18 +294,6 @@ variable "kubeconfig_output_path" {
   type        = string
 }
 
-variable "manage_cluster_iam_resources" {
-  default     = true
-  description = "Whether to let the module manage worker IAM reosurces. If set to false, cluster_iam_role_name must be specified for workers"
-  type        = bool
-}
-
-variable "manage_worker_iam_resources" {
-  default     = false
-  description = "Whether to let the module manage worker IAM reosurces. If set to false, cluster_iam_role_name must be specified for workers"
-  type        = bool
-}
-
 variable "map_additional_aws_accounts" {
   default     = []
   description = "Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap"
@@ -335,6 +331,12 @@ variable "node_pool_disk_size" {
   type        = number
 }
 
+variable "node_pool_disk_type" {
+  default     = "gp3"
+  description = "Disk type for worker nodes in the node pool. Defaults to gp3"
+  type        = string
+}
+
 variable "node_pool_instance_types" {
   default     = ["t3.medium"]
   description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided"
@@ -367,6 +369,12 @@ variable "olm_settings" {
   default     = null
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
+}
+
+variable "olm_sn_image" {
+  default     = ""
+  description = "The registry containing StreamNative's operator catalog image"
+  type        = string
 }
 
 variable "olm_subscription_settings" {
@@ -421,6 +429,7 @@ variable "prometheus_operator_timeout" {
   description = "Time in seconds to wait for any individual kubernetes operation"
   type        = number
 }
+
 variable "public_subnet_ids" {
   default     = []
   description = "The ids of existing public subnets"

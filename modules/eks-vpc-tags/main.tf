@@ -17,37 +17,32 @@
 # under the License.
 #
 
-module "label" {
-  source     = "cloudposse/label/null"
-  version    = "0.24.1"
-  attributes = ["cluster"]
-
-  context = module.this.context
+locals {
+  cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
 }
 
 resource "aws_ec2_tag" "vpc_tag" {
-  count       = var.add_vpc_tags == true ? 1 : 0
   resource_id = var.vpc_id
-  key         = local.cluster_label
+  key         = var.cluster_name
   value       = "shared"
 }
 
-resource "aws_ec2_tag" "subnet_tag" {
-  count       = var.add_vpc_tags == true ? length(local.cluster_subnet_ids) : 0
+resource "aws_ec2_tag" "cluster_subnet_tag" {
+  count       = length(local.cluster_subnet_ids)
   resource_id = local.cluster_subnet_ids[count.index]
-  key         = local.cluster_label
+  key         = format("kubernetes.io/cluster/%s", var.cluster_name)
   value       = "shared"
 }
 
 resource "aws_ec2_tag" "private_subnet_tag" {
-  count       = var.add_vpc_tags == true ? length(var.private_subnet_ids) : 0
+  count       = length(var.private_subnet_ids)
   resource_id = var.private_subnet_ids[count.index]
   key         = "kubernetes.io/role/internal-elb"
   value       = "1"
 }
 
 resource "aws_ec2_tag" "public_subnet_tag" {
-  count       = var.add_vpc_tags == true ? length(var.public_subnet_ids) : 0
+  count       = length(var.private_subnet_ids)
   resource_id = var.public_subnet_ids[count.index]
   key         = "kubernetes.io/role/elb"
   value       = "1"

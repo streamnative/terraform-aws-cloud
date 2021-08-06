@@ -45,8 +45,8 @@ output "external_dns_role_arn" {
   value = aws_iam_role.external_dns.arn
 }
 
-output "function_pool_role_arn" {
-  value = aws_iam_role.func_pool[0].arn
+output "tiered_storage_role_arn" {
+  value = aws_iam_role.tiered_storage.arn
 }
 
 output "vault_role_arn" {

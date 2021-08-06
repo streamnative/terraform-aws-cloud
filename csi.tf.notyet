@@ -75,7 +75,6 @@ resource "aws_iam_role" "csi" {
   name               = format("%s-%s-role", module.eks.cluster_id, var.csi_sa_name)
   description        = format("Role assumed by EKS ServiceAccount %s", var.csi_sa_name)
   assume_role_policy = data.aws_iam_policy_document.csi_sts.json
-  tags               = module.func_role_label.tags
 
   inline_policy {
     name   = format("%s-%s-policy", module.eks.cluster_id, var.csi_sa_name)

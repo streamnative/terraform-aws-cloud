@@ -21,7 +21,8 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account_id           = data.aws_caller_identity.current.account_id
-  cluster_label        = "kubernetes.io/cluster/${module.label.id}"
+  bucket_tags          = { "Attributes" = "offload", "Name" = "offload" }
+  cluster_label        = "kubernetes.io/cluster/${module.eks.cluster_id}"
   cluster_subnet_ids   = concat(var.private_subnet_ids, var.public_subnet_ids)
   func_pool_sa_id      = format("%v@%v", var.func_pool_sa_name, var.func_pool_namespace)
   oidc_issuer          = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
@@ -29,26 +30,26 @@ locals {
   vault_sa_id          = format("%v@%v", "vault", var.pulsar_namespace)
 
   ### Node Groups
-  func_pool_config = tomap({
-    func-pool = {
-      desired_capacity = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
-      disk_size        = var.func_pool_disk_size
-      iam_role_arn     = var.func_pool_enabled ? aws_iam_role.func_pool[0].arn : "placeholder"
-      instance_types   = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
-      min_capacity     = coalesce(var.func_pool_min_size, var.node_pool_min_size)
-      max_capacity     = coalesce(var.func_pool_max_size, var.node_pool_max_size)
-    }
-  })
+  func_pool_config = {
+    # create_launch_template = true
+    desired_capacity = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
+    disk_size        = var.func_pool_disk_size
+    # disk_type              = var.func_pool_disk_type
+    instance_types = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
+    min_capacity   = coalesce(var.func_pool_min_size, var.node_pool_min_size)
+    max_capacity   = coalesce(var.func_pool_max_size, var.node_pool_max_size)
+  }
 
-  node_pool_config = tomap({
-    node-pool = {
-      desired_capacity = var.node_pool_desired_size
-      disk_size        = var.node_pool_disk_size
-      instance_types   = var.node_pool_instance_types
-      min_capacity     = var.node_pool_min_size
-      max_capacity     = var.node_pool_max_size
-    }
-  })
+  node_pool_config = {
+    # create_launch_template = true
+    desired_capacity = var.node_pool_desired_size
+    disk_size        = var.node_pool_disk_size
+    # disk_type              = var.node_pool_disk_type
+    instance_types = var.node_pool_instance_types
+    min_capacity   = var.node_pool_min_size
+    max_capacity   = var.node_pool_max_size
+  }
 
-  node_groups = var.func_pool_enabled ? merge(local.node_pool_config, local.func_pool_config) : local.node_pool_config
+
+  node_groups = var.enable_func_pool ? { "node-pool" = local.node_pool_config, "func-pool" = local.func_pool_config } : { "node-pool" = local.node_pool_config }
 }

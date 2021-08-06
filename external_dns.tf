@@ -90,6 +90,11 @@ resource "helm_release" "external_dns" {
   }
 
   set {
+    name  = "aws.assumeRoleArn"
+    value = aws_iam_role.external_dns.arn
+  }
+
+  set {
     name  = "rbac.create"
     value = "true"
     type  = "string"
@@ -115,7 +120,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "sources"
-    value = "{service,ingress,istio-gateway,istio-virtualservice}"
+    value = var.enable_istio_operator == true && var.enable_istio_sources == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}" 
   }
 
   dynamic "set" {
