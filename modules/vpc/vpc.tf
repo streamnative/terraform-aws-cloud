@@ -26,6 +26,10 @@ resource "aws_vpc" "vpc" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags                 = { Name = format("%s-vpc", var.vpc_name) }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_subnet" "public" {
@@ -35,6 +39,10 @@ resource "aws_subnet" "public" {
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = var.public_subnet_auto_ip
   tags                    = { "type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_subnet" "private" {
@@ -43,11 +51,18 @@ resource "aws_subnet" "private" {
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, var.private_subnet_start + count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
   tags              = { "type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.vpc.id
-  tags = { Name = format("%s-igw", var.vpc_name)
+  tags   = { Name = format("%s-igw", var.vpc_name) }
+
+  lifecycle {
+    ignore_changes = [tags]
   }
 }
 
@@ -61,12 +76,19 @@ resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.eip[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
   tags          = { Name = format("%s-ngw-%s", var.vpc_name, count.index) }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_route_table" "public_route_table" {
   count  = var.num_azs
   vpc_id = aws_vpc.vpc.id
   tags   = { Name = format("%s-public-rtb-%s", var.vpc_name, count.index) }
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_route" "public_route" {
@@ -86,6 +108,10 @@ resource "aws_route_table" "private_route_table" {
   count  = var.num_azs
   vpc_id = aws_vpc.vpc.id
   tags   = { Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_route" "private_route" {

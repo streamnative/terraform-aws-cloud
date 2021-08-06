@@ -22,7 +22,7 @@ module "eks" {
   version = "17.1.0"
 
   cluster_iam_role_name    = format("%s-role", var.cluster_name)
-  cluster_name             = format("%s-%s", var.cluster_name, var.region)
+  cluster_name             = var.cluster_name
   cluster_version          = var.cluster_version
   enable_irsa              = var.enable_irsa
   kubeconfig_output_path   = var.kubeconfig_output_path
@@ -37,7 +37,7 @@ module "eks" {
   node_groups = local.node_groups
 
   node_groups_defaults = {
-    additional_tags = var.additional_tags 
+    additional_tags = var.additional_tags
     subnets         = var.private_subnet_ids
   }
 }

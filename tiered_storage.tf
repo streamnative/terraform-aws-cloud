@@ -17,16 +17,6 @@
 # under the License.
 #
 
-# module "tiered_storage_label" {
-#   source     = "cloudposse/label/null"
-#   version    = "0.24.1"
-#   attributes = ["offload"]
-
-#   context = module.this.context
-# }
-
-
-### The way we reference this module, disparate from the ones local to these eks modules, feels like spaghetti. We need to unify all of our modules and our references.
 module "tiered_storage" {
   source  = "streamnative/managed-cloud/aws//modules/tiered_storage"
   version = "0.4.1"

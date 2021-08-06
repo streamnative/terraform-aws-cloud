@@ -19,7 +19,7 @@
 
 variable "cluster_name" {
   default     = ""
-  description = "The name of your EKS cluster and associated resources. Must be 16 characters or less"
+  description = "The name of your EKS cluster and associated resources. Required if input \"enable_eks_tags\" Must be 16 characters or less"
   type        = string
 
   validation {

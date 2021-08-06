@@ -74,15 +74,13 @@ resource "aws_iam_role" "external_dns" {
 
 resource "helm_release" "external_dns" {
   atomic           = true
-  chart            = "external-dns"
+  chart            = var.external_dns_helm_chart_name
   cleanup_on_fail  = true
-  create_namespace = false
   namespace        = "kube-system"
   name             = "external-dns"
-  repository       = "https://charts.bitnami.com/bitnami"
+  repository       = var.external_dns_helm_chart_repository
   timeout          = 600
-  version          = "4.9.0"
-  wait             = true
+  version          = var.external_dns_helm_chart_version 
 
   set {
     name  = "aws.region"
@@ -120,7 +118,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "sources"
-    value = var.enable_istio_operator == true && var.enable_istio_sources == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}" 
+    value = var.enable_istio_operator == true && var.enable_istio_sources == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}"
   }
 
   dynamic "set" {

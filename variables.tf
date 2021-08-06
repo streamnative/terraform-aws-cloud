@@ -19,8 +19,14 @@
 
 variable "additional_tags" {
   default     = {}
-  description = "Additional tags to be added to the resources created by this module"
-  type        = map
+  description = "Additional tags to be added to the resources created by this module."
+  type        = map(any)
+}
+
+variable "add_vpc_tags" {
+  default     = true
+  description = "Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to \"true\". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module."
+  type        = bool
 }
 
 variable "aws_partition" {
@@ -29,15 +35,51 @@ variable "aws_partition" {
   type        = string
 }
 
+variable "cert_manager_helm_chart_name" {
+  default     = "cert-manager"
+  description = "The name of the Helm chart in the repository for cert-manager."
+  type        = string
+}
+
+variable "cert_manager_helm_chart_repository" {
+  default     = "https://charts.jetstack.io"
+  description = "The repository containing the cert-manager helm chart."
+  type        = string
+}
+
+variable "cert_manager_helm_chart_version" {
+  default     = "1.4.0"
+  description = "Helm chart version for the cert-manager. Defaults to \"1.4.0\". See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases."
+  type        = string
+}
+
 variable "cert_manager_settings" {
   default     = {}
-  description = "Additional settings which will be passed to the Helm chart values"
+  description = "Additional settings which will be passed to the Helm chart values. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for available options."
   type        = map(any)
+}
+
+variable "cluster_autoscaler_helm_chart_name" {
+  default     = "cluster-autoscaler"
+  description = "The name of the Helm chart in the repository for cluster-autoscaler."
+  type        = string
+}
+
+variable "cluster_autoscaler_helm_chart_repository" {
+  default     = "https://kubernetes.github.io/autoscaler"
+  description = "The repository containing the cluster-autoscaler helm chart."
+  type        = string
+}
+
+variable "cluster_autoscaler_helm_chart_version" {
+  default     = "9.10.4"
+  description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
+  type        = string
 }
 
 variable "cluster_autoscaler_settings" {
   default     = {}
-  description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns"
+  description = "Additional settings which will be passed to the Helm chart values for cluster-autoscaler, see https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for options."
   type        = map(any)
 }
 
@@ -129,11 +171,30 @@ variable "enable_vault_operator" {
   type        = bool
 }
 
+variable "external_dns_helm_chart_name" {
+  default     = "external-dns"
+  description = "The name of the Helm chart in the repository for ExternalDNS."
+  type        = string
+}
+
+variable "external_dns_helm_chart_repository" {
+  default     = "https://charts.bitnami.com/bitnami"
+  description = "The repository containing the ExternalDNS helm chart."
+  type        = string
+}
+
+variable "external_dns_helm_chart_version" {
+  default     = "4.9.0"
+  description = "Helm chart version for ExternalDNS. Defaults to \"4.9.0\". See https://hub.helm.sh/charts/bitnami/external-dns for updates."
+  type        = string
+}
+
 variable "external_dns_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns"
   type        = map(any)
 }
+
 variable "function_mesh_operator_chart_name" {
   default     = "function-mesh-operator"
   description = "The name of the Helm chart to install"

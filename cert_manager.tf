@@ -84,15 +84,13 @@ resource "aws_iam_role" "cert_manager" {
 
 resource "helm_release" "cert_manager" {
   atomic           = true
-  chart            = "cert-manager"
+  chart            = var.cert_manager_helm_chart_name
   cleanup_on_fail  = true
-  create_namespace = false
   name             = "cert-manager"
   namespace        = "kube-system"
-  repository       = "https://charts.jetstack.io"
+  repository       = var.cert_manager_helm_chart_repository
   timeout          = 600
-  version          = "1.4.0"
-  wait             = true
+  version          = var.cert_manager_helm_chart_version 
 
   set {
     name  = "installCRDs"

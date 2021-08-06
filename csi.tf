@@ -112,7 +112,6 @@ resource "helm_release" "csi" {
   namespace        = "kube-system"
   repository       = "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
   timeout          = 300
-  #   version          = var.chart_version
   wait = true
 
   set {
