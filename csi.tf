@@ -112,7 +112,7 @@ resource "helm_release" "csi" {
   namespace        = "kube-system"
   repository       = "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
   timeout          = 300
-  wait = true
+  wait             = true
 
   set {
     name  = "controller.serviceAccount.create"

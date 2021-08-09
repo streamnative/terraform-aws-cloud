@@ -33,17 +33,17 @@ locals {
   func_pool_config = {
     desired_capacity = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
     disk_size        = var.func_pool_disk_size
-    instance_types = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
-    min_capacity   = coalesce(var.func_pool_min_size, var.node_pool_min_size)
-    max_capacity   = coalesce(var.func_pool_max_size, var.node_pool_max_size)
+    instance_types   = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
+    min_capacity     = coalesce(var.func_pool_min_size, var.node_pool_min_size)
+    max_capacity     = coalesce(var.func_pool_max_size, var.node_pool_max_size)
   }
 
   node_pool_config = {
     desired_capacity = var.node_pool_desired_size
     disk_size        = var.node_pool_disk_size
-    instance_types = var.node_pool_instance_types
-    min_capacity   = var.node_pool_min_size
-    max_capacity   = var.node_pool_max_size
+    instance_types   = var.node_pool_instance_types
+    min_capacity     = var.node_pool_min_size
+    max_capacity     = var.node_pool_max_size
   }
 
 

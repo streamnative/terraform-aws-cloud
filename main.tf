@@ -38,8 +38,8 @@ module "eks" {
 
   node_groups_defaults = {
     additional_tags = merge({
-      "k8s.io/cluster-autoscaler/enabled"                           = "true",
-      format("k8s.io/cluster-autoscaler/%s", module.eks.cluster_id) = "owned",
+      "k8s.io/cluster-autoscaler/enabled"                      = "true",
+      format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
       },
       var.additional_tags
     )
@@ -47,7 +47,7 @@ module "eks" {
   }
 
   tags = {
-    format("k8s.io/cluster/%s", module.eks.cluster_id)        = "owned",
+    format("k8s.io/cluster/%s", var.cluster_name) = "owned",
   }
 }
 
