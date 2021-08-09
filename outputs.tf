@@ -50,5 +50,5 @@ output "tiered_storage_role_arn" {
 }
 
 output "vault_role_arn" {
-  value = aws_iam_role.vault[0].arn
+  value = join("", aws_iam_role.vault.*.arn)
 }
