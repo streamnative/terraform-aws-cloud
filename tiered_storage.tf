@@ -21,10 +21,10 @@ module "tiered_storage" {
   source  = "streamnative/managed-cloud/aws//modules/tiered_storage"
   version = "0.4.1"
 
-  bucket_name = var.s3_bucket_name_override
-  bucket_tags = merge(local.bucket_tags, var.additional_tags)
+  bucket_name   = var.s3_bucket_name_override
+  bucket_tags   = merge(local.bucket_tags, var.additional_tags)
   new_role_name = format("%s-offload-role", module.eks.cluster_id)
-  policy_name = format("%s-offload-policy", module.eks.cluster_id)
+  policy_name   = format("%s-offload-policy", module.eks.cluster_id)
 }
 
 data "aws_iam_policy_document" "tiered_storage" {
