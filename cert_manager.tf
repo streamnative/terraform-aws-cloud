@@ -83,14 +83,14 @@ resource "aws_iam_role" "cert_manager" {
 }
 
 resource "helm_release" "cert_manager" {
-  atomic           = true
-  chart            = var.cert_manager_helm_chart_name
-  cleanup_on_fail  = true
-  name             = "cert-manager"
-  namespace        = "kube-system"
-  repository       = var.cert_manager_helm_chart_repository
-  timeout          = 600
-  version          = var.cert_manager_helm_chart_version 
+  atomic          = true
+  chart           = var.cert_manager_helm_chart_name
+  cleanup_on_fail = true
+  name            = "cert-manager"
+  namespace       = "kube-system"
+  repository      = var.cert_manager_helm_chart_repository
+  timeout         = 600
+  version         = var.cert_manager_helm_chart_version
 
   set {
     name  = "installCRDs"
