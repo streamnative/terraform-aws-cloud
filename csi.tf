@@ -182,3 +182,23 @@ resource "helm_release" "csi" {
     type  = "string"
   }
 }
+
+resource "kubernetes_storage_class" "sn_default" {
+  metadata {
+    name = "sn-default"
+  }
+  storage_provisioner = "kubernetes.io/aws-ebs"
+  parameters = {
+    type = "gp2"
+  }
+}
+
+resource "kubernetes_storage_class" "sn_ssd" {
+  metadata {
+    name = "sn-ssd"
+  }
+  storage_provisioner = "kubernetes.io/aws-ebs"
+  parameters = {
+    type = "gp2"
+  }
+}
