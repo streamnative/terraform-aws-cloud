@@ -113,7 +113,7 @@ variable "csi_namespace" {
 }
 
 variable "csi_sa_name" {
-  default     = "efs-csi-controller-sa"
+  default     = "ebs-csi-controller-sa"
   description = "The service account name used for AWS EKS Container Storage Interface (CSI)"
 }
 

@@ -20,34 +20,103 @@
 data "aws_iam_policy_document" "csi" {
   statement {
     actions = [
-      "elasticfilesystem:DescribeAccessPoints",
-      "elasticfilesystem:DescribeFileSystems"
+      "ec2:CreateSnapshot",
+      "ec2:AttachVolume",
+      "ec2:DetachVolume",
+      "ec2:ModifyVolume",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeInstances",
+      "ec2:DescribeSnapshots",
+      "ec2:DescribeTags",
+      "ec2:DescribeVolumes",
+      "ec2:DescribeVolumesModifications"
     ]
     resources = ["*"]
     effect    = "Allow"
   }
   statement {
     actions = [
-      "elasticfilesystem:CreateAccessPoint"
+      "ec2:CreateTags"
     ]
-    resources = ["*"]
-    effect    = "Allow"
+    resources = [
+      "arn:aws:ec2:*:*:volume/*",
+      "arn:aws:ec2:*:*:snapshot/*"
+    ]
+    effect = "Allow"
     condition {
-      test     = "StringLike"
-      variable = "aws:RequestTag"
-      values   = ["efs.csi.aws.com/cluster: \"true\""]
+      test     = "StringEquals"
+      variable = "ec2:CreateAction"
+      values   = ["CreateVolume", "CreateSnapshot"]
     }
   }
   statement {
     actions = [
-      "elasticfilesystem:DeleteAccessPoint"
+      "ec2:DeleteTags"
     ]
+    resources = [
+      "arn:aws:ec2:*:*:volume/*",
+      "arn:aws:ec2:*:*:snapshot/*"
+    ]
+    effect = "Allow"
+  }
+  statement {
+    actions   = ["ec2:CreateVolume"]
     resources = ["*"]
     effect    = "Allow"
     condition {
       test     = "StringLike"
-      variable = "aws:ResourceTag"
-      values   = ["efs.csi.aws.com/cluster: \"true\""]
+      variable = "aws:RequestTag/ebs.csi.aws.com/cluster"
+      values   = ["true"]
+    }
+  }
+  statement {
+    actions   = ["ec2:CreateVolume"]
+    resources = ["*"]
+    effect    = "Allow"
+    condition {
+      test     = "StringLike"
+      variable = "aws:RequestTag/CSIVolumeName"
+      values   = ["*"]
+    }
+  }
+  statement {
+    actions   = ["ec2:DeleteVolume"]
+    resources = ["*"]
+    effect    = "Allow"
+    condition {
+      test     = "StringLike"
+      variable = "ec2:ResourceTag/CSIVolumeName"
+      values   = ["*"]
+    }
+  }
+  statement {
+    actions   = ["ec2:DeleteVolume"]
+    resources = ["*"]
+    effect    = "Allow"
+    condition {
+      test     = "StringLike"
+      variable = "ec2:ResourceTag/ebs.csi.aws.com/cluster"
+      values   = ["true"]
+    }
+  }
+  statement {
+    actions   = ["ec2:DeleteSnapshot"]
+    resources = ["*"]
+    effect    = "Allow"
+    condition {
+      test     = "StringLike"
+      variable = "ec2:ResourceTag/CSIVolumeSnapshotName"
+      values   = ["*"]
+    }
+  }
+  statement {
+    actions   = ["ec2:DeleteSnapshot"]
+    resources = ["*"]
+    effect    = "Allow"
+    condition {
+      test     = "StringLike"
+      variable = "ec2:ResourceTag/ebs.csi.aws.com/cluster"
+      values   = ["true"]
     }
   }
 }
@@ -63,15 +132,19 @@ data "aws_iam_policy_document" "csi_sts" {
       identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       values   = [format("system:serviceaccount:%s:%s", var.csi_namespace, var.csi_sa_name)]
       variable = format("%s:sub", local.oidc_issuer)
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = format("%s:aud", local.oidc_issuer)
     }
   }
 }
 
 resource "aws_iam_role" "csi" {
-  count              = var.cluster_version >= "1.20" ? 1 : 0
   name               = format("%s-%s-role", module.eks.cluster_id, var.csi_sa_name)
   description        = format("Role assumed by EKS ServiceAccount %s", var.csi_sa_name)
   assume_role_policy = data.aws_iam_policy_document.csi_sts.json
@@ -82,46 +155,50 @@ resource "aws_iam_role" "csi" {
   }
 }
 
-resource "kubernetes_service_account" "csi" {
-  count = var.cluster_version >= "1.20" ? 1 : 0
-
-  metadata {
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.csi[0].arn
-    }
-
-    labels = {
-      "app.kubernetes.io/name" = "aws-efs-csi-driver"
-    }
-
-    name      = "efs-csi-controller-sa"
-    namespace = "kube-system"
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
 resource "helm_release" "csi" {
-  count            = var.cluster_version >= "1.20" ? 1 : 0
-  atomic           = true
-  chart            = "aws-efs-csi-driver"
-  cleanup_on_fail  = true
-  create_namespace = false
-  name             = "aws-efs-csi-driver"
-  namespace        = "kube-system"
-  repository       = "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
-  timeout          = 300
-  wait             = true
+  atomic          = true
+  chart           = "aws-ebs-csi-driver"
+  cleanup_on_fail = true
+  name            = "aws-ebs-csi-driver"
+  namespace       = var.csi_namespace
+  repository      = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"
+  timeout         = 300
 
   set {
     name  = "controller.serviceAccount.create"
-    value = "false"
+    value = "true"
+    type  = "string"
   }
 
   set {
     name  = "controller.serviceAccount.name"
-    value = trimprefix(kubernetes_service_account.csi[0].id, "kube-system/")
+    value = var.csi_sa_name
     type  = "string"
+  }
+
+  set {
+    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
+    value = aws_iam_role.csi.arn
+    type  = "string"
+  }
+}
+
+resource "kubernetes_storage_class" "sn_default" {
+  metadata {
+    name = "sn-default"
+  }
+  storage_provisioner = "kubernetes.io/aws-ebs"
+  parameters = {
+    type = "gp2"
+  }
+}
+
+resource "kubernetes_storage_class" "sn_ssd" {
+  metadata {
+    name = "sn-ssd"
+  }
+  storage_provisioner = "kubernetes.io/aws-ebs"
+  parameters = {
+    type = "gp2"
   }
 }
