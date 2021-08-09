@@ -37,8 +37,17 @@ module "eks" {
   node_groups = local.node_groups
 
   node_groups_defaults = {
-    additional_tags = var.additional_tags
-    subnets         = var.private_subnet_ids
+    additional_tags = merge({
+      "k8s.io/cluster-autoscaler/enabled"                           = "true",
+      format("k8s.io/cluster-autoscaler/%s", module.eks.cluster_id) = "owned",
+      },
+      var.additional_tags
+    )
+    subnets = var.private_subnet_ids
+  }
+
+  tags = {
+    format("k8s.io/cluster/%s", module.eks.cluster_id)        = "owned",
   }
 }
 

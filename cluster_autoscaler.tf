@@ -56,12 +56,6 @@ data "aws_iam_policy_document" "worker_autoscaling" {
       variable = "autoscaling:ResourceTag/k8s.io/cluster/${module.eks.cluster_id}"
       values   = ["owned"]
     }
-
-    condition {
-      test     = "StringEquals"
-      variable = "autoscaling:ResourceTag/kubernetes.io/cluster/${module.eks.cluster_id}"
-      values   = ["owned"]
-    }
   }
 }
 
@@ -92,11 +86,11 @@ resource "aws_iam_role" "cluster_autoscaler" {
 
 resource "helm_release" "cluster_autoscaler" {
   atomic          = true
-  chart           = var.cluster_autoscaler_helm_chart_name 
+  chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true
   name            = "cluster-autoscaler"
   namespace       = "kube-system"
-  repository      = var.cluster_autoscaler_helm_chart_repository 
+  repository      = var.cluster_autoscaler_helm_chart_repository
   timeout         = 600
   version         = var.cluster_autoscaler_helm_chart_version
 
