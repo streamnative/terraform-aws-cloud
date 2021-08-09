@@ -73,14 +73,14 @@ resource "aws_iam_role" "external_dns" {
 }
 
 resource "helm_release" "external_dns" {
-  atomic           = true
-  chart            = var.external_dns_helm_chart_name
-  cleanup_on_fail  = true
-  namespace        = "kube-system"
-  name             = "external-dns"
-  repository       = var.external_dns_helm_chart_repository
-  timeout          = 600
-  version          = var.external_dns_helm_chart_version 
+  atomic          = true
+  chart           = var.external_dns_helm_chart_name
+  cleanup_on_fail = true
+  namespace       = "kube-system"
+  name            = "external-dns"
+  repository      = var.external_dns_helm_chart_repository
+  timeout         = 600
+  version         = var.external_dns_helm_chart_version
 
   set {
     name  = "aws.region"
@@ -88,8 +88,13 @@ resource "helm_release" "external_dns" {
   }
 
   set {
-    name  = "aws.assumeRoleArn"
-    value = aws_iam_role.external_dns.arn
+    name  = "podSecurityContext.fsGroup"
+    value = "65534"
+  }
+
+  set {
+    name  = "podSecurityContext.runAsUser"
+    value = "0"
   }
 
   set {
@@ -115,6 +120,8 @@ resource "helm_release" "external_dns" {
     value = aws_iam_role.external_dns.arn
     type  = "string"
   }
+
+
 
   set {
     name  = "sources"
