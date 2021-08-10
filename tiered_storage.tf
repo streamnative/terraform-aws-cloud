@@ -18,13 +18,14 @@
 #
 
 module "tiered_storage" {
+  count   = var.enable_tiered_storage_offloading ? 1 : 0
   source  = "streamnative/managed-cloud/aws//modules/tiered_storage"
   version = "0.4.1"
 
   bucket_name   = var.s3_bucket_name_override
   bucket_tags   = merge(local.bucket_tags, var.additional_tags)
-  new_role_name = format("%s-offload-role", module.eks.cluster_id)
-  policy_name   = format("%s-offload-policy", module.eks.cluster_id)
+  new_role_name = format("%s-offload-role", var.cluster_name)
+  policy_name   = format("%s-offload-policy", var.cluster_name)
 }
 
 data "aws_iam_policy_document" "tiered_storage" {
@@ -46,13 +47,15 @@ data "aws_iam_policy_document" "tiered_storage" {
 }
 
 resource "aws_iam_role" "tiered_storage" {
-  name               = format("%s-tiered-storage-role", module.eks.cluster_id)
+  count              = var.enable_tiered_storage_offloading ? 1 : 0
+  name               = format("%s-tiered-storage-role", var.cluster_name)
   description        = format("Role assumed by EKS ServiceAccount %s", local.tiered_storage_sa_id)
   assume_role_policy = data.aws_iam_policy_document.tiered_storage.json
   tags               = merge(local.bucket_tags, var.additional_tags)
 }
 
 resource "aws_iam_role_policy_attachment" "tiered_storage" {
-  role       = aws_iam_role.tiered_storage.name
-  policy_arn = module.tiered_storage.policy_arn
+  count      = var.enable_tiered_storage_offloading ? 1 : 0
+  role       = aws_iam_role.tiered_storage[0].name
+  policy_arn = module.tiered_storage[0].policy_arn
 }

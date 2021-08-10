@@ -46,7 +46,7 @@ output "external_dns_role_arn" {
 }
 
 output "tiered_storage_role_arn" {
-  value = aws_iam_role.tiered_storage.arn
+  value = join("", aws_iam_role.tiered_storage.*.arn)
 }
 
 output "vault_role_arn" {
