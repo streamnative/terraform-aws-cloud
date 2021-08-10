@@ -191,6 +191,9 @@ resource "kubernetes_storage_class" "sn_default" {
   parameters = {
     type = "gp2"
   }
+  reclaim_policy = "Delete"
+  allow_volume_expansion = true
+  volume_binding_mode = "WaitForFirstConsumer"
 }
 
 resource "kubernetes_storage_class" "sn_ssd" {
@@ -201,4 +204,7 @@ resource "kubernetes_storage_class" "sn_ssd" {
   parameters = {
     type = "gp2"
   }
+  reclaim_policy = "Delete"
+  allow_volume_expansion = true
+  volume_binding_mode = "WaitForFirstConsumer"
 }
