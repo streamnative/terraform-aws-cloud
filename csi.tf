@@ -145,6 +145,7 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
+  count              = var.enable_csi ? 1 : 0
   name               = format("%s-%s-role", module.eks.cluster_id, var.csi_sa_name)
   description        = format("Role assumed by EKS ServiceAccount %s", var.csi_sa_name)
   assume_role_policy = data.aws_iam_policy_document.csi_sts.json
@@ -156,6 +157,7 @@ resource "aws_iam_role" "csi" {
 }
 
 resource "helm_release" "csi" {
+  count           = var.enable_csi ? 1 : 0
   atomic          = true
   chart           = "aws-ebs-csi-driver"
   cleanup_on_fail = true
@@ -178,8 +180,16 @@ resource "helm_release" "csi" {
 
   set {
     name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.csi.arn
+    value = aws_iam_role.csi[0].arn
     type  = "string"
+  }
+
+  dynamic "set" {
+    for_each = var.csi_settings
+    content {
+      name  = set.key
+      value = set.value
+    }
   }
 }
 
@@ -191,9 +201,9 @@ resource "kubernetes_storage_class" "sn_default" {
   parameters = {
     type = "gp2"
   }
-  reclaim_policy = "Delete"
+  reclaim_policy         = "Delete"
   allow_volume_expansion = true
-  volume_binding_mode = "WaitForFirstConsumer"
+  volume_binding_mode    = "WaitForFirstConsumer"
 }
 
 resource "kubernetes_storage_class" "sn_ssd" {
@@ -204,7 +214,7 @@ resource "kubernetes_storage_class" "sn_ssd" {
   parameters = {
     type = "gp2"
   }
-  reclaim_policy = "Delete"
+  reclaim_policy         = "Delete"
   allow_volume_expansion = true
-  volume_binding_mode = "WaitForFirstConsumer"
+  volume_binding_mode    = "WaitForFirstConsumer"
 }

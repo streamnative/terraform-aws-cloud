@@ -29,6 +29,30 @@ variable "add_vpc_tags" {
   type        = bool
 }
 
+variable "aws_load_balancer_controller_helm_chart_name" {
+  default     = "aws-load-balancer-controller"
+  description = "The name of the Helm chart to use for the AWS Load Balancer Controller."
+  type        = string
+}
+
+variable "aws_load_balancer_controller_helm_chart_repository" {
+  default     = "https://aws.github.io/eks-charts"
+  description = "The repository containing the Helm chart to use for the AWS Load Balancer Controller."
+  type        = string
+}
+
+variable "aws_load_balancer_controller_helm_chart_version" {
+  default     = "1.2.6"
+  description = "The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml"
+  type        = string
+}
+
+variable "aws_load_balancer_controller_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options."
+
+}
+
 variable "aws_partition" {
   default     = "aws"
   description = "AWS partition: 'aws', 'aws-cn', or 'aws-us-gov'"
@@ -117,9 +141,21 @@ variable "csi_sa_name" {
   description = "The service account name used for AWS EKS Container Storage Interface (CSI)"
 }
 
+variable "csi_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml for available options."
+  type        = map(any)
+}
+
 variable "disable_olm" {
   default     = true
   description = "Enables Operator Lifecycle Manager (OLM) on the EKS cluster, and disables installing operators via helm releases. This is currently disabled by default."
+  type        = bool
+}
+
+variable "enable_csi" {
+  default     = true
+  description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
   type        = bool
 }
 
@@ -162,6 +198,12 @@ variable "enable_prometheus_operator" {
 variable "enable_pulsar_operator" {
   default     = true
   description = "Enables the Pulsar Operator on the EKS cluster. Enabled by default, but disabled if var.disable_olm is set to `true`"
+  type        = bool
+}
+
+variable "enable_tiered_storage_offloading" {
+  default     = false
+  description = "Enables the resources needed for Pulsar's tiered storage offloading of data to S3. See the official docs for more information: https://pulsar.apache.org/docs/en/concepts-tiered-storage/"
   type        = bool
 }
 
