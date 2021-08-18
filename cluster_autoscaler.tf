@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "worker_autoscaling" {
 
     condition {
       test     = "StringEquals"
-      variable = "autoscaling:ResourceTag/k8s.io/cluster/${module.eks.cluster_id}"
+      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${module.eks.cluster_id}"
       values   = ["owned"]
     }
   }
