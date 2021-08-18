@@ -264,7 +264,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   set {
     name  = "clusterName"
     value = module.eks.cluster_id
-    type = "string"
+    type  = "string"
   }
 
   set {

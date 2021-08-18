@@ -50,7 +50,7 @@ variable "aws_load_balancer_controller_helm_chart_version" {
 variable "aws_load_balancer_controller_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options."
-
+  type        = map(string)
 }
 
 variable "aws_partition" {
@@ -421,6 +421,24 @@ variable "map_additional_iam_users" {
     username = string
     groups   = list(string)
   }))
+}
+
+variable "node_termination_handler_helm_chart_name" {
+  default     = "aws-node-termination-handler"
+  description = "The name of the Helm chart to use for the AWS Node Termination Handler."
+  type        = string
+}
+
+variable "node_termination_handler_helm_chart_repository" {
+  default     = "https://aws.github.io/eks-charts"
+  description = "The repository containing the Helm chart to use for the AWS Node Termination Handler."
+  type        = string
+}
+
+variable "node_termination_handler_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values for the AWS Node Termination Handler. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options."
+  type        = map(string)
 }
 
 variable "node_pool_desired_size" {
