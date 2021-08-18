@@ -180,6 +180,7 @@ sn-platform \
 | Name | Type |
 |------|------|
 | [aws_iam_policy.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_role.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -188,15 +189,20 @@ sn-platform \
 | [aws_iam_role.vault](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.tiered_storage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.vault](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [helm_release.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.csi](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.external_dns](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [helm_release.node_termination_handler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [kubernetes_namespace.istio](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.pulsar](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.sn_system](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
-| [kubernetes_service_account.csi](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/service_account) | resource |
+| [kubernetes_storage_class.sn_default](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/storage_class) | resource |
+| [kubernetes_storage_class.sn_ssd](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/storage_class) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_iam_policy_document.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.aws_load_balancer_controller_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cert_manager_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -214,6 +220,10 @@ sn-platform \
 |------|-------------|------|---------|:--------:|
 | <a name="input_add_vpc_tags"></a> [add\_vpc\_tags](#input\_add\_vpc\_tags) | Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to "true". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module. | `bool` | `true` | no |
 | <a name="input_additional_tags"></a> [additional\_tags](#input\_additional\_tags) | Additional tags to be added to the resources created by this module. | `map(any)` | `{}` | no |
+| <a name="input_aws_load_balancer_controller_helm_chart_name"></a> [aws\_load\_balancer\_controller\_helm\_chart\_name](#input\_aws\_load\_balancer\_controller\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"aws-load-balancer-controller"` | no |
+| <a name="input_aws_load_balancer_controller_helm_chart_repository"></a> [aws\_load\_balancer\_controller\_helm\_chart\_repository](#input\_aws\_load\_balancer\_controller\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"https://aws.github.io/eks-charts"` | no |
+| <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml | `string` | `"1.2.6"` | no |
+| <a name="input_aws_load_balancer_controller_settings"></a> [aws\_load\_balancer\_controller\_settings](#input\_aws\_load\_balancer\_controller\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
 | <a name="input_aws_partition"></a> [aws\_partition](#input\_aws\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov' | `string` | `"aws"` | no |
 | <a name="input_cert_manager_helm_chart_name"></a> [cert\_manager\_helm\_chart\_name](#input\_cert\_manager\_helm\_chart\_name) | The name of the Helm chart in the repository for cert-manager. | `string` | `"cert-manager"` | no |
 | <a name="input_cert_manager_helm_chart_repository"></a> [cert\_manager\_helm\_chart\_repository](#input\_cert\_manager\_helm\_chart\_repository) | The repository containing the cert-manager helm chart. | `string` | `"https://charts.jetstack.io"` | no |
@@ -227,8 +237,10 @@ sn-platform \
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of your EKS cluster and associated resources. Must be 16 characters or less | `string` | `""` | no |
 | <a name="input_cluster_version"></a> [cluster\_version](#input\_cluster\_version) | The version of Kubernetes to be installed | `string` | `"1.18"` | no |
 | <a name="input_csi_namespace"></a> [csi\_namespace](#input\_csi\_namespace) | The namespace used for AWS EKS Container Storage Interface (CSI) | `string` | `"kube-system"` | no |
-| <a name="input_csi_sa_name"></a> [csi\_sa\_name](#input\_csi\_sa\_name) | The service account name used for AWS EKS Container Storage Interface (CSI) | `string` | `"efs-csi-controller-sa"` | no |
+| <a name="input_csi_sa_name"></a> [csi\_sa\_name](#input\_csi\_sa\_name) | The service account name used for AWS EKS Container Storage Interface (CSI) | `string` | `"ebs-csi-controller-sa"` | no |
+| <a name="input_csi_settings"></a> [csi\_settings](#input\_csi\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml for available options. | `map(any)` | `{}` | no |
 | <a name="input_disable_olm"></a> [disable\_olm](#input\_disable\_olm) | Enables Operator Lifecycle Manager (OLM) on the EKS cluster, and disables installing operators via helm releases. This is currently disabled by default. | `bool` | `true` | no |
+| <a name="input_enable_csi"></a> [enable\_csi](#input\_enable\_csi) | Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS. | `bool` | `true` | no |
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool | `bool` | `true` | no |
 | <a name="input_enable_function_mesh_operator"></a> [enable\_function\_mesh\_operator](#input\_enable\_function\_mesh\_operator) | Enables the StreamNative Function Mesh Operator on the EKS cluster. Enabled by default, but disabled if var.disable\_olm is set to `true` | `bool` | `true` | no |
 | <a name="input_enable_irsa"></a> [enable\_irsa](#input\_enable\_irsa) | Enables the OpenID Connect Provider for EKS to use IAM Roles for Service Accounts (IRSA) | `bool` | `true` | no |
@@ -236,6 +248,7 @@ sn-platform \
 | <a name="input_enable_istio_sources"></a> [enable\_istio\_sources](#input\_enable\_istio\_sources) | Enables the Istio sources when deploying ExternalDNS. Automatically enabled if input "enable\_istio\_operator" is set to  "true", but can be explicitly disabled by setting this input to "false" and should only be changed for debugging purposes. | `bool` | `true` | no |
 | <a name="input_enable_prometheus_operator"></a> [enable\_prometheus\_operator](#input\_enable\_prometheus\_operator) | Enables the Prometheus operator on the EKS cluster. Enabled by default, but disabled if var.disable\_olm is set to `true` | `bool` | `true` | no |
 | <a name="input_enable_pulsar_operator"></a> [enable\_pulsar\_operator](#input\_enable\_pulsar\_operator) | Enables the Pulsar Operator on the EKS cluster. Enabled by default, but disabled if var.disable\_olm is set to `true` | `bool` | `true` | no |
+| <a name="input_enable_tiered_storage_offloading"></a> [enable\_tiered\_storage\_offloading](#input\_enable\_tiered\_storage\_offloading) | Enables the resources needed for Pulsar's tiered storage offloading of data to S3. See the official docs for more information: https://pulsar.apache.org/docs/en/concepts-tiered-storage/ | `bool` | `false` | no |
 | <a name="input_enable_vault_operator"></a> [enable\_vault\_operator](#input\_enable\_vault\_operator) | Enables Hashicorp Vault on the EKS cluster. | `bool` | `true` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
@@ -276,6 +289,9 @@ sn-platform \
 | <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.medium"]. Terraform will only perform drift detection if a configuration value is provided | `list(string)` | <pre>[<br>  "t3.medium"<br>]</pre> | no |
 | <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group | `number` | n/a | yes |
 | <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group | `number` | n/a | yes |
+| <a name="input_node_termination_handler_helm_chart_name"></a> [node\_termination\_handler\_helm\_chart\_name](#input\_node\_termination\_handler\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"aws-node-termination-handler"` | no |
+| <a name="input_node_termination_handler_helm_chart_repository"></a> [node\_termination\_handler\_helm\_chart\_repository](#input\_node\_termination\_handler\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Node Termination Handler. | `string` | `"https://aws.github.io/eks-charts"` | no |
+| <a name="input_node_termination_handler_settings"></a> [node\_termination\_handler\_settings](#input\_node\_termination\_handler\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Node Termination Handler. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
 | <a name="input_olm_namespace"></a> [olm\_namespace](#input\_olm\_namespace) | The namespace used by OLM and its resources | `string` | `"olm"` | no |
 | <a name="input_olm_operators_namespace"></a> [olm\_operators\_namespace](#input\_olm\_operators\_namespace) | The namespace where OLM will install the operators | `string` | `"operators"` | no |
 | <a name="input_olm_settings"></a> [olm\_settings](#input\_olm\_settings) | Additional settings which will be passed to the Helm chart values | `map(any)` | `null` | no |
@@ -326,3 +342,4 @@ sn-platform \
 | <a name="output_external_dns_role_arn"></a> [external\_dns\_role\_arn](#output\_external\_dns\_role\_arn) | n/a |
 | <a name="output_tiered_storage_role_arn"></a> [tiered\_storage\_role\_arn](#output\_tiered\_storage\_role\_arn) | n/a |
 | <a name="output_vault_role_arn"></a> [vault\_role\_arn](#output\_vault\_role\_arn) | n/a |
+
