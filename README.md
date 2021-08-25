@@ -39,7 +39,6 @@ terraform {
   }
 }
 
-
 #######
 ### These data sources are required by the Kubernetes and Helm providers to connect to the newly provisioned cluster
 #######
@@ -57,7 +56,7 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    config_path = "/path/to/my-sn-platform-cluster-config" # This must match the module input
+    config_path = "./sn-platform-cluster-config" # This must match the module input
   }
 }
 
@@ -66,7 +65,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   insecure               = false
-  config_path            = "/path/to/my-sn-platform-cluster-config" # This must match the module input
+  config_path            = "./sn-platform-cluster-config" # This must match the module input
 }
 
 #######
@@ -77,7 +76,7 @@ module "sn_platform_cluster" {
 
   cluster_name                 = "my-sn-platform-cluster"
   cluster_version              = "1.19"
-  kubeconfig_output_path       = "/path/to/my-sn-platform-cluster-config" # add this path to the provider configs above
+  kubeconfig_output_path       = "./sn-platform-cluster-config" # add this path to the provider configs above
 
   map_additional_iam_roles = [
     {
@@ -87,11 +86,12 @@ module "sn_platform_cluster" {
     }
   ]
 
-  node_pool_instance_types     = ["m4.large"]
+  node_pool_instance_types     = ["m5.large"]
   node_pool_desired_size       = 3
-  node_pool_min_size           = 3
+  node_pool_min_size           = 1
   node_pool_max_size           = 5
   pulsar_namespace             = "pulsar-demo"
+  pulsar_namespace_create      = true
 
   hosted_zone_id               = "Z04554535IN8Z31SKDVQ2"
   public_subnet_ids            = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
@@ -131,12 +131,12 @@ We use a [Helm chart](https://github.com/streamnative/charts/tree/master/charts/
 The example below will install StreamNative Platform using the default values file. 
 
 ```shell
-helm install \
+helm upgrade --install \
 --namespace pulsar-demo \
 sn-platform \
---repo https://charts.streamnative.io pulsar \
---values https://raw.githubusercontent.com/streamnative/charts/master/charts/pulsar/values.yaml \
---version 2.7.0-rc.8 \
+--repo https://charts.streamnative.io sn-platform \
+--values https://raw.githubusercontent.com/streamnative/examples/master/platform/values_cluster.yaml \
+--version 1.1.9 \
 --set initialize=true
 --kubeconfig=/path/to/my-sn-platform-cluster-config 
 ```
@@ -190,11 +190,13 @@ sn-platform \
 | [aws_iam_role_policy_attachment.tiered_storage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.vault](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [helm_release.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [helm_release.calico](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.csi](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.external_dns](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.node_termination_handler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [kubernetes_namespace.calico](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.istio](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.pulsar](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.sn_system](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
@@ -225,6 +227,10 @@ sn-platform \
 | <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml | `string` | `"1.2.6"` | no |
 | <a name="input_aws_load_balancer_controller_settings"></a> [aws\_load\_balancer\_controller\_settings](#input\_aws\_load\_balancer\_controller\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
 | <a name="input_aws_partition"></a> [aws\_partition](#input\_aws\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov' | `string` | `"aws"` | no |
+| <a name="input_calico_helm_chart_name"></a> [calico\_helm\_chart\_name](#input\_calico\_helm\_chart\_name) | The name of the Helm chart in the repository for Calico, which is installed alongside the tigera-operator. | `string` | `"tigera-operator"` | no |
+| <a name="input_calico_helm_chart_repository"></a> [calico\_helm\_chart\_repository](#input\_calico\_helm\_chart\_repository) | The repository containing the calico helm chart. We are currently using a community provided chart, which is a fork of the official chart published by Tigera. This chart isn't as opinionated about namespaces, and should be used until this issue is resolved https://github.com/projectcalico/calico/issues/4812 | `string` | `"https://stevehipwell.github.io/helm-charts/"` | no |
+| <a name="input_calico_helm_chart_version"></a> [calico\_helm\_chart\_version](#input\_calico\_helm\_chart\_version) | Helm chart version for Calico. Defaults to "1.0.5". See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available version releases. | `string` | `"1.0.5"` | no |
+| <a name="input_calico_settings"></a> [calico\_settings](#input\_calico\_settings) | Additional settings which will be passed to the Helm chart values. See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available options. | `map(any)` | `{}` | no |
 | <a name="input_cert_manager_helm_chart_name"></a> [cert\_manager\_helm\_chart\_name](#input\_cert\_manager\_helm\_chart\_name) | The name of the Helm chart in the repository for cert-manager. | `string` | `"cert-manager"` | no |
 | <a name="input_cert_manager_helm_chart_repository"></a> [cert\_manager\_helm\_chart\_repository](#input\_cert\_manager\_helm\_chart\_repository) | The repository containing the cert-manager helm chart. | `string` | `"https://charts.jetstack.io"` | no |
 | <a name="input_cert_manager_helm_chart_version"></a> [cert\_manager\_helm\_chart\_version](#input\_cert\_manager\_helm\_chart\_version) | Helm chart version for the cert-manager. Defaults to "1.4.0". See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases. | `string` | `"1.4.0"` | no |
@@ -239,20 +245,20 @@ sn-platform \
 | <a name="input_csi_namespace"></a> [csi\_namespace](#input\_csi\_namespace) | The namespace used for AWS EKS Container Storage Interface (CSI) | `string` | `"kube-system"` | no |
 | <a name="input_csi_sa_name"></a> [csi\_sa\_name](#input\_csi\_sa\_name) | The service account name used for AWS EKS Container Storage Interface (CSI) | `string` | `"ebs-csi-controller-sa"` | no |
 | <a name="input_csi_settings"></a> [csi\_settings](#input\_csi\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml for available options. | `map(any)` | `{}` | no |
+| <a name="input_disable_istio_sources"></a> [disable\_istio\_sources](#input\_disable\_istio\_sources) | Disables Istio sources for the External DNS configuration. Set to "false" by default. Set to "true" for debugging External DNS or if Istio is disabled. | `bool` | `false` | no |
 | <a name="input_disable_olm"></a> [disable\_olm](#input\_disable\_olm) | Enables Operator Lifecycle Manager (OLM) on the EKS cluster, and disables installing operators via helm releases. This is currently disabled by default. | `bool` | `true` | no |
 | <a name="input_enable_csi"></a> [enable\_csi](#input\_enable\_csi) | Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS. | `bool` | `true` | no |
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool | `bool` | `true` | no |
 | <a name="input_enable_function_mesh_operator"></a> [enable\_function\_mesh\_operator](#input\_enable\_function\_mesh\_operator) | Enables the StreamNative Function Mesh Operator on the EKS cluster. Enabled by default, but disabled if var.disable\_olm is set to `true` | `bool` | `true` | no |
 | <a name="input_enable_irsa"></a> [enable\_irsa](#input\_enable\_irsa) | Enables the OpenID Connect Provider for EKS to use IAM Roles for Service Accounts (IRSA) | `bool` | `true` | no |
 | <a name="input_enable_istio_operator"></a> [enable\_istio\_operator](#input\_enable\_istio\_operator) | Enables the Istio operator on the EKS cluster. Enabled by default. | `bool` | `true` | no |
-| <a name="input_enable_istio_sources"></a> [enable\_istio\_sources](#input\_enable\_istio\_sources) | Enables the Istio sources when deploying ExternalDNS. Automatically enabled if input "enable\_istio\_operator" is set to  "true", but can be explicitly disabled by setting this input to "false" and should only be changed for debugging purposes. | `bool` | `true` | no |
 | <a name="input_enable_prometheus_operator"></a> [enable\_prometheus\_operator](#input\_enable\_prometheus\_operator) | Enables the Prometheus operator on the EKS cluster. Enabled by default, but disabled if var.disable\_olm is set to `true` | `bool` | `true` | no |
 | <a name="input_enable_pulsar_operator"></a> [enable\_pulsar\_operator](#input\_enable\_pulsar\_operator) | Enables the Pulsar Operator on the EKS cluster. Enabled by default, but disabled if var.disable\_olm is set to `true` | `bool` | `true` | no |
 | <a name="input_enable_tiered_storage_offloading"></a> [enable\_tiered\_storage\_offloading](#input\_enable\_tiered\_storage\_offloading) | Enables the resources needed for Pulsar's tiered storage offloading of data to S3. See the official docs for more information: https://pulsar.apache.org/docs/en/concepts-tiered-storage/ | `bool` | `false` | no |
 | <a name="input_enable_vault_operator"></a> [enable\_vault\_operator](#input\_enable\_vault\_operator) | Enables Hashicorp Vault on the EKS cluster. | `bool` | `true` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
-| <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"4.9.0"` | no |
+| <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"5.4.1"` | no |
 | <a name="input_external_dns_settings"></a> [external\_dns\_settings](#input\_external\_dns\_settings) | Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns | `map(any)` | `{}` | no |
 | <a name="input_func_pool_allowed_role_arns"></a> [func\_pool\_allowed\_role\_arns](#input\_func\_pool\_allowed\_role\_arns) | The role resources (or patterns) that function roles can assume | `list(string)` | <pre>[<br>  "arn:aws:iam::*:role/pulsar-func-*"<br>]</pre> | no |
 | <a name="input_func_pool_desired_size"></a> [func\_pool\_desired\_size](#input\_func\_pool\_desired\_size) | Desired number of worker nodes | `number` | `1` | no |
@@ -342,4 +348,3 @@ sn-platform \
 | <a name="output_external_dns_role_arn"></a> [external\_dns\_role\_arn](#output\_external\_dns\_role\_arn) | n/a |
 | <a name="output_tiered_storage_role_arn"></a> [tiered\_storage\_role\_arn](#output\_tiered\_storage\_role\_arn) | n/a |
 | <a name="output_vault_role_arn"></a> [vault\_role\_arn](#output\_vault\_role\_arn) | n/a |
-
