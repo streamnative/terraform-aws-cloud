@@ -16,37 +16,24 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-resource "kubernetes_namespace" "calico" {
-  metadata {
-    name = "calico-system"
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
-resource "helm_release" "calico" {
+resource "helm_release" "node_termination_handler" {
   atomic          = true
-  chart           = var.calico_helm_chart_name
+  chart           = var.node_termination_handler_helm_chart_name
   cleanup_on_fail = true
-  name            = "tigera-operator"
-  namespace       = kubernetes_namespace.calico.id
-  repository      = var.calico_helm_chart_repository
-  timeout         = 120
-  version         = var.calico_helm_chart_version
-
-  set {
-    name  = "installation.kubernetesProvider"
-    value = "EKS"
-    type  = "string"
-  }
+  name            = "node-termination-handler"
+  namespace       = "kube-system"
+  repository      = var.node_termination_handler_helm_chart_repository
+  timeout         = 300
 
   dynamic "set" {
-    for_each = var.calico_settings
+    for_each = var.node_termination_handler_settings
     content {
       name  = set.key
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }

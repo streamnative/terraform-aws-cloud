@@ -17,6 +17,17 @@
 # under the License.
 #
 
+terraform {
+  required_version = ">=1.0.0"
+
+  required_providers {
+    aws = {
+      version = ">= 3.45.0"
+      source  = "hashicorp/aws"
+    }
+  }
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -38,7 +49,7 @@ resource "aws_subnet" "public" {
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, var.public_subnet_start + count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = var.public_subnet_auto_ip
-  tags                    = { "type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }
+  tags                    = { "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }
 
   lifecycle {
     ignore_changes = [tags]
@@ -50,7 +61,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, var.private_subnet_start + count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
-  tags              = { "type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }
+  tags              = { "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }
 
   lifecycle {
     ignore_changes = [tags]

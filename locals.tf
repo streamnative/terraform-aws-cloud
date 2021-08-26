@@ -20,14 +20,9 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  account_id           = data.aws_caller_identity.current.account_id
-  bucket_tags          = { "Attributes" = "offload", "Name" = "offload" }
-  cluster_label        = "kubernetes.io/cluster/${module.eks.cluster_id}"
-  cluster_subnet_ids   = concat(var.private_subnet_ids, var.public_subnet_ids)
-  func_pool_sa_id      = format("%v@%v", var.func_pool_sa_name, var.func_pool_namespace)
-  oidc_issuer          = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
-  tiered_storage_sa_id = format("%v@%v", "pulsar", var.pulsar_namespace)
-  vault_sa_id          = format("%v@%v", "vault", var.pulsar_namespace)
+  account_id         = data.aws_caller_identity.current.account_id
+  cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
+  oidc_issuer        = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
 
   ### Node Groups
   func_pool_config = {
@@ -45,7 +40,6 @@ locals {
     min_capacity     = var.node_pool_min_size
     max_capacity     = var.node_pool_max_size
   }
-
 
   node_groups = var.enable_func_pool ? { "node-pool" = local.node_pool_config, "func-pool" = local.func_pool_config } : { "node-pool" = local.node_pool_config }
 }

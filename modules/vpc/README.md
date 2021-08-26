@@ -14,13 +14,16 @@ In order for [subnet auto discovery](https://github.com/kubernetes-sigs/aws-load
 For this reason, we recommend managing the tags externally of the resource itself, and have thus added the `ignore_changes` block to any resource using a tag which makes the default tags applied by this module static, rather than being able to dynamically provide additional tags to this module.
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.0.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.45.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.45.0 |
 
 ## Modules
 
@@ -48,7 +51,6 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of your EKS cluster and associated resources. Required if input "enable\_eks\_tags" Must be 16 characters or less | `string` | `""` | no |
 | <a name="input_num_azs"></a> [num\_azs](#input\_num\_azs) | The number of availability zones to provision | `number` | `2` | no |
 | <a name="input_private_subnet_start"></a> [private\_subnet\_start](#input\_private\_subnet\_start) | n/a | `number` | `10` | no |
 | <a name="input_public_subnet_auto_ip"></a> [public\_subnet\_auto\_ip](#input\_public\_subnet\_auto\_ip) | n/a | `bool` | `false` | no |
@@ -61,6 +63,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_private_subnet_ids"></a> [private\_subnet\_ids](#output\_private\_subnet\_ids) | n/a |
-| <a name="output_public_subnet_ids"></a> [public\_subnet\_ids](#output\_public\_subnet\_ids) | n/a |
-| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | n/a |
+| <a name="output_private_subnet_ids"></a> [private\_subnet\_ids](#output\_private\_subnet\_ids) | A list of private subnet ID's created by this module |
+| <a name="output_public_subnet_ids"></a> [public\_subnet\_ids](#output\_public\_subnet\_ids) | A list of public subnet ID's created by this module |
+| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | The ID of the VPC created by this module |
