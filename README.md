@@ -65,7 +65,7 @@ module "sn_cluster" {
       username = "management-admin"
       groups   = ["system:masters"]
     }
-  ]A
+  ]
   
   public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
   private_subnet_ids = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
