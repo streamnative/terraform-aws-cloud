@@ -183,12 +183,6 @@ variable "disable_istio_sources" {
   type        = bool
 }
 
-variable "disable_istio_sources" {
-  default     = false
-  description = "Disables Istio sources for the External DNS configuration. Set to \"false\" by default. Set to \"true\" for debugging External DNS or if Istio is disabled."
-  type        = bool
-}
-
 variable "enable_csi" {
   default     = true
   description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
