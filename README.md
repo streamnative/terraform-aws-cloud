@@ -17,31 +17,9 @@ Your caller identity must also have the necessary AWS IAM permissions to create 
 - [`aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html) command line tool 
 
 ## Getting Started
-A bare minimum configuration will be contained in a `main.tf`:
+A bare minimum configuration to execute the module:
 
 ```hcl
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "2.2.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.2.0"
-    }
-  }
-}
-
-#######
-### These data sources are required by the Kubernetes and Helm providers to connect to the newly provisioned cluster
-#######
 data "aws_eks_cluster" "cluster" {
   name = module.eks_cluster.eks_cluster_id
 }
@@ -56,7 +34,7 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    config_path = "./sn-platform-cluster-config" # This must match the module input
+    config_path = "./${local.cluster_name}-config" # This must match the module input
   }
 }
 
@@ -65,39 +43,34 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   insecure               = false
-  config_path            = "./sn-platform-cluster-config" # This must match the module input
+  config_path            = "./${local.cluster_name}-config" # This must match the module input
 }
 
-#######
-### Create the StreamNative Platform Cluster
-#######
-module "sn_platform_cluster" {
-  source          = "streamnative/cloud/aws"
+module "sn_cluster" {
+  source = "streamnative/cloud/aws"
 
-  cluster_name                 = "my-sn-platform-cluster"
-  cluster_version              = "1.19"
-  kubeconfig_output_path       = "./sn-platform-cluster-config" # add this path to the provider configs above
+  add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
+  cluster_name             = local.cluster_name
+  cluster_version          = "1.19"
+  hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+  kubeconfig_output_path   = "./${local.cluster_name}-config"
+  node_pool_instance_types = ["m5.large"]
+  node_pool_desired_size   = 3
+  node_pool_min_size       = 1
+  node_pool_max_size       = 3
 
-  map_additional_iam_roles = [
+  map_additional_iam_roles = [ # Map your IAM admin role for access within the Cluster
     {
-      rolearn  = "arn:aws:iam::123456789012:role/my-aws-admin-role" 
+      rolearn  = "arn:aws:iam::123456789012:role/my-aws-admin-role"
       username = "management-admin"
       groups   = ["system:masters"]
     }
-  ]
-
-  node_pool_instance_types     = ["m5.large"]
-  node_pool_desired_size       = 3
-  node_pool_min_size           = 1
-  node_pool_max_size           = 5
-  pulsar_namespace             = "pulsar-demo"
-  pulsar_namespace_create      = true
-
-  hosted_zone_id               = "Z04554535IN8Z31SKDVQ2"
-  public_subnet_ids            = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
-  private_subnet_ids           = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
-  region                       = "us-west-2"
-  vpc_id                       = "vpc-1234556abcdef"
+  ]A
+  
+  public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
+  private_subnet_ids = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
+  region             = var.region
+  vpc_id             = "vpc-1234556abcdef"
 }
 ```
 
