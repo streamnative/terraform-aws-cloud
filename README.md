@@ -57,7 +57,7 @@ module "sn_cluster" {
   node_pool_instance_types = ["m5.large"]
   node_pool_desired_size   = 3
   node_pool_min_size       = 1
-  node_pool_max_size       = 3
+  node_pool_max_size       = 5
 
   map_additional_iam_roles = [ # Map your IAM admin role for access within the Cluster
     {
@@ -76,9 +76,9 @@ module "sn_cluster" {
 
 *Important Note: You will notice that a [Terraform Backend](https://www.terraform.io/docs/language/settings/backends/index.html) configuration is absent in this example, and a `local` backend (Terraform's default) will be used. For production deployments, we highly recommend using a `remote` backend with proper versioning and access controls, such as [Terraform Cloud](https://www.terraform.io/docs/cloud/index.html) or [S3](https://www.terraform.io/docs/language/settings/backends/s3.html).*
 
-In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.19`, with a desired node pool size of `3` `m4.large` instances and an auto-scaling capacity to `5`.
+In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.19`, with a desired node pool size of `3` `m5.large` instances and an auto-scaling capacity to `5`.
 
-It also adds the role `arn:aws:iam::123456789012:role/my-aws-admin-role` to the EKS auth config map, granting the identity access to manage the cluster via [IRSA](https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/).
+It also adds the role `arn:aws:iam::123456789012:role/my-aws-admin-role` to the EKS auth config map, granting the identity (presumably an administrative management role) access to manage the cluster.
 
 ## Creating a StreamNative Platform EKS Cluster
 To apply the configuration, initialize the Terraform module in the directory containing **your own version** of the `main.tf` from the example above:
