@@ -18,13 +18,16 @@
 #
 
 output "private_subnet_ids" {
-  value = aws_subnet.private.*.id
+  value       = aws_subnet.private.*.id
+  description = "A list of private subnet ID's created by this module"
 }
 
 output "public_subnet_ids" {
-  value = aws_subnet.public.*.id
+  value       = aws_subnet.public.*.id
+  description = "A list of public subnet ID's created by this module"
 }
 
 output "vpc_id" {
-  value = aws_vpc.vpc.id
+  value       = aws_vpc.vpc.id
+  description = "The ID of the VPC created by this module"
 }

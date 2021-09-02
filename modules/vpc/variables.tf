@@ -17,17 +17,6 @@
 # under the License.
 #
 
-variable "cluster_name" {
-  default     = ""
-  description = "The name of your EKS cluster and associated resources. Required if input \"enable_eks_tags\" Must be 16 characters or less"
-  type        = string
-
-  validation {
-    condition     = can(length(var.cluster_name) <= 16)
-    error_message = "The value for variable \"cluster_name\" must be a string of 16 characters or less."
-  }
-}
-
 variable "region" {
   type = string
   validation {

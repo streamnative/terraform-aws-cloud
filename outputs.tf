@@ -18,37 +18,46 @@
 #
 
 output "cert_manager_role_arn" {
-  value = aws_iam_role.cert_manager.arn
+  value       = aws_iam_role.cert_manager.arn
+  description = "The IAM Role ARN used by the Certificate Manager configuration"
 }
 
 output "cluster_autoscaler_role_arn" {
-  value = aws_iam_role.cluster_autoscaler.arn
+  value       = aws_iam_role.cluster_autoscaler.arn
+  description = "The IAM Role ARN used by the Cluster Autoscaler configuration"
 }
 
 output "eks_cluster_arn" {
-  value = module.eks.cluster_arn
+  value       = module.eks.cluster_arn
+  description = "The ARN for the EKS cluster created by this module"
 }
 
 output "eks_cluster_id" {
-  value = module.eks.cluster_id
+  value       = module.eks.cluster_id
+  description = "The id/name of the EKS cluster created by this module"
 }
 
 output "eks_cluster_identity_oidc_issuer_url" {
-  value = module.eks.cluster_oidc_issuer_url
+  value       = module.eks.cluster_oidc_issuer_url
+  description = "The URL for the OIDC issuer created by this module"
 }
 
 output "eks_cluster_identity_oidc_issuer_arn" {
-  value = module.eks.oidc_provider_arn
+  value       = module.eks.oidc_provider_arn
+  description = "The ARN for the OIDC issuer created by this module"
+}
+
+output "eks_cluster_identity_oidc_issuer_string" {
+  value       = local.oidc_issuer
+  description = "A formatted string containing the prefix for the OIDC issuer created by this module. Same as \"cluster_oidc_issuer_url\", but with \"https://\" stripped from the name. This output is typically used in other StreamNative modules that request the \"oidc_issuer\" input."
 }
 
 output "external_dns_role_arn" {
-  value = aws_iam_role.external_dns.arn
+  value       = aws_iam_role.external_dns.arn
+  description = "The IAM Role ARN used by the ExternalDNS configuration"
 }
 
-output "tiered_storage_role_arn" {
-  value = join("", aws_iam_role.tiered_storage.*.arn)
-}
-
-output "vault_role_arn" {
-  value = join("", aws_iam_role.vault.*.arn)
+output "sn_system_namespace" {
+  value       = join("", kubernetes_namespace.sn_system.*.id)
+  description = "The namespace used for StreamNative system resources, i.e. operators et all"
 }

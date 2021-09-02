@@ -24,7 +24,7 @@ module "eks" {
   cluster_iam_role_name    = format("%s-role", var.cluster_name)
   cluster_name             = var.cluster_name
   cluster_version          = var.cluster_version
-  enable_irsa              = var.enable_irsa
+  enable_irsa              = true
   kubeconfig_output_path   = var.kubeconfig_output_path
   map_accounts             = var.map_additional_aws_accounts
   map_roles                = var.map_additional_iam_roles
@@ -52,28 +52,9 @@ module "eks" {
 }
 
 resource "kubernetes_namespace" "sn_system" {
+  count = var.create_sn_system_namespace ? 1 : 0
   metadata {
     name = "sn-system"
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
-resource "kubernetes_namespace" "pulsar" {
-  count = var.pulsar_namespace_create ? 1 : 0
-  metadata {
-    name = var.pulsar_namespace
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
-resource "kubernetes_namespace" "istio" {
-  count = var.enable_istio_operator ? 1 : 0
-  metadata {
-    name = "istio-system"
   }
   depends_on = [
     module.eks

@@ -78,7 +78,7 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    config_path = pathexpand("~/.kube/${local.cluster_name}-config")
+    config_path = "./${local.cluster_name}-config"
   }
 }
 
@@ -87,7 +87,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   insecure               = false
-  config_path            = pathexpand("~/.kube/${local.cluster_name}-config")
+  config_path            = "./${local.cluster_name}-config"
 }
 
 module "vpc" {
@@ -102,16 +102,11 @@ module "vpc" {
 module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
-  add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
-  cluster_name             = local.cluster_name
-  cluster_version          = "1.19"
-  hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
-  kubeconfig_output_path   = pathexpand("~/.kube/${local.cluster_name}-config")
-  func_pool_instance_types = ["t3.medium"]
-  node_pool_instance_types = ["m5.large"]
-  node_pool_desired_size   = 3
-  node_pool_min_size       = 1
-  node_pool_max_size       = 3
+  add_vpc_tags           = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
+  cluster_name           = local.cluster_name
+  cluster_version        = "1.18"
+  hosted_zone_id         = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+  kubeconfig_output_path = "./${local.cluster_name}-config"
 
   map_additional_iam_roles = [ # Map your IAM admin role for access within the Cluster
     {
@@ -128,5 +123,65 @@ module "sn_cluster" {
 
   depends_on = [
     module.vpc # Adding a dependency on the VPC module allows for a cleaner destroy
+  ]
+}
+
+#######
+### This module creates resources used for tiered storage offloading in Pulsar 
+#######
+module "sn_tiered_storage_resources" {
+  source = "streamnative/cloud/aws//modules/tiered-storage-resources"
+
+  cluster_name         = module.sn_cluster.eks_cluster_id
+  oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
+  pulsar_namespace     = "my-pulsar-namespace"
+  service_account_name = "pulsar"
+
+  tags = {
+    Project     = "StreamNative Platform"
+    Environment = var.environment
+  }
+
+  depends_on = [
+    module.sn_cluster
+  ]
+}
+
+#######
+### This module creates resources used by Vault for storing and retrieving secrets related to the Pulsar cluster
+#######
+module "sn_tiered_storage_vault_resources" {
+  source = "streamnative/cloud/aws//modules/vault-resources"
+
+  cluster_name         = module.sn_cluster.eks_cluster_id
+  oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
+  pulsar_namespace     = "my-pulsar-namespace" # The namespace where you will be installing Pulsar
+  service_account_name = "vault" # The name of the service account used by Vault in the Pulsar namespace
+
+  tags = {
+    Project     = "StreamNative Platform"
+    Environment = var.environment
+  }
+
+  depends_on = [
+    module.sn_cluster
+  ]
+}
+
+#######
+### This module installs the necessary operators for StreamNative Platform
+### See: https://registry.terraform.io/modules/streamnative/charts/helm/latest
+#######
+module "sn_bootstrap" {
+  source = "streamnative/charts/helm"
+
+  enable_vault_operator         = true
+  enable_function_mesh_operator = true
+  enable_istio_operator         = true
+  enable_prometheus_operator    = true
+  enable_pulsar_operator        = true
+
+  depends_on = [
+    module.sn_cluster,
   ]
 }

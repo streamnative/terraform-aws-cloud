@@ -17,36 +17,22 @@
 # under the License.
 #
 
-resource "kubernetes_namespace" "calico" {
-  metadata {
-    name = "calico-system"
-  }
-  depends_on = [
-    module.eks
-  ]
+output "role_arn" {
+  value       = aws_iam_role.tiered_storage.arn
+  description = "The arn of the role used for Pulsar's tiered storage offloading. This needs to be annotated on the corresponding Kubernetes Service account in order for IRSA to work properly, e.g. \"eks.amazonaws.com/role-arn\" : \"<this_arn>\""
 }
 
-resource "helm_release" "calico" {
-  atomic          = true
-  chart           = var.calico_helm_chart_name
-  cleanup_on_fail = true
-  name            = "tigera-operator"
-  namespace       = kubernetes_namespace.calico.id
-  repository      = var.calico_helm_chart_repository
-  timeout         = 120
-  version         = var.calico_helm_chart_version
+output "role_name" {
+  value       = aws_iam_role.tiered_storage.name
+  description = "The name of the role used for Pulsar's tiered storage offloading"
+}
 
-  set {
-    name  = "installation.kubernetesProvider"
-    value = "EKS"
-    type  = "string"
-  }
+output "s3_bucket" {
+  value       = aws_s3_bucket.pulsar_offload.bucket
+  description = "The name of the bucket used for Pulsar's tiered storage offloading"
+}
 
-  dynamic "set" {
-    for_each = var.calico_settings
-    content {
-      name  = set.key
-      value = set.value
-    }
-  }
+output "s3_bucket_arn" {
+  value       = aws_s3_bucket.pulsar_offload.arn
+  description = "The arn of the bucket used for Pulsar's tiered storage offloading"
 }

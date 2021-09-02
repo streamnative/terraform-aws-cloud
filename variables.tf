@@ -55,7 +55,7 @@ variable "aws_load_balancer_controller_settings" {
 
 variable "aws_partition" {
   default     = "aws"
-  description = "AWS partition: 'aws', 'aws-cn', or 'aws-us-gov'"
+  description = "AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies"
   type        = string
 }
 
@@ -154,6 +154,12 @@ variable "cluster_version" {
   type        = string
 }
 
+variable "create_sn_system_namespace" {
+  default     = true
+  description = "Whether or not to create the namespace \"sn-system\" on the cluster. This namespace is commonly used by OLM and StreamNative's Kubernetes Operators"
+  type        = bool
+}
+
 variable "csi_namespace" {
   default     = "kube-system"
   description = "The namespace used for AWS EKS Container Storage Interface (CSI)"
@@ -171,9 +177,9 @@ variable "csi_settings" {
   type        = map(any)
 }
 
-variable "disable_olm" {
-  default     = true
-  description = "Enables Operator Lifecycle Manager (OLM) on the EKS cluster, and disables installing operators via helm releases. This is currently disabled by default."
+variable "disable_istio_sources" {
+  default     = false
+  description = "Disables Istio sources for the External DNS configuration. Set to \"false\" by default. Set to \"true\" for debugging External DNS or if Istio is disabled."
   type        = bool
 }
 
@@ -189,51 +195,9 @@ variable "enable_csi" {
   type        = bool
 }
 
-variable "enable_istio_operator" {
-  default     = true
-  description = "Enables the Istio operator on the EKS cluster. Enabled by default."
-  type        = bool
-}
-
-variable "enable_irsa" {
-  default     = true
-  description = "Enables the OpenID Connect Provider for EKS to use IAM Roles for Service Accounts (IRSA)"
-  type        = bool
-}
-
 variable "enable_func_pool" {
-  default     = true
-  description = "Enable an additional dedicated function pool"
-  type        = bool
-}
-
-variable "enable_function_mesh_operator" {
-  default     = true
-  description = "Enables the StreamNative Function Mesh Operator on the EKS cluster. Enabled by default, but disabled if var.disable_olm is set to `true`"
-  type        = bool
-}
-
-variable "enable_prometheus_operator" {
-  default     = true
-  description = "Enables the Prometheus operator on the EKS cluster. Enabled by default, but disabled if var.disable_olm is set to `true`"
-  type        = bool
-}
-
-variable "enable_pulsar_operator" {
-  default     = true
-  description = "Enables the Pulsar Operator on the EKS cluster. Enabled by default, but disabled if var.disable_olm is set to `true`"
-  type        = bool
-}
-
-variable "enable_tiered_storage_offloading" {
   default     = false
-  description = "Enables the resources needed for Pulsar's tiered storage offloading of data to S3. See the official docs for more information: https://pulsar.apache.org/docs/en/concepts-tiered-storage/"
-  type        = bool
-}
-
-variable "enable_vault_operator" {
-  default     = true
-  description = "Enables Hashicorp Vault on the EKS cluster."
+  description = "Enable an additional dedicated function pool"
   type        = bool
 }
 
@@ -261,56 +225,6 @@ variable "external_dns_settings" {
   type        = map(any)
 }
 
-variable "function_mesh_operator_chart_name" {
-  default     = "function-mesh-operator"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "function_mesh_operator_chart_repository" {
-  default     = "https://charts.streamnative.io"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "function_mesh_operator_chart_version" {
-  default     = "0.1.7"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "function_mesh_operator_cleanup_on_fail" {
-  default     = true
-  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
-  type        = bool
-}
-
-variable "function_mesh_operator_release_name" {
-  default     = "function-mesh-operator"
-  description = "The name of the helm release"
-  type        = string
-}
-
-variable "function_mesh_operator_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
-variable "function_mesh_operator_timeout" {
-  default     = 600
-  description = "Time in seconds to wait for any individual kubernetes operation"
-  type        = number
-}
-
-variable "func_pool_allowed_role_arns" {
-  default = [
-    "arn:aws:iam::*:role/pulsar-func-*"
-  ]
-  description = "The role resources (or patterns) that function roles can assume"
-  type        = list(string)
-}
-
 variable "func_pool_desired_size" {
   type        = number
   default     = 1
@@ -329,18 +243,10 @@ variable "func_pool_disk_type" {
   type        = string
 }
 
-
-
 variable "func_pool_instance_types" {
   default     = ["t3.large"]
   description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.large\"]. Terraform will only perform drift detection if a configuration value is provided"
   type        = list(string)
-}
-
-variable "func_pool_kubernetes_labels" {
-  description = "Key-value mapping of Kubernetes labels. Only labels that are applied with the EKS API are managed by this argument. Other Kubernetes labels applied to the EKS Node Group will not be managed"
-  default     = {}
-  type        = map(string)
 }
 
 variable "func_pool_min_size" {
@@ -368,51 +274,8 @@ variable "func_pool_sa_name" {
 }
 
 variable "hosted_zone_id" {
-  default     = ""
-  description = "The ID of the Route53 hosted zone used by the cluster's external-dns configuration"
+  description = "The ID of the Route53 hosted zone used by the cluster's External DNS configuration"
   type        = string
-}
-
-variable "istio_operator_chart_name" {
-  default     = "istio-operator"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "istio_operator_chart_repository" {
-  default     = "https://kubernetes-charts.banzaicloud.com"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "istio_operator_chart_version" {
-  default     = "0.0.88"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "istio_operator_cleanup_on_fail" {
-  default     = true
-  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
-  type        = bool
-}
-
-variable "istio_operator_release_name" {
-  default     = "istio-operator"
-  description = "The name of the helm release"
-  type        = string
-}
-
-variable "istio_operator_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
-variable "istio_operator_timeout" {
-  default     = 600
-  description = "Time in seconds to wait for any individual kubernetes operation"
-  type        = number
 }
 
 variable "kubeconfig_output_path" {
@@ -498,81 +361,10 @@ variable "node_pool_max_size" {
   type        = number
 }
 
-variable "olm_namespace" {
-  default     = "olm"
-  description = "The namespace used by OLM and its resources"
-  type        = string
-}
-
-variable "olm_operators_namespace" {
-  default     = "operators"
-  description = "The namespace where OLM will install the operators"
-  type        = string
-}
-
-variable "olm_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
-variable "olm_sn_image" {
-  default     = ""
-  description = "The registry containing StreamNative's operator catalog image"
-  type        = string
-}
-
-variable "olm_subscription_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
 variable "private_subnet_ids" {
   default     = []
   description = "The ids of existing private subnets"
   type        = list(string)
-}
-
-variable "prometheus_operator_chart_name" {
-  default     = "kube-prometheus-stack"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "prometheus_operator_chart_repository" {
-  default     = "https://prometheus-community.github.io/helm-charts"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "prometheus_operator_chart_version" {
-  default     = "16.12.1"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "prometheus_operator_cleanup_on_fail" {
-  default     = true
-  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
-  type        = bool
-}
-
-variable "prometheus_operator_release_name" {
-  default     = "kube-prometheus-stack"
-  description = "The name of the helm release"
-  type        = string
-}
-variable "prometheus_operator_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
-variable "prometheus_operator_timeout" {
-  default     = 600
-  description = "Time in seconds to wait for any individual kubernetes operation"
-  type        = number
 }
 
 variable "public_subnet_ids" {
@@ -581,116 +373,9 @@ variable "public_subnet_ids" {
   type        = list(string)
 }
 
-variable "pulsar_namespace" {
-  description = "The Kubernetes namespace that will be used for the Pulsar workload. This does not get created automatically, but is needed in order to create the scoped access policies in AWS. Can be enabled by setting `var.pulsar_namespace_create` to `true`."
-  type        = string
-}
-
-variable "pulsar_namespace_create" {
-  default     = false
-  description = "Whether to create the Pulsar namespace if it doesn't already exist"
-  type        = bool
-}
-
-variable "pulsar_operator_chart_name" {
-  default     = "pulsar-operator"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "pulsar_operator_chart_repository" {
-  default     = "https://charts.streamnative.io"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "pulsar_operator_chart_version" {
-  default     = "0.7.2"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "pulsar_operator_cleanup_on_fail" {
-  default     = true
-  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
-  type        = bool
-}
-
-variable "pulsar_operator_release_name" {
-  default     = "pulsar-operator"
-  description = "The name of the helm release"
-  type        = string
-}
-
-variable "pulsar_operator_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
-variable "pulsar_operator_timeout" {
-  default     = 600
-  description = "Time in seconds to wait for any individual kubernetes operation"
-  type        = number
-}
-
 variable "region" {
   default     = null
   description = "The AWS region"
-  type        = string
-}
-
-variable "s3_bucket_name_override" {
-  default     = ""
-  description = "Overrides the name for S3 bucket resources"
-  type        = string
-}
-
-variable "vault_operator_chart_name" {
-  default     = "vault-operator"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "vault_operator_chart_repository" {
-  default     = "https://kubernetes-charts.banzaicloud.com"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "vault_operator_chart_version" {
-  default     = "1.13.0"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "vault_operator_cleanup_on_fail" {
-  default     = true
-  description = "Allow deletion of new resources created in this upgrade when upgrade fails"
-  type        = bool
-}
-
-variable "vault_operator_release_name" {
-  default     = "vault-operator"
-  description = "The name of the helm release"
-  type        = string
-}
-
-variable "vault_operator_settings" {
-  default     = null
-  description = "Additional settings which will be passed to the Helm chart values"
-  type        = map(any)
-}
-
-variable "vault_operator_timeout" {
-  default     = 600
-  description = "Time in seconds to wait for any individual kubernetes operation"
-  type        = number
-}
-
-variable "vault_prefix_override" {
-  default     = ""
-  description = "Overrides the name prefix for Vault resources"
   type        = string
 }
 
@@ -698,7 +383,6 @@ variable "vpc_id" {
   default     = ""
   description = "The ID of the AWS VPC to use"
   type        = string
-
   validation {
     condition     = length(var.vpc_id) > 4 && substr(var.vpc_id, 0, 4) == "vpc-"
     error_message = "The value for variable \"vpc_id\" must be a valid VPC id, starting with \"vpc-\"."
