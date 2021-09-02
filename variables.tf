@@ -183,6 +183,12 @@ variable "disable_istio_sources" {
   type        = bool
 }
 
+variable "disable_istio_sources" {
+  default     = false
+  description = "Disables Istio sources for the External DNS configuration. Set to \"false\" by default. Set to \"true\" for debugging External DNS or if Istio is disabled."
+  type        = bool
+}
+
 variable "enable_csi" {
   default     = true
   description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
@@ -208,7 +214,7 @@ variable "external_dns_helm_chart_repository" {
 }
 
 variable "external_dns_helm_chart_version" {
-  default     = "4.9.0"
+  default     = "5.4.1"
   description = "Helm chart version for ExternalDNS. Defaults to \"4.9.0\". See https://hub.helm.sh/charts/bitnami/external-dns for updates."
   type        = string
 }

@@ -39,7 +39,6 @@ terraform {
   }
 }
 
-
 #######
 ### These data sources are required by the Kubernetes and Helm providers to connect to the newly provisioned cluster
 #######
@@ -57,7 +56,7 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    config_path = "/path/to/my-sn-platform-cluster-config" # This must match the module input
+    config_path = "./sn-platform-cluster-config" # This must match the module input
   }
 }
 
@@ -66,7 +65,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   insecure               = false
-  config_path            = "/path/to/my-sn-platform-cluster-config" # This must match the module input
+  config_path            = "./sn-platform-cluster-config" # This must match the module input
 }
 
 #######
@@ -77,7 +76,7 @@ module "sn_platform_cluster" {
 
   cluster_name                 = "my-sn-platform-cluster"
   cluster_version              = "1.19"
-  kubeconfig_output_path       = "/path/to/my-sn-platform-cluster-config" # add this path to the provider configs above
+  kubeconfig_output_path       = "./sn-platform-cluster-config" # add this path to the provider configs above
 
   map_additional_iam_roles = [
     {
@@ -87,11 +86,12 @@ module "sn_platform_cluster" {
     }
   ]
 
-  node_pool_instance_types     = ["m4.large"]
+  node_pool_instance_types     = ["m5.large"]
   node_pool_desired_size       = 3
-  node_pool_min_size           = 3
+  node_pool_min_size           = 1
   node_pool_max_size           = 5
   pulsar_namespace             = "pulsar-demo"
+  pulsar_namespace_create      = true
 
   hosted_zone_id               = "Z04554535IN8Z31SKDVQ2"
   public_subnet_ids            = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
@@ -131,12 +131,12 @@ We use a [Helm chart](https://github.com/streamnative/charts/tree/master/charts/
 The example below will install StreamNative Platform using the default values file. 
 
 ```shell
-helm install \
+helm upgrade --install \
 --namespace pulsar-demo \
 sn-platform \
---repo https://charts.streamnative.io pulsar \
---values https://raw.githubusercontent.com/streamnative/charts/master/charts/pulsar/values.yaml \
---version 2.7.0-rc.8 \
+--repo https://charts.streamnative.io sn-platform \
+--values https://raw.githubusercontent.com/streamnative/examples/master/platform/values_cluster.yaml \
+--version 1.1.9 \
 --set initialize=true
 --kubeconfig=/path/to/my-sn-platform-cluster-config 
 ```
@@ -233,7 +233,7 @@ sn-platform \
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool | `bool` | `false` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
-| <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"4.9.0"` | no |
+| <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"5.4.1"` | no |
 | <a name="input_external_dns_settings"></a> [external\_dns\_settings](#input\_external\_dns\_settings) | Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns | `map(any)` | `{}` | no |
 | <a name="input_func_pool_desired_size"></a> [func\_pool\_desired\_size](#input\_func\_pool\_desired\_size) | Desired number of worker nodes | `number` | `1` | no |
 | <a name="input_func_pool_disk_size"></a> [func\_pool\_disk\_size](#input\_func\_pool\_disk\_size) | Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided | `number` | `20` | no |

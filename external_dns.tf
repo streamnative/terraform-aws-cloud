@@ -121,11 +121,14 @@ resource "helm_release" "external_dns" {
     type  = "string"
   }
 
-
-
   set {
     name  = "sources"
     value = var.disable_istio_sources == true ? "{service,ingress}" : "{service,ingress,istio-gateway,istio-virtualservice}"
+  }
+
+  set {
+    name  = "txtOwnerId"
+    value = module.eks.cluster_id
   }
 
   dynamic "set" {
