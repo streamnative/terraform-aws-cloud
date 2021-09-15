@@ -29,6 +29,12 @@ variable "add_vpc_tags" {
   type        = bool
 }
 
+variable "asm_secret_arns" {
+  default     = []
+  description = "The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region"
+  type        = list(string)
+}
+
 variable "aws_load_balancer_controller_helm_chart_name" {
   default     = "aws-load-balancer-controller"
   description = "The name of the Helm chart to use for the AWS Load Balancer Controller."
@@ -189,6 +195,12 @@ variable "enable_csi" {
   type        = bool
 }
 
+variable "enable_external_secrets" {
+  default     = true
+  description = "Enables kubernetes-external-secrets on the cluster, which uses AWS Secrets Manager as the secrets backend"
+  type        = bool
+}
+
 variable "enable_func_pool" {
   default     = false
   description = "Enable an additional dedicated function pool"
@@ -216,6 +228,30 @@ variable "external_dns_helm_chart_version" {
 variable "external_dns_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns"
+  type        = map(any)
+}
+
+variable "external_secrets_helm_chart_name" {
+  default     = "kubernetes-external-secrets"
+  description = "The name of the Helm chart in the repository for kubernetes-external-secrets"
+  type        = string
+}
+
+variable "external_secrets_helm_chart_repository" {
+  default     = "https://external-secrets.github.io/kubernetes-external-secrets"
+  description = "The repository containing the kubernetes-external-secrets helm chart"
+  type        = string
+}
+
+variable "external_secrets_helm_chart_version" {
+  default     = "8.3.0"
+  description = "Helm chart version for kubernetes-external-secrets. Defaults to \"8.3.0\". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates"
+  type        = string
+}
+
+variable "external_secrets_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options"
   type        = map(any)
 }
 

@@ -115,6 +115,41 @@ sn-platform \
 ```
 *Important Note: If this is your first time installing the helm chart, you must override the initialize value to `true` (e.g. `--set initialize=true`)*
 
+## Using kubenertes-external-secrets with Amazon Secrets Manager
+By default, `kubernetes-external-secrets` is enabled on the EKS cluster and the corresponding IRSA has access to retrieve all secrets created in the cluster's region. To clamp down access, you can specify the ARNs for just the secrets needed by passing a list to the input `asm_secret_arns` in your composition:
+
+```hcl
+module "sn_cluster" {
+  source = "streamnative/cloud/aws"
+
+  asm_secret_arns = [
+    "arn:aws:secretsmanager:us-west-2:111122223333:secret:aes128-1a2b3c",
+    "arn:aws:secretsmanager:us-west-2:111122223333:secret:aes192-4D5e6F",
+    "arn:aws:secretsmanager:us-west-2:111122223333:secret:aes256-7g8H9i",
+  ]
+}
+```
+
+You can also use secret prefixes and wildcards to scope access a bit more granularly, i.e. `"arn:aws:secretsmanager:Region:AccountId:secret:TestEnv/*"` and pass that to the module. Refer to the [Secrets Manager docs](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html) for examples.
+
+To get an ASM secret on the cluster, create an `ExternalSecret` manifiest yml file:
+
+```yml
+apiVersion: 'kubernetes-client.io/v1'
+kind: ExternalSecret
+metadata:
+  name: my-cluster-secret
+spec:
+  backendType: secretsManager
+  data:
+    - key: secret-prefix/secret-id
+      name: my-cluster-secret
+```
+
+Refer to [the official docs](https://github.com/external-secrets/kubernetes-external-secrets#add-a-secret) for more details.
+
+You can also disable `kubernetes-external-secrets` by setting the input `enable-external-secret` to false.
+
 ## Requirements
 
 | Name | Version |
@@ -149,12 +184,14 @@ sn-platform \
 | [aws_iam_role.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [helm_release.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.calico](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.csi](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.external_dns](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [helm_release.external_secrets](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.node_termination_handler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [kubernetes_namespace.calico](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.sn_system](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
@@ -169,6 +206,8 @@ sn-platform \
 | [aws_iam_policy_document.csi_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_dns_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.external_secrets_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.worker_autoscaling](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
 ## Inputs
@@ -177,6 +216,7 @@ sn-platform \
 |------|-------------|------|---------|:--------:|
 | <a name="input_add_vpc_tags"></a> [add\_vpc\_tags](#input\_add\_vpc\_tags) | Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to "true". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module. | `bool` | `true` | no |
 | <a name="input_additional_tags"></a> [additional\_tags](#input\_additional\_tags) | Additional tags to be added to the resources created by this module. | `map(any)` | `{}` | no |
+| <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region | `list(string)` | `[]` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_name"></a> [aws\_load\_balancer\_controller\_helm\_chart\_name](#input\_aws\_load\_balancer\_controller\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"aws-load-balancer-controller"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_repository"></a> [aws\_load\_balancer\_controller\_helm\_chart\_repository](#input\_aws\_load\_balancer\_controller\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"https://aws.github.io/eks-charts"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml | `string` | `"1.2.6"` | no |
@@ -203,11 +243,16 @@ sn-platform \
 | <a name="input_csi_settings"></a> [csi\_settings](#input\_csi\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml for available options. | `map(any)` | `{}` | no |
 | <a name="input_disable_istio_sources"></a> [disable\_istio\_sources](#input\_disable\_istio\_sources) | Disables Istio sources for the External DNS configuration. Set to "false" by default. Set to "true" for debugging External DNS or if Istio is disabled. | `bool` | `false` | no |
 | <a name="input_enable_csi"></a> [enable\_csi](#input\_enable\_csi) | Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS. | `bool` | `true` | no |
+| <a name="input_enable_external_secrets"></a> [enable\_external\_secrets](#input\_enable\_external\_secrets) | Enables kubernetes-external-secrets on the cluster, which uses AWS Secrets Manager as the secrets backend | `bool` | `true` | no |
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool | `bool` | `false` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
 | <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"5.4.1"` | no |
 | <a name="input_external_dns_settings"></a> [external\_dns\_settings](#input\_external\_dns\_settings) | Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns | `map(any)` | `{}` | no |
+| <a name="input_external_secrets_helm_chart_name"></a> [external\_secrets\_helm\_chart\_name](#input\_external\_secrets\_helm\_chart\_name) | The name of the Helm chart in the repository for kubernetes-external-secrets | `string` | `"kubernetes-external-secrets"` | no |
+| <a name="input_external_secrets_helm_chart_repository"></a> [external\_secrets\_helm\_chart\_repository](#input\_external\_secrets\_helm\_chart\_repository) | The repository containing the kubernetes-external-secrets helm chart | `string` | `"https://external-secrets.github.io/kubernetes-external-secrets"` | no |
+| <a name="input_external_secrets_helm_chart_version"></a> [external\_secrets\_helm\_chart\_version](#input\_external\_secrets\_helm\_chart\_version) | Helm chart version for kubernetes-external-secrets. Defaults to "8.3.0". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates | `string` | `"8.3.0"` | no |
+| <a name="input_external_secrets_settings"></a> [external\_secrets\_settings](#input\_external\_secrets\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options | `map(any)` | `{}` | no |
 | <a name="input_func_pool_desired_size"></a> [func\_pool\_desired\_size](#input\_func\_pool\_desired\_size) | Desired number of worker nodes | `number` | `1` | no |
 | <a name="input_func_pool_disk_size"></a> [func\_pool\_disk\_size](#input\_func\_pool\_disk\_size) | Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided | `number` | `20` | no |
 | <a name="input_func_pool_disk_type"></a> [func\_pool\_disk\_type](#input\_func\_pool\_disk\_type) | Disk type for function worker nodes. Defaults to gp3 | `string` | `"gp3"` | no |

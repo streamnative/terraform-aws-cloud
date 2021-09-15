@@ -88,7 +88,7 @@ module "sn_cluster" {
       groups   = ["system:masters"]
     }
   ]
-  
+
   public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
   private_subnet_ids = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
   region             = var.region
