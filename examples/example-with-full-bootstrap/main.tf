@@ -156,7 +156,7 @@ module "sn_tiered_storage_vault_resources" {
   cluster_name         = module.sn_cluster.eks_cluster_id
   oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
   pulsar_namespace     = "my-pulsar-namespace" # The namespace where you will be installing Pulsar
-  service_account_name = "vault" # The name of the service account used by Vault in the Pulsar namespace
+  service_account_name = "vault"               # The name of the service account used by Vault in the Pulsar namespace
 
   tags = {
     Project     = "StreamNative Platform"

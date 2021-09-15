@@ -44,7 +44,7 @@ resource "aws_s3_bucket" "pulsar_offload" {
     }
   }
 
-  tags   = merge({ "Attributes" = "offload", "Name" = "offload" }, var.tags)
+  tags = merge({ "Attributes" = "offload", "Name" = "offload" }, var.tags)
 }
 
 data "aws_iam_policy_document" "tiered_storage_base_policy" {
