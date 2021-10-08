@@ -51,6 +51,12 @@ variable "oidc_issuer" {
   type        = string
 }
 
+variable "permissions_boundary_arn" {
+  default     = null
+  description = "If required, provide the ARN of the IAM permissions boundary to use for restricting StreamNative's vendor access."
+  type        = string
+}
+
 variable "pulsar_namespace" {
   description = "The kubernetes namespace where Pulsar has been deployed. This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account for Vault access to use the IAM role"
   type        = string

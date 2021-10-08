@@ -17,17 +17,6 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-  }
-}
-
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
@@ -44,7 +33,7 @@ resource "aws_s3_bucket" "pulsar_offload" {
     }
   }
 
-  tags = merge({ "Attributes" = "offload", "Name" = "offload" }, var.tags)
+  tags = merge({ "Vendor" = "StreamNative", "Attributes" = "offload", "Name" = "offload" }, var.tags)
 }
 
 data "aws_iam_policy_document" "tiered_storage_base_policy" {
@@ -83,10 +72,12 @@ data "aws_iam_policy_document" "tiered_storage_sts_policy" {
 }
 
 resource "aws_iam_role" "tiered_storage" {
-  name               = format("%s-tiered-storage-role", var.cluster_name)
-  description        = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
-  assume_role_policy = data.aws_iam_policy_document.tiered_storage_sts_policy.json
-  tags               = var.tags
+  name                 = format("%s-tiered-storage-role", var.cluster_name)
+  description          = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
+  assume_role_policy   = data.aws_iam_policy_document.tiered_storage_sts_policy.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-tiered-storage-base-policy", var.cluster_name)

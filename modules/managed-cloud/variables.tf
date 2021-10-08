@@ -17,36 +17,20 @@
 # under the License.
 #
 
-resource "kubernetes_namespace" "calico" {
-  metadata {
-    name = "calico-system"
-  }
-  depends_on = [
-    module.eks
-  ]
+variable "create_bootstrap_role" {
+  default     = true
+  description = "Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud"
+  type        = string
+
 }
 
-resource "helm_release" "calico" {
-  atomic          = true
-  chart           = var.calico_helm_chart_name
-  cleanup_on_fail = true
-  name            = "tigera-operator"
-  namespace       = kubernetes_namespace.calico.id
-  repository      = var.calico_helm_chart_repository
-  timeout         = 300
-  version         = var.calico_helm_chart_version
+variable "streamnative_vendor_access_role_arn" {
+  description = "The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account"
+  type        = string
+}
 
-  set {
-    name  = "installation.kubernetesProvider"
-    value = "EKS"
-    type  = "string"
-  }
-
-  dynamic "set" {
-    for_each = var.calico_settings
-    content {
-      name  = set.key
-      value = set.value
-    }
-  }
+variable "tags" {
+  default     = {}
+  description = "Extra tags to apply to the resources created by this module."
+  type        = map(string)
 }

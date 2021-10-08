@@ -17,17 +17,6 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-  }
-}
-
 data "aws_caller_identity" "current" {}
 
 resource "aws_dynamodb_table" "vault_table" {
@@ -48,11 +37,12 @@ resource "aws_dynamodb_table" "vault_table" {
   write_capacity = var.dynamo_billing_mode == "PROVISIONED" ? var.dynamo_provisioned_capacity.write : 0
   read_capacity  = var.dynamo_billing_mode == "PROVISIONED" ? var.dynamo_provisioned_capacity.read : 0
 
-  tags = var.tags
+  tags = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_kms_key" "vault_key" {
   description = "Key for vault in streamnative pulsar cluster"
+  tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_kms_alias" "vault_key" {
@@ -130,10 +120,12 @@ data "aws_iam_policy_document" "vault_sts_policy" {
 }
 
 resource "aws_iam_role" "vault" {
-  name               = format("%s-vault-role", var.cluster_name)
-  description        = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
-  assume_role_policy = data.aws_iam_policy_document.vault_sts_policy.json
-  tags               = var.tags
+  name                 = format("%s-vault-role", var.cluster_name)
+  description          = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
+  assume_role_policy   = data.aws_iam_policy_document.vault_sts_policy.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-vault-base-policy", var.cluster_name)

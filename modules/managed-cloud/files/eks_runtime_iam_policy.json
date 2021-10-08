@@ -1,0 +1,365 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "",
+			"Effect": "UnrestrictedClusterActions",
+			"Action": [
+				"acm:DescribeCertificate",
+				"acm:ListCertificates",
+				"autoscaling:DescribeAutoScalingGroups",
+				"autoscaling:DescribeAutoScalingInstances",
+				"autoscaling:DescribeLaunchConfigurations",
+				"autoscaling:DescribeTags",
+				"cognito-idp:DescribeUserPoolClient",
+				"ec2:AttachVolume",
+				"ec2:AuthorizeSecurityGroupIngress",
+				"ec2:CreateSecurityGroup",
+				"ec2:CreateSnapshot",
+				"ec2:DescribeAccountAttributes",
+				"ec2:DescribeAddresses",
+				"ec2:DescribeAvailabilityZones",
+				"ec2:DescribeCoipPools",
+				"ec2:DescribeInstances",
+				"ec2:DescribeInternetGateways",
+				"ec2:DescribeLaunchTemplateVersions",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DescribeSnapshots",
+				"ec2:DescribeSubnets",
+				"ec2:DescribeTags",
+				"ec2:DescribeVolumes",
+				"ec2:DescribeVolumesModifications",
+				"ec2:DescribeVpcs",
+				"ec2:DetachVolume",
+				"ec2:GetCoipPoolUsage",
+				"ec2:ModifyVolume",
+				"ec2:RevokeSecurityGroupIngress",
+				"elasticloadbalancing:AddListenerCertificates",
+				"elasticloadbalancing:CreateListener",
+				"elasticloadbalancing:CreateRule",
+				"elasticloadbalancing:DeleteListener",
+				"elasticloadbalancing:DeleteRule",
+				"elasticloadbalancing:DescribeListenerCertificates",
+				"elasticloadbalancing:DescribeListeners",
+				"elasticloadbalancing:DescribeLoadBalancerAttributes",
+				"elasticloadbalancing:DescribeLoadBalancers",
+				"elasticloadbalancing:DescribeRules",
+				"elasticloadbalancing:DescribeSSLPolicies",
+				"elasticloadbalancing:DescribeTags",
+				"elasticloadbalancing:DescribeTargetGroupAttributes",
+				"elasticloadbalancing:DescribeTargetGroups",
+				"elasticloadbalancing:DescribeTargetHealth",
+				"elasticloadbalancing:ModifyListener",
+				"elasticloadbalancing:ModifyRule",
+				"elasticloadbalancing:RemoveListenerCertificates",
+				"elasticloadbalancing:SetWebAcl",
+				"iam:CreateServiceLinkedRole",
+				"iam:GetServerCertificate",
+				"iam:ListServerCertificates",
+				"route53:ListHostedZones",
+				"route53:ListHostedZonesByName",
+				"route53:ListResourceRecordSets",
+				"route53:ListTagsForResource",
+				"secretsmanager:DescribeSecret",
+				"secretsmanager:GetResourcePolicy",
+				"secretsmanager:GetSecretValue",
+				"secretsmanager:ListSecrets",
+				"secretsmanager:ListSecretVersionIds",
+				"shield:CreateProtection",
+				"shield:DeleteProtection",
+				"shield:DescribeProtection",
+				"shield:GetSubscriptionState",
+				"waf-regional:AssociateWebACL",
+				"waf-regional:DisassociateWebACL",
+				"waf-regional:GetWebACL",
+				"waf-regional:GetWebACLForResource",
+				"wafv2:AssociateWebACL",
+				"wafv2:DisassociateWebACL",
+				"wafv2:GetWebACL",
+				"wafv2:GetWebACLForResource"
+			],
+			"Resource": "*"
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:CreateTags",
+			"Resource": "arn:aws:ec2:*:*:security-group/*",
+			"Condition": {
+				"Null": {
+					"aws:RequestTag/elbv2.k8s.aws/cluster": [
+						"false"
+					]
+				},
+				"StringEquals": {
+					"ec2:CreateAction": [
+						"CreateSecurityGroup"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:DeleteTags",
+				"ec2:CreateTags"
+			],
+			"Resource": "arn:aws:ec2:*:*:security-group/*",
+			"Condition": {
+				"Null": {
+					"aws:RequestTag/elbv2.k8s.aws/cluster": [
+						"true"
+					],
+					"aws:ResourceTag/elbv2.k8s.aws/cluster": [
+						"false"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"ec2:RevokeSecurityGroupIngress",
+				"ec2:DeleteSecurityGroup",
+				"ec2:AuthorizeSecurityGroupIngress"
+			],
+			"Resource": "*",
+			"Condition": {
+				"Null": {
+					"aws:ResourceTag/elbv2.k8s.aws/cluster": [
+						"false"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"elasticloadbalancing:CreateTargetGroup",
+				"elasticloadbalancing:CreateLoadBalancer"
+			],
+			"Resource": "*",
+			"Condition": {
+				"Null": {
+					"aws:RequestTag/elbv2.k8s.aws/cluster": [
+						"false"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"elasticloadbalancing:RemoveTags",
+				"elasticloadbalancing:AddTags"
+			],
+			"Resource": [
+				"arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
+				"arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+				"arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+			],
+			"Condition": {
+				"Null": {
+					"aws:RequestTag/elbv2.k8s.aws/cluster": [
+						"true"
+					],
+					"aws:ResourceTag/elbv2.k8s.aws/cluster": [
+						"false"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"elasticloadbalancing:RemoveTags",
+				"elasticloadbalancing:AddTags"
+			],
+			"Resource": [
+				"arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
+				"arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
+				"arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+				"arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+			]
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"elasticloadbalancing:SetSubnets",
+				"elasticloadbalancing:SetSecurityGroups",
+				"elasticloadbalancing:SetIpAddressType",
+				"elasticloadbalancing:ModifyTargetGroupAttributes",
+				"elasticloadbalancing:ModifyTargetGroup",
+				"elasticloadbalancing:ModifyLoadBalancerAttributes",
+				"elasticloadbalancing:DeleteTargetGroup",
+				"elasticloadbalancing:DeleteLoadBalancer"
+			],
+			"Resource": "*",
+			"Condition": {
+				"Null": {
+					"aws:ResourceTag/elbv2.k8s.aws/cluster": [
+						"false"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": [
+				"elasticloadbalancing:RegisterTargets",
+				"elasticloadbalancing:DeregisterTargets"
+			],
+			"Resource": "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+		},
+		{
+			"Sid": "Changes",
+			"Effect": "Allow",
+			"Action": "route53:GetChange",
+			"Resource": "arn:aws:route53:::change/*"
+		},
+		{
+			"Sid": "Update",
+			"Effect": "Allow",
+			"Action": [
+				"route53:ListResourceRecordSets",
+				"route53:ChangeResourceRecordSets"
+			],
+			"Resource": "arn:aws:route53:::hostedzone/Z0754260TFRZFGJGVOIK"
+		},
+		{
+			"Sid": "eksWorkerAutoscalingOwn",
+			"Effect": "Allow",
+			"Action": [
+				"autoscaling:UpdateAutoScalingGroup",
+				"autoscaling:TerminateInstanceInAutoScalingGroup",
+				"autoscaling:SetDesiredCapacity"
+			],
+			"Resource": "*",
+			"Condition": {
+				"StringEquals": {
+					"autoscaling:ResourceTag/k8s.io/cluster-autoscaler/sn-pegasus-test-us-west-2": [
+						"owned"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:CreateTags",
+			"Resource": [
+				"arn:aws:ec2:*:*:volume/*",
+				"arn:aws:ec2:*:*:snapshot/*"
+			],
+			"Condition": {
+				"StringEquals": {
+					"ec2:CreateAction": [
+						"CreateVolume",
+						"CreateSnapshot"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:DeleteTags",
+			"Resource": [
+				"arn:aws:ec2:*:*:volume/*",
+				"arn:aws:ec2:*:*:snapshot/*"
+			]
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:CreateVolume",
+			"Resource": "*",
+			"Condition": {
+				"StringLike": {
+					"aws:RequestTag/ebs.csi.aws.com/cluster": [
+						"true"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:CreateVolume",
+			"Resource": "*",
+			"Condition": {
+				"StringLike": {
+					"aws:RequestTag/CSIVolumeName": [
+						"*"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:DeleteVolume",
+			"Resource": "*",
+			"Condition": {
+				"StringLike": {
+					"ec2:ResourceTag/CSIVolumeName": [
+						"*"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:DeleteVolume",
+			"Resource": "*",
+			"Condition": {
+				"StringLike": {
+					"ec2:ResourceTag/ebs.csi.aws.com/cluster": [
+						"true"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:DeleteSnapshot",
+			"Resource": "*",
+			"Condition": {
+				"StringLike": {
+					"ec2:ResourceTag/CSIVolumeSnapshotName": [
+						"*"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Action": "ec2:DeleteSnapshot",
+			"Resource": "*",
+			"Condition": {
+				"StringLike": {
+					"ec2:ResourceTag/ebs.csi.aws.com/cluster": [
+						"true"
+					]
+				}
+			}
+		},
+		{
+			"Sid": "ChangeResourceRecordSets",
+			"Effect": "Allow",
+			"Action": "route53:ChangeResourceRecordSets",
+			"Resource": "arn:aws:route53:::hostedzone/Z0754260TFRZFGJGVOIK"
+		}
+	]
+}

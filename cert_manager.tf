@@ -72,9 +72,12 @@ data "aws_iam_policy_document" "cert_manager_sts" {
 }
 
 resource "aws_iam_role" "cert_manager" {
-  name               = format("%s-cert-manager-role", module.eks.cluster_id)
-  description        = "Role assumed by EKS ServiceAccount cert-manager"
-  assume_role_policy = data.aws_iam_policy_document.cert_manager_sts.json
+  name                 = format("%s-cert-manager-role", module.eks.cluster_id)
+  description          = "Role assumed by EKS ServiceAccount cert-manager"
+  assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-cert-manager-policy", module.eks.cluster_id)
@@ -89,7 +92,7 @@ resource "helm_release" "cert_manager" {
   name            = "cert-manager"
   namespace       = "kube-system"
   repository      = var.cert_manager_helm_chart_repository
-  timeout         = 600
+  timeout         = 300
   version         = var.cert_manager_helm_chart_version
 
   set {

@@ -20,7 +20,9 @@
 resource "aws_iam_policy" "cluster_autoscaler" {
   name        = format("%s-cluster-autoscaler-policy", module.eks.cluster_id)
   description = "Provides EC2 ASG access for cluster autoscaling"
+  path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.worker_autoscaling.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
 
 data "aws_iam_policy_document" "worker_autoscaling" {
@@ -60,9 +62,12 @@ data "aws_iam_policy_document" "worker_autoscaling" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  name                = format("%s-cluster-autoscaler-role", module.eks.cluster_id)
-  description         = format("Allows %s assume role permissions in %s", module.eks.cluster_id, var.region)
-  managed_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
+  name                 = format("%s-cluster-autoscaler-role", module.eks.cluster_id)
+  description          = format("Allows %s assume role permissions in %s", module.eks.cluster_id, var.region)
+  managed_policy_arns  = [aws_iam_policy.cluster_autoscaler.arn]
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
@@ -91,7 +96,7 @@ resource "helm_release" "cluster_autoscaler" {
   name            = "cluster-autoscaler"
   namespace       = "kube-system"
   repository      = var.cluster_autoscaler_helm_chart_repository
-  timeout         = 600
+  timeout         = 300
   version         = var.cluster_autoscaler_helm_chart_version
 
   dynamic "set" {

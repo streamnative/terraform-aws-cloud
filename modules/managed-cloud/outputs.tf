@@ -17,36 +17,16 @@
 # under the License.
 #
 
-resource "kubernetes_namespace" "calico" {
-  metadata {
-    name = "calico-system"
-  }
-  depends_on = [
-    module.eks
-  ]
+output "bootstrap_role_arn" {
+  value       = join("", aws_iam_role.bootstrap_role.*.arn)
+  description = "the arn of the role"
 }
 
-resource "helm_release" "calico" {
-  atomic          = true
-  chart           = var.calico_helm_chart_name
-  cleanup_on_fail = true
-  name            = "tigera-operator"
-  namespace       = kubernetes_namespace.calico.id
-  repository      = var.calico_helm_chart_repository
-  timeout         = 300
-  version         = var.calico_helm_chart_version
+output "management_role_arn" {
+  value = aws_iam_role.management_role.arn
+}
 
-  set {
-    name  = "installation.kubernetesProvider"
-    value = "EKS"
-    type  = "string"
-  }
-
-  dynamic "set" {
-    for_each = var.calico_settings
-    content {
-      name  = set.key
-      value = set.value
-    }
-  }
+output "permission_boundary_policy_arn" {
+  value       = aws_iam_policy.permission_boundary.arn
+  description = "the name of the policy"
 }

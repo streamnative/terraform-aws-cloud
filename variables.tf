@@ -138,9 +138,21 @@ variable "cluster_autoscaler_settings" {
 }
 
 variable "cluster_enabled_log_types" {
-  default     = []
+  default     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   description = "A list of the desired control plane logging to enable. For more information, see Amazon EKS Control Plane Logging documentation (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)"
   type        = list(string)
+}
+
+variable "cluster_log_kms_key_id" {
+  default     = ""
+  description = "If a KMS Key ARN is set, this key will be used to encrypt the corresponding log group. Please be sure that the KMS Key has an appropriate key policy (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html)"
+  type        = string
+}
+
+variable "cluster_log_retention_in_days" {
+  default     = 90
+  description = "Number of days to retain log events. Default retention - 90 days."
+  type        = number
 }
 
 variable "cluster_name" {
@@ -389,6 +401,12 @@ variable "node_pool_min_size" {
 variable "node_pool_max_size" {
   description = "The maximum size of the node pool Autoscaling group"
   type        = number
+}
+
+variable "permissions_boundary_arn" {
+  default     = null
+  description = "If required, provide the ARN of the IAM permissions boundary to use for restricting StreamNative's vendor access."
+  type        = string
 }
 
 variable "private_subnet_ids" {

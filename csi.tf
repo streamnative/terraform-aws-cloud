@@ -145,10 +145,13 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
-  count              = var.enable_csi ? 1 : 0
-  name               = format("%s-%s-role", module.eks.cluster_id, var.csi_sa_name)
-  description        = format("Role assumed by EKS ServiceAccount %s", var.csi_sa_name)
-  assume_role_policy = data.aws_iam_policy_document.csi_sts.json
+  count                = var.enable_csi ? 1 : 0
+  name                 = format("%s-%s-role", module.eks.cluster_id, var.csi_sa_name)
+  description          = format("Role assumed by EKS ServiceAccount %s", var.csi_sa_name)
+  assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-%s-policy", module.eks.cluster_id, var.csi_sa_name)
@@ -166,6 +169,10 @@ resource "helm_release" "csi" {
   repository      = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"
   timeout         = 300
 
+  set {
+    name  = "controller.extraVolumeTags"
+    value = jsonencode({ Vendor = "StreamNative" })
+  }
   set {
     name  = "controller.serviceAccount.create"
     value = "true"

@@ -260,9 +260,12 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
 }
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
-  name               = format("%s-aws-load-balancer-controller-role", module.eks.cluster_id)
-  description        = "Role assumed by EKS ServiceAccount aws-load-balancer-controller"
-  assume_role_policy = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
+  name                 = format("%s-aws-load-balancer-controller-role", module.eks.cluster_id)
+  description          = "Role assumed by EKS ServiceAccount aws-load-balancer-controller"
+  assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-aws-load-balancer-controller-policy", module.eks.cluster_id)
@@ -277,13 +280,18 @@ resource "helm_release" "aws_load_balancer_controller" {
   name            = "aws-load-balancer-controller"
   namespace       = "kube-system"
   repository      = var.aws_load_balancer_controller_helm_chart_repository
-  timeout         = 600
+  timeout         = 300
   version         = var.aws_load_balancer_controller_helm_chart_version
 
   set {
     name  = "clusterName"
     value = module.eks.cluster_id
     type  = "string"
+  }
+
+  set {
+    name  = "defaultTags"
+    value = jsonencode({ Vendor = "StreamNative" }) #TODO - figure out how to pass multiple KV pairs
   }
 
   set {

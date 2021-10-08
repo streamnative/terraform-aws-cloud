@@ -62,9 +62,12 @@ data "aws_iam_policy_document" "external_dns_sts" {
 }
 
 resource "aws_iam_role" "external_dns" {
-  name               = format("%s-external-dns-role", module.eks.cluster_id)
-  description        = "Role assumed by EKS ServiceAccount external-dns"
-  assume_role_policy = data.aws_iam_policy_document.external_dns_sts.json
+  name                 = format("%s-external-dns-role", module.eks.cluster_id)
+  description          = "Role assumed by EKS ServiceAccount external-dns"
+  assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-external-dns-policy", module.eks.cluster_id)
@@ -79,7 +82,7 @@ resource "helm_release" "external_dns" {
   namespace       = "kube-system"
   name            = "external-dns"
   repository      = var.external_dns_helm_chart_repository
-  timeout         = 600
+  timeout         = 300
   version         = var.external_dns_helm_chart_version
 
   set {

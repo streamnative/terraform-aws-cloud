@@ -58,10 +58,13 @@ data "aws_iam_policy_document" "external_secrets_sts" {
 }
 
 resource "aws_iam_role" "external_secrets" {
-  count              = var.enable_external_secrets ? 1 : 0
-  name               = format("%s-external-secrets-role", module.eks.cluster_id)
-  description        = "Role assumed by EKS ServiceAccount external-secrets"
-  assume_role_policy = data.aws_iam_policy_document.external_secrets_sts.json
+  count                = var.enable_external_secrets ? 1 : 0
+  name                 = format("%s-external-secrets-role", module.eks.cluster_id)
+  description          = "Role assumed by EKS ServiceAccount external-secrets"
+  assume_role_policy   = data.aws_iam_policy_document.external_secrets_sts.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
 
   inline_policy {
     name   = format("%s-external-secrets-policy", module.eks.cluster_id)
