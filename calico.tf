@@ -17,21 +17,13 @@
 # under the License.
 #
 
-resource "kubernetes_namespace" "calico" {
-  metadata {
-    name = "calico-system"
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
 resource "helm_release" "calico" {
+  count           = var.enable_calico ? 1 : 0
   atomic          = true
   chart           = var.calico_helm_chart_name
   cleanup_on_fail = true
   name            = "tigera-operator"
-  namespace       = kubernetes_namespace.calico.id
+  namespace       = kubernetes_namespace.sn_system.id
   repository      = var.calico_helm_chart_repository
   timeout         = 300
   version         = var.calico_helm_chart_version

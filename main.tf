@@ -64,7 +64,6 @@ module "eks" {
 }
 
 resource "kubernetes_namespace" "sn_system" {
-  count = var.create_sn_system_namespace ? 1 : 0
   metadata {
     name = "sn-system"
   }

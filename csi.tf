@@ -133,7 +133,7 @@ data "aws_iam_policy_document" "csi_sts" {
     }
     condition {
       test     = "StringEquals"
-      values   = [format("system:serviceaccount:%s:%s", var.csi_namespace, var.csi_sa_name)]
+      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "ebs-csi-controller-sa")]
       variable = format("%s:sub", local.oidc_issuer)
     }
     condition {
@@ -146,27 +146,36 @@ data "aws_iam_policy_document" "csi_sts" {
 
 resource "aws_iam_role" "csi" {
   count                = var.enable_csi ? 1 : 0
-  name                 = format("%s-%s-role", module.eks.cluster_id, var.csi_sa_name)
-  description          = format("Role assumed by EKS ServiceAccount %s", var.csi_sa_name)
+  name                 = format("%s-csi-role", module.eks.cluster_id)
+  description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+}
 
-  inline_policy {
-    name   = format("%s-%s-policy", module.eks.cluster_id, var.csi_sa_name)
-    policy = data.aws_iam_policy_document.csi.json
-  }
+resource "aws_iam_policy" "csi" {
+  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_csi ? 1 : 0
+  name        = "StreamNativeCloudCsiPolicy"
+  description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.csi.json
+}
+
+resource "aws_iam_role_policy_attachment" "csi" {
+  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_csi ? 1 : 0
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.csi[0].arn : var.csi_policy_arn
+  role       = aws_iam_role.csi[0].name
 }
 
 resource "helm_release" "csi" {
   count           = var.enable_csi ? 1 : 0
   atomic          = true
-  chart           = "aws-ebs-csi-driver"
+  chart           = var.csi_helm_chart_name
   cleanup_on_fail = true
   name            = "aws-ebs-csi-driver"
-  namespace       = var.csi_namespace
-  repository      = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"
+  namespace       = kubernetes_namespace.sn_system.id
+  repository      = var.csi_helm_chart_repository
   timeout         = 300
 
   set {
@@ -181,7 +190,7 @@ resource "helm_release" "csi" {
 
   set {
     name  = "controller.serviceAccount.name"
-    value = var.csi_sa_name
+    value = "ebs-csi-controller-sa"
     type  = "string"
   }
 
@@ -201,6 +210,7 @@ resource "helm_release" "csi" {
 }
 
 resource "kubernetes_storage_class" "sn_default" {
+  count = var.enable_csi ? 1 : 0
   metadata {
     name = "sn-default"
   }
@@ -214,6 +224,7 @@ resource "kubernetes_storage_class" "sn_default" {
 }
 
 resource "kubernetes_storage_class" "sn_ssd" {
+  count = var.enable_csi ? 1 : 0
   metadata {
     name = "sn-ssd"
   }

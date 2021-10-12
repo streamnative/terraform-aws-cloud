@@ -18,21 +18,21 @@
 #
 
 output "role_arn" {
-  value       = aws_iam_role.backup.arn
+  value       = aws_iam_role.velero.arn
   description = "The arn of the role used for Velero backups for Pulsar. This needs to be annotated on the corresponding Kubernetes Service account in order for IRSA to work properly, e.g. \"eks.amazonaws.com/role-arn\" : \"<this_arn>\""
 }
 
 output "role_name" {
-  value       = aws_iam_role.backup.name
+  value       = aws_iam_role.velero.name
   description = "The name of the role used for Velero backups for Pulsar"
 }
 
 output "s3_bucket" {
-  value       = aws_s3_bucket.pulsar_backup.bucket
+  value       = aws_s3_bucket.velero.bucket
   description = "The name of the bucket used for Velero backups of Pulsar"
 }
 
 output "s3_bucket_arn" {
-  value       = aws_s3_bucket.pulsar_backup.arn
+  value       = aws_s3_bucket.velero.arn
   description = "The arn of the bucket used for Velero backups for Pulsar"
 }

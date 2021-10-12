@@ -39,9 +39,10 @@ data "aws_iam_policy_document" "streamnative_vendor_access" {
 #-- within your AWS Account and is applied to all our IAM Roles
 ######
 data "template_file" "permission_boundary" {
-  template = file("${path.module}/files/permission_boundary_iam_policy.tpl")
+  template = file("${path.module}/files/permission_boundary_iam_policy.json.tpl")
   vars = {
     account_id = data.aws_caller_identity.current.account_id
+    region     = var.region
   }
 }
 
@@ -58,14 +59,22 @@ resource "aws_iam_policy" "permission_boundary" {
 #-- This role is only needed for the initial StreamNative Cloud
 #-- deployment to an AWS account, or when it is being removed.
 ######
+data "template_file" "bootstrap_role" {
+  template = file("${path.module}/files/bootstrap_role_iam_policy.json.tpl")
+  vars = {
+    account_id = data.aws_caller_identity.current.account_id
+    region     = var.region
+  }
+}
+
 resource "aws_iam_role" "bootstrap_role" {
-  count              = var.create_bootstrap_role ? 1 : 0
-  name               = "StreamNativeCloudBootstrapRole"
-  description        = "This role is used to bootstrap the StreamNative Cloud within the AWS account. It is limited in scope to the attached policy and also the permission boundary."
-  assume_role_policy = data.aws_iam_policy_document.streamnative_vendor_access.json
-  path               = "/StreamNative/"
-  # permissions_boundary = aws_iam_policy.permission_boundary.arn
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  count                = var.create_bootstrap_role ? 1 : 0
+  name                 = "StreamNativeCloudBootstrapRole"
+  description          = "This role is used to bootstrap the StreamNative Cloud within the AWS account. It is limited in scope to the attached policy and also the permission boundary."
+  assume_role_policy   = data.aws_iam_policy_document.streamnative_vendor_access.json
+  path                 = "/StreamNative/"
+  permissions_boundary = aws_iam_policy.permission_boundary.arn
+  tags                 = merge({ Vendor = "StreamNative" }, var.tags)
 }
 
 resource "aws_iam_policy" "bootstrap_policy" {
@@ -73,7 +82,7 @@ resource "aws_iam_policy" "bootstrap_policy" {
   name        = "StreamNativeCloudBootstrapPolicy"
   description = "This policy sets the minimum amount of permissions needed by the StreamNativeCloudBootstrapRole to bootstrap the StreamNative Cloud deployment."
   path        = "/StreamNative/"
-  policy      = file("${path.module}/files/bootstrap_role_iam_policy.json")
+  policy      = data.template_file.bootstrap_role.rendered
   tags        = merge({ Vendor = "StreamNative" }, var.tags)
 }
 
@@ -89,9 +98,10 @@ resource "aws_iam_role_policy_attachment" "bootstrap_policy" {
 #-- of the managed deployment.
 ######
 data "template_file" "management_role" {
-  template = file("${path.module}/files/management_role_iam_policy.tpl")
+  template = file("${path.module}/files/management_role_iam_policy.json.tpl")
   vars = {
     account_id = data.aws_caller_identity.current.account_id
+    region     = var.region
   }
 }
 

@@ -24,6 +24,11 @@ variable "create_bootstrap_role" {
 
 }
 
+variable "region" {
+  description = "The AWS region where your instance of StreamNative Cloud is deployed, i.e. \"us-west-2\""
+  type        = string
+}
+
 variable "streamnative_vendor_access_role_arn" {
   description = "The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account"
   type        = string

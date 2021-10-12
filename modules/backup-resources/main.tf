@@ -32,9 +32,9 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
-resource "aws_s3_bucket" "pulsar_backup" {
+resource "aws_s3_bucket" "velero" {
   acl    = "private"
-  bucket = format("%s-backup-%s", var.cluster_name, data.aws_region.current.name)
+  bucket = format("%s-velero-backup-%s", var.cluster_name, data.aws_region.current.name)
 
   server_side_encryption_configuration {
     rule {
@@ -47,7 +47,7 @@ resource "aws_s3_bucket" "pulsar_backup" {
   tags = merge({ "Vendor" = "StreamNative", "Attributes" = "backup", "Name" = "velero-backups" }, var.tags)
 }
 
-data "aws_iam_policy_document" "backup_base_policy" {
+data "aws_iam_policy_document" "velero" {
   statement {
     actions = [
       "ec2:DescribeVolumes",
@@ -71,13 +71,13 @@ data "aws_iam_policy_document" "backup_base_policy" {
     ]
 
     resources = [
-      aws_s3_bucket.pulsar_backup.arn,
-      "${aws_s3_bucket.pulsar_backup.arn}/*",
+      aws_s3_bucket.velero.arn,
+      "${aws_s3_bucket.velero.arn}/*",
     ]
   }
 }
 
-data "aws_iam_policy_document" "backup_sts_policy" {
+data "aws_iam_policy_document" "velero_sts" {
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -89,24 +89,33 @@ data "aws_iam_policy_document" "backup_sts_policy" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", var.velero_namespace, var.service_account_name)]
+      values   = [format("system:serviceaccount:%s:%s", var.velero_namespace, "velero")]
       variable = format("%s:sub", var.oidc_issuer)
     }
   }
 }
 
-resource "aws_iam_role" "backup" {
-  name                 = format("%s-backup-role", var.cluster_name)
-  description          = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
-  assume_role_policy   = data.aws_iam_policy_document.backup_sts_policy.json
+resource "aws_iam_role" "velero" {
+  name                 = format("%s-velero-backup-role", var.cluster_name)
+  description          = format("Role used by IRSA and the KSA velero on StreamNative Cloud EKS cluster %s", var.cluster_name)
+  assume_role_policy   = data.aws_iam_policy_document.velero_sts.json
   tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
+}
 
-  inline_policy {
-    name   = format("%s-backup-base-policy", var.cluster_name)
-    policy = data.aws_iam_policy_document.backup_base_policy.json
-  }
+resource "aws_iam_policy" "velero" {
+  count       = var.create_iam_policy_for_velero ? 1 : 0
+  name        = "StreamNativeCloudVeleroBackupPolicy"
+  description = "Policy that defines the permissions for the Velero backup addon service running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.velero.json
+}
+
+resource "aws_iam_role_policy_attachment" "velero" {
+  count      = var.create_iam_policy_for_velero ? 1 : 0
+  policy_arn = var.create_iam_policy_for_velero ? aws_iam_policy.velero[0].arn : var.velero_policy_arn
+  role       = aws_iam_role.velero.name
 }
 
 resource "helm_release" "velero" {
@@ -128,7 +137,7 @@ resource "helm_release" "velero" {
           "provider" : "aws",
           "backupStorageLocation" : {
             "name" : "aws"
-            "bucket" : "${aws_s3_bucket.pulsar_backup.id}"
+            "bucket" : "${aws_s3_bucket.velero.id}"
             "region" : "${data.aws_region.current.name}"
           }
         },
@@ -146,16 +155,16 @@ resource "helm_release" "velero" {
           }
         ],
         "podAnnotations" : {
-          "eks.amazonaws.com/role-arn" : "${aws_iam_role.backup.arn}"
+          "eks.amazonaws.com/role-arn" : "${aws_iam_role.velero.arn}"
         },
         "podSecurityContext" : {
           "fsGroup" : 65534
         },
         "serviceAccount" : {
           "server" : {
-            "name" : "${var.service_account_name}"
+            "name" : "${"velero"}"
             "annotations" : {
-              "eks.amazonaws.com/role-arn" : "${aws_iam_role.backup.arn}"
+              "eks.amazonaws.com/role-arn" : "${aws_iam_role.velero.arn}"
             }
           },
         },

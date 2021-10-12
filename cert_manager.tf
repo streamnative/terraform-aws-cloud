@@ -65,32 +65,43 @@ data "aws_iam_policy_document" "cert_manager_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", "kube-system", "cert-manager")]
+      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "cert-manager")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
 }
 
 resource "aws_iam_role" "cert_manager" {
+  count                = var.enable_cert_manager ? 1 : 0
   name                 = format("%s-cert-manager-role", module.eks.cluster_id)
-  description          = "Role assumed by EKS ServiceAccount cert-manager"
+  description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+}
 
-  inline_policy {
-    name   = format("%s-cert-manager-policy", module.eks.cluster_id)
-    policy = data.aws_iam_policy_document.cert_manager.json
-  }
+resource "aws_iam_policy" "cert_manager" {
+  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_cert_manager ? 1 : 0
+  name        = "StreamNativeCloudCertManagerPolicy"
+  description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.cert_manager.json
+}
+
+resource "aws_iam_role_policy_attachment" "cert_manager" {
+  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_cert_manager ? 1 : 0
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cert_manager[0].arn : var.cert_manager_policy_arn
+  role       = aws_iam_role.cert_manager[0].name
 }
 
 resource "helm_release" "cert_manager" {
+  count           = var.enable_cert_manager ? 1 : 0
   atomic          = true
   chart           = var.cert_manager_helm_chart_name
   cleanup_on_fail = true
   name            = "cert-manager"
-  namespace       = "kube-system"
+  namespace       = kubernetes_namespace.sn_system.id
   repository      = var.cert_manager_helm_chart_repository
   timeout         = 300
   version         = var.cert_manager_helm_chart_version
@@ -117,7 +128,7 @@ resource "helm_release" "cert_manager" {
 
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.cert_manager.arn
+    value = aws_iam_role.cert_manager[0].arn
     type  = "string"
   }
 

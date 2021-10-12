@@ -57,7 +57,7 @@
         "*"
       ],
       "Condition": {
-        "StringLike": {
+        "StringEqualsIgnoreCase": {
           "aws:ResourceTag/Vendor": "StreamNative"
         }
       }

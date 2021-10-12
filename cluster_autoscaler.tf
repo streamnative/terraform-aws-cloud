@@ -17,17 +17,8 @@
 # under the License.
 #
 
-resource "aws_iam_policy" "cluster_autoscaler" {
-  name        = format("%s-cluster-autoscaler-policy", module.eks.cluster_id)
-  description = "Provides EC2 ASG access for cluster autoscaling"
-  path        = "/StreamNative/"
-  policy      = data.aws_iam_policy_document.worker_autoscaling.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
-}
-
-data "aws_iam_policy_document" "worker_autoscaling" {
+data "aws_iam_policy_document" "cluster_autoscaler" {
   statement {
-    sid    = "eksWorkerAutoscalingAll"
     effect = "Allow"
 
     actions = [
@@ -42,7 +33,6 @@ data "aws_iam_policy_document" "worker_autoscaling" {
   }
 
   statement {
-    sid    = "eksWorkerAutoscalingOwn"
     effect = "Allow"
 
     actions = [
@@ -61,40 +51,55 @@ data "aws_iam_policy_document" "worker_autoscaling" {
   }
 }
 
+data "aws_iam_policy_document" "cluster_autoscaler_sts" {
+  statement {
+    actions = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
+    }
+    condition {
+      test     = "StringLike"
+      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "cluster-autoscaler")]
+      variable = format("%s:sub", local.oidc_issuer)
+    }
+  }
+}
+
 resource "aws_iam_role" "cluster_autoscaler" {
+  count                = var.enable_cluster_autoscaler ? 1 : 0
   name                 = format("%s-cluster-autoscaler-role", module.eks.cluster_id)
-  description          = format("Allows %s assume role permissions in %s", module.eks.cluster_id, var.region)
-  managed_policy_arns  = [aws_iam_policy.cluster_autoscaler.arn]
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
+  assume_role_policy   = data.aws_iam_policy_document.cluster_autoscaler_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+}
 
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Federated" : "arn:aws:iam::${local.account_id}:oidc-provider/${local.oidc_issuer}"
-        },
-        "Action" : "sts:AssumeRoleWithWebIdentity",
-        "Condition" : {
-          "StringEquals" : {
-            "${local.oidc_issuer}:aud" : "sts.amazonaws.com",
-            "${local.oidc_issuer}:sub" : "system:serviceaccount:kube-system:cluster-autoscaler"
-          }
-        }
-      }
-    ]
-  })
+resource "aws_iam_policy" "cluster_autoscaler" {
+  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_cluster_autoscaler ? 1 : 0
+  name        = "StreamNativeCloudClusterAutoscalerPolicy"
+  description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.cluster_autoscaler.json
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
+  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_cluster_autoscaler ? 1 : 0
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cluster_autoscaler[0].arn : var.cluster_autoscaler_policy_arn
+  role       = aws_iam_role.cluster_autoscaler[0].name
 }
 
 resource "helm_release" "cluster_autoscaler" {
+  count           = var.enable_cluster_autoscaler ? 1 : 0
   atomic          = true
   chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true
   name            = "cluster-autoscaler"
-  namespace       = "kube-system"
+  namespace       = kubernetes_namespace.sn_system.id
   repository      = var.cluster_autoscaler_helm_chart_repository
   timeout         = 300
   version         = var.cluster_autoscaler_helm_chart_version
@@ -143,7 +148,7 @@ resource "helm_release" "cluster_autoscaler" {
         "pspEnabled" : true,
         "serviceAccount" : {
           "annotations" : {
-            "eks.amazonaws.com/role-arn" : "${aws_iam_role.cluster_autoscaler.arn}"
+            "eks.amazonaws.com/role-arn" : "${aws_iam_role.cluster_autoscaler[0].arn}"
           },
           "create" : true,
           "name" : "cluster-autoscaler",

@@ -31,6 +31,7 @@ locals {
     instance_types   = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
     min_capacity     = coalesce(var.func_pool_min_size, var.node_pool_min_size)
     max_capacity     = coalesce(var.func_pool_max_size, var.node_pool_max_size)
+    name             = "snc-node-pool"
   }
 
   node_pool_config = {
@@ -39,7 +40,8 @@ locals {
     instance_types   = var.node_pool_instance_types
     min_capacity     = var.node_pool_min_size
     max_capacity     = var.node_pool_max_size
+    name             = "snc-func-pool"
   }
 
-  node_groups = var.enable_func_pool ? { "node-pool" = local.node_pool_config, "func-pool" = local.func_pool_config } : { "node-pool" = local.node_pool_config }
+  node_groups = var.enable_func_pool ? { "snc-node-pool" = local.node_pool_config, "snc-func-pool" = local.func_pool_config } : { "snc-node-pool" = local.node_pool_config }
 }

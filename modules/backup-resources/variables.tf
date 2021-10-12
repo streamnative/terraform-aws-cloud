@@ -28,6 +28,12 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "create_iam_policy_for_velero" {
+  default     = true
+  description = "Whether to create the IAM policy used by the Velero backup addon service running within the EKS cluster. For enhanced security, we allow for these IAM policies to be created seperately from this module. Defaults to \"true\". If set to \"false\", you must provide the ARN for the IAM policy needed for Velero."
+  type        = bool
+}
+
 variable "oidc_issuer" {
   description = "The OIDC issuer for the EKS cluster"
   type        = string
@@ -44,12 +50,6 @@ variable "pulsar_namespace" {
   type        = string
 }
 
-variable "service_account_name" {
-  default     = "velero"
-  description = "The name of the kubernetes service account to used by Velero backups. Defaults to \"velero\". This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account access to use the IAM role"
-  type        = string
-}
-
 variable "velero_backup_schedule" {
   default     = "0 5 * * *"
   description = "The scheduled time for Velero to perform backups. Written in cron expression, defaults to \"0 5 * * *\" or \"at 5:00am every day\""
@@ -57,8 +57,8 @@ variable "velero_backup_schedule" {
 }
 
 variable "velero_excluded_namespaces" {
-  default     = ["default", "kube-system", "operators", "olm"]
-  description = "A comma-separated list of namespaces to exclude from Velero backups. "
+  default     = ["kube-system", "default", "operators", "olm"]
+  description = "A comma-separated list of namespaces to exclude from Velero backups. Defaults are set to [\"default\", \"kube-system\", \"operators\", \"olm\"]."
   type        = list(string)
 }
 
@@ -89,6 +89,12 @@ variable "velero_namespace" {
 variable "velero_plugin_version" {
   default     = "v1.3.0"
   description = "Which version of the velero-plugin-for-aws to use. Defaults to v1.3.0"
+  type        = string
+}
+
+variable "velero_policy_arn" {
+  default     = null
+  description = "The arn for the IAM policy used by the Velero backup addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policy_for_velero\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudVeleroBackupPolicy\"."
   type        = string
 }
 

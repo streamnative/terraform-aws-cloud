@@ -14,10 +14,9 @@
 				"dynamodb:ListTagsOfResource",
 				"ec2:Describe*",
 				"ec2:Get*",
-				"eks:DeleteNodeGroup",
 				"eks:Describe*",
 				"eks:List*",
-				"iam:DetachRolePolicy",
+				"iam:AttachRolePolicy",
 				"iam:GetInstanceProfile",
 				"iam:GetOpenIDConnectProvider",
 				"iam:GetPolicy",
@@ -51,6 +50,21 @@
 				"s3:ListBucket"
 			],
 			"Resource": "*"
+		},
+		{
+			"Sid": "ResourceBasedRestictions",
+			"Effect": "Allow",
+			"Action": [
+				"eks:DeleteNodeGroup",
+				"iam:CreatePolicy",
+				"iam:CreatePolicyVersion",
+				"iam:DeletePolicy",
+				"iam:DeletePolicyVersion"
+			],
+			"Resource": [
+				"arn:aws:eks:${region}:${account_id}:nodegroup/*/snc-*-pool/*",
+				"arn:aws:iam::${account_id}:policy/StreamNative/*"
+			]
 		},
 		{
 			"Sid": "RequireRequestTag",
@@ -190,24 +204,40 @@
 				"dynamodb:Update*"
 			],
 			"Resource": [
-				"arn:aws:dynamodb:*:*:table/*vault-table",
-				"arn:aws:dynamodb:*:*:global-table/*vault-table"
+				"arn:aws:dynamodb:${region}:${account_id}:table/*vault-table",
+				"arn:aws:dynamodb:${region}:${account_id}:global-table/*vault-table"
 			]
 		},
 		{
-			"Sid": "RequireVendorTagAndIamPath",
+			"Sid": "IamRequireRequestTag",
+			"Effect": "Allow",
+			"Action": [
+				"iam:CreateRole",
+				"iam:CreateOpenIDConnectProvider",
+				"iam:TagPolicy",
+				"iam:TagRole",
+				"iam:TagInstanceProfile",
+				"iam:TagOpenIDConnectProvider"
+			],
+			"Resource": [
+				"arn:aws:iam::${account_id}:role/StreamNative/*",
+				"arn:aws:iam::${account_id}:policy/StreamNative/*",
+				"arn:aws:iam::${account_id}:oidc-provider/*"
+			],
+			"Condition": {
+				"StringEqualsIgnoreCase": {
+					"aws:RequestTag/Vendor": "StreamNative"
+				}
+			}
+		},
+		{
+			"Sid": "IamRequireResourceTag",
 			"Effect": "Allow",
 			"Action": [
 				"iam:AddRoleToInstanceProfile",
-				"iam:AttachRolePolicy",
-				"iam:CreateOpenIDConnectProvider",
-				"iam:CreatePolicy",
-				"iam:CreatePolicyVersion",
 				"iam:CreateServiceLinkedRole",
 				"iam:DeleteInstanceProfile",
 				"iam:DeleteOpenIDConnectProvider",
-				"iam:DeletePolicy",
-				"iam:DeletePolicyVersion",
 				"iam:DeleteRole",
 				"iam:DeleteRolePolicy",
 				"iam:DeleteServiceLinkedRole",
@@ -216,23 +246,15 @@
 				"iam:PutRolePolicy",
 				"iam:RemoveRoleFromInstanceProfile",
 				"iam:SetDefaultPolicyVersion",
-				"iam:TagInstanceProfile",
-				"iam:TagOpenIDConnectProvider",
-				"iam:TagPolicy",
-				"iam:TagRole",
-				"iam:UntagInstanceProfile",
-				"iam:UntagOpenIDConnectProvider",
-				"iam:UntagPolicy",
-				"iam:UntagRole",
 				"iam:UpdateAssumeRolePolicy",
 				"iam:UpdateOpenIDConnectProviderThumbprint",
 				"iam:UpdateRole",
 				"iam:UpdateRoleDescription"
 			],
 			"Resource": [
-				"arn:aws:iam::*:role/StreamNative/*",
-				"arn:aws:iam::*:policy/StreamNative/*",
-				"arn:aws:iam::*:oidc-provider/*"
+				"arn:aws:iam::${account_id}:role/StreamNative/*",
+				"arn:aws:iam::${account_id}:policy/StreamNative/*",
+				"arn:aws:iam::${account_id}:oidc-provider/*"
 			],
 			"Condition": {
 				"StringEqualsIgnoreCase": {
@@ -241,7 +263,7 @@
 			}
 		},
 		{
-			"Sid": "RestrictPassRoleToStreamNative",
+			"Sid": "RestrictPassRoleToEKS",
 			"Effect": "Allow",
 			"Action": [
 				"iam:PassRole"
@@ -252,31 +274,6 @@
 					"iam:PassedToService": "eks.amazonaws.com"
 				}
 			}
-		},
-		{
-			"Sid": "RequirePermissionBoundaryForIamRoles",
-			"Effect": "Allow",
-			"Action": [
-				"iam:CreateRole"
-			],
-			"Resource": "arn:aws:iam::*:role/StreamNative/*",
-			"Condition": {
-				"StringEqualsIgnoreCase": {
-					"aws:ResourceTag/Vendor": "StreamNative"
-				}
-			}
-		},
-		{
-			"Sid": "RestrictEditingPermissionBoundary",
-			"Effect": "Deny",
-			"Action": [
-				"iam:CreatePolicyVersion",
-				"iam:DeletePolicy",
-				"iam:DeletePolicyVersion",
-				"iam:DeleteRolePermissionsBoundary",
-				"iam:SetDefaultPolicyVersion"
-			],
-			"Resource": "arn:aws:iam:::policy/StreamNative/StreamNativeCloudPermissionBoundary"
 		}
 	]
 }
