@@ -17,22 +17,13 @@
 # under the License.
 #
 
-output "role_arn" {
-  value       = aws_iam_role.tiered_storage.arn
-  description = "The arn of the role used for Pulsar's tiered storage offloading. This needs to be annotated on the corresponding Kubernetes Service account in order for IRSA to work properly, e.g. \"eks.amazonaws.com/role-arn\" : \"<this_arn>\""
-}
+terraform {
+  required_version = ">=1.0.0"
 
-output "role_name" {
-  value       = aws_iam_role.tiered_storage.name
-  description = "The name of the role used for Pulsar's tiered storage offloading"
-}
-
-output "s3_bucket" {
-  value       = aws_s3_bucket.tiered_storage.bucket
-  description = "The name of the bucket used for Pulsar's tiered storage offloading"
-}
-
-output "s3_bucket_arn" {
-  value       = aws_s3_bucket.tiered_storage.arn
-  description = "The arn of the bucket used for Pulsar's tiered storage offloading"
+  required_providers {
+    aws = {
+      version = ">= 3.61.0"
+      source  = "hashicorp/aws"
+    }
+  }
 }

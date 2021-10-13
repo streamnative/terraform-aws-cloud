@@ -21,7 +21,7 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
-resource "aws_s3_bucket" "pulsar_offload" {
+resource "aws_s3_bucket" "tiered_storage" {
   acl    = "private"
   bucket = format("%s-storage-offload-%s", var.cluster_name, data.aws_region.current.name)
 
@@ -36,7 +36,7 @@ resource "aws_s3_bucket" "pulsar_offload" {
   tags = merge({ "Vendor" = "StreamNative", "Attributes" = "offload", "Name" = "offload" }, var.tags)
 }
 
-data "aws_iam_policy_document" "tiered_storage_base_policy" {
+data "aws_iam_policy_document" "tiered_storage" {
   statement {
     actions = [
       "s3:AbortMultipartUpload",
@@ -47,13 +47,13 @@ data "aws_iam_policy_document" "tiered_storage_base_policy" {
     ]
 
     resources = [
-      aws_s3_bucket.pulsar_offload.arn,
-      "${aws_s3_bucket.pulsar_offload.arn}/*",
+      aws_s3_bucket.tiered_storage.arn,
+      "${aws_s3_bucket.tiered_storage.arn}/*",
     ]
   }
 }
 
-data "aws_iam_policy_document" "tiered_storage_sts_policy" {
+data "aws_iam_policy_document" "tiered_storage_sts" {
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -73,14 +73,23 @@ data "aws_iam_policy_document" "tiered_storage_sts_policy" {
 
 resource "aws_iam_role" "tiered_storage" {
   name                 = format("%s-tiered-storage-role", var.cluster_name)
-  description          = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
-  assume_role_policy   = data.aws_iam_policy_document.tiered_storage_sts_policy.json
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+  description          = format("Role used by IRSA and the KSA %s on StreamNative Cloud EKS cluster %s", var.cluster_name, var.service_account_name)
+  assume_role_policy   = data.aws_iam_policy_document.tiered_storage_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+}
 
-  inline_policy {
-    name   = format("%s-tiered-storage-base-policy", var.cluster_name)
-    policy = data.aws_iam_policy_document.tiered_storage_base_policy.json
-  }
+resource "aws_iam_policy" "tiered_storage" {
+  count       = var.create_iam_policy_for_tiered_storage ? 1 : 0
+  name        = "StreamNativeCloudTieredStoragePolicy"
+  description = "Policy that defines the permissions for Pulsar's tiered storage offloading to S3, running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.tiered_storage.json
+}
+
+resource "aws_iam_role_policy_attachment" "tiered_storage" {
+  count      = var.create_iam_policy_for_tiered_storage ? 1 : 0
+  policy_arn = var.create_iam_policy_for_tiered_storage ? aws_iam_policy.tiered_storage[0].arn : var.iam_policy_arn
+  role       = aws_iam_role.tiered_storage.name
 }

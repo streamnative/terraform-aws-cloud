@@ -17,24 +17,11 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-  }
-}
-
 data "aws_caller_identity" "current" {}
-
-data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "velero" {
   acl    = "private"
-  bucket = format("%s-velero-backup-%s", var.cluster_name, data.aws_region.current.name)
+  bucket = format("%s-velero-backup-%s", var.cluster_name, var.region)
 
   server_side_encryption_configuration {
     rule {
@@ -138,7 +125,7 @@ resource "helm_release" "velero" {
           "backupStorageLocation" : {
             "name" : "aws"
             "bucket" : "${aws_s3_bucket.velero.id}"
-            "region" : "${data.aws_region.current.name}"
+            "region" : var.region
           }
         },
         "initContainers" : [

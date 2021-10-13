@@ -50,6 +50,11 @@ variable "pulsar_namespace" {
   type        = string
 }
 
+variable "region" {
+  description = "The region where your StreamNative Cloud EKS cluster is deployed"
+  type        = string
+}
+
 variable "velero_backup_schedule" {
   default     = "0 5 * * *"
   description = "The scheduled time for Velero to perform backups. Written in cron expression, defaults to \"0 5 * * *\" or \"at 5:00am every day\""

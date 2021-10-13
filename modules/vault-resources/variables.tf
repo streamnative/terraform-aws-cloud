@@ -28,6 +28,18 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "create_iam_policy_for_vault" {
+  default     = true
+  description = "Whether to create the IAM policy used by Hashicorp Vault. For enhanced security, we allow for these IAM policies to be created seperately from this module. Defaults to \"true\". If set to \"false\", you must provide the ARN for the IAM policy needed for Vault to function."
+  type        = bool
+}
+
+variable "iam_policy_arn" {
+  default     = null
+  description = "The arn for the IAM policy used by Hasicorp Vault. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policy_for_vault\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudVaultPolicy\"."
+  type        = string
+}
+
 variable "dynamo_billing_mode" {
   default     = "PAY_PER_REQUEST"
   description = "the billing mode for the dynamodb table that will be created"

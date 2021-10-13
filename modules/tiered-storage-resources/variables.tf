@@ -28,6 +28,18 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "create_iam_policy_for_tiered_storage" {
+  default     = true
+  description = "Whether to create the IAM policy used by Pulsar's tiered storage offloading. For enhanced security, we allow for these IAM policies to be created seperately from this module. Defaults to \"true\". If set to \"false\", you must provide the ARN for the IAM policy needed for tiered storage offloading to function."
+  type        = bool
+}
+
+variable "iam_policy_arn" {
+  default     = null
+  description = "The arn for the IAM policy used for Pulsar's tiered storage offloading. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policy_for_tiered_storage\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudTieredStoragedPolicy\"."
+  type        = string
+}
+
 variable "oidc_issuer" {
   description = "The OIDC issuer for the EKS cluster"
   type        = string

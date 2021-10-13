@@ -37,13 +37,13 @@ eks.amazonaws.com/role-arn=arn:aws:iam::<ACCOUNT_ID>:role/my-eks-cluster-vault-r
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.45.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.61.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.45.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.61.0 |
 
 ## Modules
 
@@ -70,6 +70,7 @@ No modules.
 | <a name="input_dynamo_billing_mode"></a> [dynamo\_billing\_mode](#input\_dynamo\_billing\_mode) | the billing mode for the dynamodb table that will be created | `string` | `"PAY_PER_REQUEST"` | no |
 | <a name="input_dynamo_provisioned_capacity"></a> [dynamo\_provisioned\_capacity](#input\_dynamo\_provisioned\_capacity) | when using "PROVISIONED" billing mode, the specified values will be use for throughput, in all other modes they are ignored | <pre>object({<br>    read  = number,<br>    write = number<br>  })</pre> | <pre>{<br>  "read": 10,<br>  "write": 10<br>}</pre> | no |
 | <a name="input_oidc_issuer"></a> [oidc\_issuer](#input\_oidc\_issuer) | The OIDC issuer for the EKS cluster | `string` | n/a | yes |
+| <a name="input_permissions_boundary_arn"></a> [permissions\_boundary\_arn](#input\_permissions\_boundary\_arn) | If required, provide the ARN of the IAM permissions boundary to use for restricting StreamNative's vendor access. | `string` | `null` | no |
 | <a name="input_pulsar_namespace"></a> [pulsar\_namespace](#input\_pulsar\_namespace) | The kubernetes namespace where Pulsar has been deployed. This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account for Vault access to use the IAM role | `string` | n/a | yes |
 | <a name="input_service_account_name"></a> [service\_account\_name](#input\_service\_account\_name) | The name of the kubernetes service account to by vault. Defaults to "vault" | `string` | `"vault"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags that will be added to resources | `map(string)` | `{}` | no |
@@ -85,4 +86,3 @@ No modules.
 | <a name="output_kms_key_target_arn"></a> [kms\_key\_target\_arn](#output\_kms\_key\_target\_arn) | The arn of the kms key used by Vault |
 | <a name="output_role_arn"></a> [role\_arn](#output\_role\_arn) | The arn of the IAM role used by Vault. This needs to be annotated on the corresponding Kubernetes Service account in order for IRSA to work properly, e.g. "eks.amazonaws.com/role-arn" : "<this\_arn>" |
 | <a name="output_role_name"></a> [role\_name](#output\_role\_name) | The name of the IAM role used by Vault |
-
