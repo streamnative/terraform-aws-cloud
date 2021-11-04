@@ -66,6 +66,10 @@ module "eks" {
 resource "kubernetes_namespace" "sn_system" {
   metadata {
     name = "sn-system"
+
+    labels = {
+      "istio-injection" = "enabled"
+    }
   }
   depends_on = [
     module.eks
