@@ -48,7 +48,7 @@ variable "aws_load_balancer_controller_helm_chart_repository" {
 }
 
 variable "aws_load_balancer_controller_helm_chart_version" {
-  default     = "1.2.6"
+  default     = "1.3.2"
   description = "The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml."
   type        = string
 }
