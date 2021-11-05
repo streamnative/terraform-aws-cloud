@@ -19,7 +19,7 @@
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "17.20.0"
+  version = "17.23.0"
 
   # cluster_iam_role_name        = aws_iam_role.cluster.name
   cluster_name                  = var.cluster_name

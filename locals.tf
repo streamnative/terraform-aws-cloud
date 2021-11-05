@@ -20,9 +20,11 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  account_id         = data.aws_caller_identity.current.account_id
-  cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
-  oidc_issuer        = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+  account_id               = data.aws_caller_identity.current.account_id
+  cluster_subnet_ids       = concat(var.private_subnet_ids, var.public_subnet_ids)
+  istio_namespace          = var.istio_namespace == "istio-system" ? kubernetes_namespace.istio_system[0].metadata[0].name : var.istio_namespace
+  istio_operator_namespace = var.istio_operator_namespace == "istio-operator" ? kubernetes_namespace.istio_operator[0].metadata[0].name : var.istio_operator_namespace
+  oidc_issuer              = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
 
   ### Node Groups
   func_pool_config = {
