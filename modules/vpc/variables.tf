@@ -51,6 +51,12 @@ variable "public_subnet_auto_ip" {
   default = false
 }
 
+variable "tags" {
+  default     = {}
+  description = "Additional to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
+  type        = map(string)
+}
+
 variable "vpc_cidr" {
   validation {
     condition     = can(regex("^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}/16", var.vpc_cidr))

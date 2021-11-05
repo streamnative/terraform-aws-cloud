@@ -253,37 +253,56 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", "kube-system", "aws-load-balancer-controller")]
+      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "aws-load-balancer-controller")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
 }
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
-  name               = format("%s-aws-load-balancer-controller-role", module.eks.cluster_id)
-  description        = "Role assumed by EKS ServiceAccount aws-load-balancer-controller"
-  assume_role_policy = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
+  count                = var.enable_aws_load_balancer_controller ? 1 : 0
+  name                 = format("%s-aws-load-balancer-controller-role", module.eks.cluster_id)
+  description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
+  assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+}
 
-  inline_policy {
-    name   = format("%s-aws-load-balancer-controller-policy", module.eks.cluster_id)
-    policy = data.aws_iam_policy_document.aws_load_balancer_controller.json
-  }
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_aws_load_balancer_controller ? 1 : 0
+  name        = "StreamNativeCloudAWSLoadBalancerControllerPolicy"
+  description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.aws_load_balancer_controller.json
+}
+
+resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
+  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_aws_load_balancer_controller ? 1 : 0
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.aws_load_balancer_controller[0].arn : var.aws_load_balancer_controller_policy_arn
+  role       = aws_iam_role.aws_load_balancer_controller[0].name
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
+  count           = var.enable_aws_load_balancer_controller ? 1 : 0
   atomic          = true
   chart           = var.aws_load_balancer_controller_helm_chart_name
   cleanup_on_fail = true
   name            = "aws-load-balancer-controller"
-  namespace       = "kube-system"
+  namespace       = kubernetes_namespace.sn_system.id
   repository      = var.aws_load_balancer_controller_helm_chart_repository
-  timeout         = 600
+  timeout         = 300
   version         = var.aws_load_balancer_controller_helm_chart_version
 
   set {
     name  = "clusterName"
     value = module.eks.cluster_id
     type  = "string"
+  }
+
+  set {
+    name  = "defaultTags"
+    value = jsonencode({ Vendor = "StreamNative" }) #TODO - figure out how to pass multiple KV pairs
   }
 
   set {
@@ -298,7 +317,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.aws_load_balancer_controller.arn
+    value = aws_iam_role.aws_load_balancer_controller[0].arn
     type  = "string"
   }
 

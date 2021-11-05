@@ -17,22 +17,25 @@
 # under the License.
 #
 
-output "role_arn" {
-  value       = aws_iam_role.tiered_storage.arn
-  description = "The arn of the role used for Pulsar's tiered storage offloading. This needs to be annotated on the corresponding Kubernetes Service account in order for IRSA to work properly, e.g. \"eks.amazonaws.com/role-arn\" : \"<this_arn>\""
+variable "create_bootstrap_role" {
+  default     = true
+  description = "Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud"
+  type        = string
+
 }
 
-output "role_name" {
-  value       = aws_iam_role.tiered_storage.name
-  description = "The name of the role used for Pulsar's tiered storage offloading"
+variable "region" {
+  description = "The AWS region where your instance of StreamNative Cloud is deployed, i.e. \"us-west-2\""
+  type        = string
 }
 
-output "s3_bucket" {
-  value       = aws_s3_bucket.tiered_storage.bucket
-  description = "The name of the bucket used for Pulsar's tiered storage offloading"
+variable "streamnative_vendor_access_role_arn" {
+  description = "The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account"
+  type        = string
 }
 
-output "s3_bucket_arn" {
-  value       = aws_s3_bucket.tiered_storage.arn
-  description = "The arn of the bucket used for Pulsar's tiered storage offloading"
+variable "tags" {
+  default     = {}
+  description = "Extra tags to apply to the resources created by this module."
+  type        = map(string)
 }

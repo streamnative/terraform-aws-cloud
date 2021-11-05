@@ -55,31 +55,45 @@ data "aws_iam_policy_document" "external_dns_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", "kube-system", "external-dns")]
+      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "external-dns")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
 }
 
 resource "aws_iam_role" "external_dns" {
-  name               = format("%s-external-dns-role", module.eks.cluster_id)
-  description        = "Role assumed by EKS ServiceAccount external-dns"
-  assume_role_policy = data.aws_iam_policy_document.external_dns_sts.json
+  count                = var.enable_external_dns ? 1 : 0
+  name                 = format("%s-external-dns-role", module.eks.cluster_id)
+  description          = format("Role used by IRSA and the KSA external-dns on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
+  assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+}
 
-  inline_policy {
-    name   = format("%s-external-dns-policy", module.eks.cluster_id)
-    policy = data.aws_iam_policy_document.external_dns.json
-  }
+resource "aws_iam_policy" "external_dns" {
+  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_external_dns ? 1 : 0
+  name        = "StreamNativeCloudExternalDnsPolicy"
+  description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.external_dns.json
+}
+
+resource "aws_iam_role_policy_attachment" "external_dns" {
+  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_external_dns ? 1 : 0
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.external_dns[0].arn : var.external_dns_policy_arn
+  role       = aws_iam_role.external_dns[0].name
 }
 
 resource "helm_release" "external_dns" {
+  count           = var.enable_external_dns ? 1 : 0
   atomic          = true
   chart           = var.external_dns_helm_chart_name
   cleanup_on_fail = true
-  namespace       = "kube-system"
+  namespace       = kubernetes_namespace.sn_system.id
   name            = "external-dns"
   repository      = var.external_dns_helm_chart_repository
-  timeout         = 600
+  timeout         = 300
   version         = var.external_dns_helm_chart_version
 
   set {
@@ -117,7 +131,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.external_dns.arn
+    value = aws_iam_role.external_dns[0].arn
     type  = "string"
   }
 

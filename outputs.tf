@@ -18,12 +18,12 @@
 #
 
 output "cert_manager_role_arn" {
-  value       = aws_iam_role.cert_manager.arn
+  value       = join("", aws_iam_role.cert_manager.*.arn)
   description = "The IAM Role ARN used by the Certificate Manager configuration"
 }
 
 output "cluster_autoscaler_role_arn" {
-  value       = aws_iam_role.cluster_autoscaler.arn
+  value       = join("", aws_iam_role.cluster_autoscaler.*.arn)
   description = "The IAM Role ARN used by the Cluster Autoscaler configuration"
 }
 
@@ -53,7 +53,7 @@ output "eks_cluster_identity_oidc_issuer_string" {
 }
 
 output "external_dns_role_arn" {
-  value       = aws_iam_role.external_dns.arn
+  value       = join("", aws_iam_role.external_dns.*.arn)
   description = "The IAM Role ARN used by the ExternalDNS configuration"
 }
 

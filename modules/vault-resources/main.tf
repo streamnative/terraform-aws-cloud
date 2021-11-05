@@ -17,17 +17,6 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-  }
-}
-
 data "aws_caller_identity" "current" {}
 
 resource "aws_dynamodb_table" "vault_table" {
@@ -48,11 +37,12 @@ resource "aws_dynamodb_table" "vault_table" {
   write_capacity = var.dynamo_billing_mode == "PROVISIONED" ? var.dynamo_provisioned_capacity.write : 0
   read_capacity  = var.dynamo_billing_mode == "PROVISIONED" ? var.dynamo_provisioned_capacity.read : 0
 
-  tags = var.tags
+  tags = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_kms_key" "vault_key" {
   description = "Key for vault in streamnative pulsar cluster"
+  tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_kms_alias" "vault_key" {
@@ -60,7 +50,7 @@ resource "aws_kms_alias" "vault_key" {
   target_key_id = aws_kms_key.vault_key.id
 }
 
-data "aws_iam_policy_document" "vault_role_policy" {
+data "aws_iam_policy_document" "vault" {
   statement {
     actions = [
       "dynamodb:List*",
@@ -111,7 +101,7 @@ data "aws_iam_policy_document" "vault_role_policy" {
   }
 }
 
-data "aws_iam_policy_document" "vault_sts_policy" {
+data "aws_iam_policy_document" "vault_sts" {
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -130,13 +120,24 @@ data "aws_iam_policy_document" "vault_sts_policy" {
 }
 
 resource "aws_iam_role" "vault" {
-  name               = format("%s-vault-role", var.cluster_name)
-  description        = format("Role assumed by EKS ServiceAccount %s", var.service_account_name)
-  assume_role_policy = data.aws_iam_policy_document.vault_sts_policy.json
-  tags               = var.tags
+  name                 = format("%s-vault-role", var.cluster_name)
+  description          = format("Role used by IRSA and the KSA %s on StreamNative Cloud EKS cluster %s", var.cluster_name, var.service_account_name)
+  assume_role_policy   = data.aws_iam_policy_document.vault_sts.json
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+}
 
-  inline_policy {
-    name   = format("%s-vault-base-policy", var.cluster_name)
-    policy = data.aws_iam_policy_document.vault_role_policy.json
-  }
+resource "aws_iam_policy" "vault" {
+  count       = var.create_iam_policy_for_vault ? 1 : 0
+  name        = "StreamNativeCloudVaultPolicy"
+  description = "Policy that defines the permissions for Hashicorp Vault, running in a StreamNative Cloud EKS cluster"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.vault.json
+}
+
+resource "aws_iam_role_policy_attachment" "vault" {
+  count      = var.create_iam_policy_for_vault ? 1 : 0
+  policy_arn = var.create_iam_policy_for_vault ? aws_iam_policy.vault[0].arn : var.iam_policy_arn
+  role       = aws_iam_role.vault.name
 }

@@ -46,13 +46,22 @@ provider "kubernetes" {
   config_path            = "./${local.cluster_name}-config" # This must match the module input
 }
 
+locals {
+  cluster_name = "sn-cluster-${var.region}"
+  hosted_zone_id = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+}
+
+variable "region" {
+  default = "us-east-1"
+}
+
 module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
   add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
   cluster_name             = local.cluster_name
   cluster_version          = "1.19"
-  hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+  hosted_zone_id           = local.hosted_zone_id
   kubeconfig_output_path   = "./${local.cluster_name}-config"
   node_pool_instance_types = ["m5.large"]
   node_pool_desired_size   = 3
@@ -155,7 +164,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.45.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.61.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.2.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.2.0 |
 
@@ -163,7 +172,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.45.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.61.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.2.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.2.0 |
 
@@ -171,20 +180,31 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 17.1.0 |
+| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 17.20.0 |
 | <a name="module_vpc_tags"></a> [vpc\_tags](#module\_vpc\_tags) | ./modules/eks-vpc-tags | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [aws_iam_policy.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [helm_release.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.calico](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cert_manager](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
@@ -193,7 +213,6 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [helm_release.external_dns](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.external_secrets](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.node_termination_handler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
-| [kubernetes_namespace.calico](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.sn_system](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/namespace) | resource |
 | [kubernetes_storage_class.sn_default](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/storage_class) | resource |
 | [kubernetes_storage_class.sn_ssd](https://registry.terraform.io/providers/hashicorp/kubernetes/2.2.0/docs/resources/storage_class) | resource |
@@ -202,13 +221,14 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [aws_iam_policy_document.aws_load_balancer_controller_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cert_manager_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.cluster_autoscaler_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.csi_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_dns_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.worker_autoscaling](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
 ## Inputs
 
@@ -216,70 +236,85 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 |------|-------------|------|---------|:--------:|
 | <a name="input_add_vpc_tags"></a> [add\_vpc\_tags](#input\_add\_vpc\_tags) | Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to "true". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module. | `bool` | `true` | no |
 | <a name="input_additional_tags"></a> [additional\_tags](#input\_additional\_tags) | Additional tags to be added to the resources created by this module. | `map(any)` | `{}` | no |
-| <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region | `list(string)` | `[]` | no |
+| <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region. | `list(string)` | `[]` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_name"></a> [aws\_load\_balancer\_controller\_helm\_chart\_name](#input\_aws\_load\_balancer\_controller\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"aws-load-balancer-controller"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_repository"></a> [aws\_load\_balancer\_controller\_helm\_chart\_repository](#input\_aws\_load\_balancer\_controller\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"https://aws.github.io/eks-charts"` | no |
-| <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml | `string` | `"1.2.6"` | no |
+| <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml. | `string` | `"1.3.2"` | no |
+| <a name="input_aws_load_balancer_controller_policy_arn"></a> [aws\_load\_balancer\_controller\_policy\_arn](#input\_aws\_load\_balancer\_controller\_policy\_arn) | The arn for the IAM policy used by the AWS Load Balancer Controller addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "StreamNativeCloudAWSLoadBalancerControllerPolicy". | `string` | `null` | no |
 | <a name="input_aws_load_balancer_controller_settings"></a> [aws\_load\_balancer\_controller\_settings](#input\_aws\_load\_balancer\_controller\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
-| <a name="input_aws_partition"></a> [aws\_partition](#input\_aws\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies | `string` | `"aws"` | no |
+| <a name="input_aws_partition"></a> [aws\_partition](#input\_aws\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies. | `string` | `"aws"` | no |
 | <a name="input_calico_helm_chart_name"></a> [calico\_helm\_chart\_name](#input\_calico\_helm\_chart\_name) | The name of the Helm chart in the repository for Calico, which is installed alongside the tigera-operator. | `string` | `"tigera-operator"` | no |
-| <a name="input_calico_helm_chart_repository"></a> [calico\_helm\_chart\_repository](#input\_calico\_helm\_chart\_repository) | The repository containing the calico helm chart. We are currently using a community provided chart, which is a fork of the official chart published by Tigera. This chart isn't as opinionated about namespaces, and should be used until this issue is resolved https://github.com/projectcalico/calico/issues/4812 | `string` | `"https://stevehipwell.github.io/helm-charts/"` | no |
+| <a name="input_calico_helm_chart_repository"></a> [calico\_helm\_chart\_repository](#input\_calico\_helm\_chart\_repository) | The repository containing the calico helm chart. We are currently using a community provided chart, which is a fork of the official chart published by Tigera. This chart isn't as opinionated about namespaces, and should be used until this issue is resolved https://github.com/projectcalico/calico/issues/4812. | `string` | `"https://stevehipwell.github.io/helm-charts/"` | no |
 | <a name="input_calico_helm_chart_version"></a> [calico\_helm\_chart\_version](#input\_calico\_helm\_chart\_version) | Helm chart version for Calico. Defaults to "1.0.5". See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available version releases. | `string` | `"1.0.5"` | no |
 | <a name="input_calico_settings"></a> [calico\_settings](#input\_calico\_settings) | Additional settings which will be passed to the Helm chart values. See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available options. | `map(any)` | `{}` | no |
 | <a name="input_cert_manager_helm_chart_name"></a> [cert\_manager\_helm\_chart\_name](#input\_cert\_manager\_helm\_chart\_name) | The name of the Helm chart in the repository for cert-manager. | `string` | `"cert-manager"` | no |
 | <a name="input_cert_manager_helm_chart_repository"></a> [cert\_manager\_helm\_chart\_repository](#input\_cert\_manager\_helm\_chart\_repository) | The repository containing the cert-manager helm chart. | `string` | `"https://charts.jetstack.io"` | no |
 | <a name="input_cert_manager_helm_chart_version"></a> [cert\_manager\_helm\_chart\_version](#input\_cert\_manager\_helm\_chart\_version) | Helm chart version for the cert-manager. Defaults to "1.4.0". See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases. | `string` | `"1.4.0"` | no |
+| <a name="input_cert_manager_policy_arn"></a> [cert\_manager\_policy\_arn](#input\_cert\_manager\_policy\_arn) | The arn for the IAM policy used by the cert-manager addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "StreamNativeCloudCertManagerPolicy". | `bool` | `null` | no |
 | <a name="input_cert_manager_settings"></a> [cert\_manager\_settings](#input\_cert\_manager\_settings) | Additional settings which will be passed to the Helm chart values. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for available options. | `map(any)` | `{}` | no |
 | <a name="input_cluster_autoscaler_helm_chart_name"></a> [cluster\_autoscaler\_helm\_chart\_name](#input\_cluster\_autoscaler\_helm\_chart\_name) | The name of the Helm chart in the repository for cluster-autoscaler. | `string` | `"cluster-autoscaler"` | no |
 | <a name="input_cluster_autoscaler_helm_chart_repository"></a> [cluster\_autoscaler\_helm\_chart\_repository](#input\_cluster\_autoscaler\_helm\_chart\_repository) | The repository containing the cluster-autoscaler helm chart. | `string` | `"https://kubernetes.github.io/autoscaler"` | no |
 | <a name="input_cluster_autoscaler_helm_chart_version"></a> [cluster\_autoscaler\_helm\_chart\_version](#input\_cluster\_autoscaler\_helm\_chart\_version) | Helm chart version for the cluster-autoscaler. Defaults to "9.10.4". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details. | `string` | `"9.10.4"` | no |
+| <a name="input_cluster_autoscaler_policy_arn"></a> [cluster\_autoscaler\_policy\_arn](#input\_cluster\_autoscaler\_policy\_arn) | The arn for the IAM policy used by the cluster-autoscaler addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "StreamNativeCloudClusterAutoscalerPolicy". | `string` | `null` | no |
 | <a name="input_cluster_autoscaler_settings"></a> [cluster\_autoscaler\_settings](#input\_cluster\_autoscaler\_settings) | Additional settings which will be passed to the Helm chart values for cluster-autoscaler, see https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for options. | `map(any)` | `{}` | no |
-| <a name="input_cluster_enabled_log_types"></a> [cluster\_enabled\_log\_types](#input\_cluster\_enabled\_log\_types) | A list of the desired control plane logging to enable. For more information, see Amazon EKS Control Plane Logging documentation (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) | `list(string)` | `[]` | no |
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of your EKS cluster and associated resources. Must be 16 characters or less | `string` | `""` | no |
-| <a name="input_cluster_version"></a> [cluster\_version](#input\_cluster\_version) | The version of Kubernetes to be installed | `string` | `"1.18"` | no |
-| <a name="input_create_sn_system_namespace"></a> [create\_sn\_system\_namespace](#input\_create\_sn\_system\_namespace) | Whether or not to create the namespace "sn-system" on the cluster. This namespace is commonly used by OLM and StreamNative's Kubernetes Operators | `bool` | `true` | no |
-| <a name="input_csi_namespace"></a> [csi\_namespace](#input\_csi\_namespace) | The namespace used for AWS EKS Container Storage Interface (CSI) | `string` | `"kube-system"` | no |
-| <a name="input_csi_sa_name"></a> [csi\_sa\_name](#input\_csi\_sa\_name) | The service account name used for AWS EKS Container Storage Interface (CSI) | `string` | `"ebs-csi-controller-sa"` | no |
+| <a name="input_cluster_enabled_log_types"></a> [cluster\_enabled\_log\_types](#input\_cluster\_enabled\_log\_types) | A list of the desired control plane logging to enable. For more information, see Amazon EKS Control Plane Logging documentation (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html). | `list(string)` | <pre>[<br>  "api",<br>  "audit",<br>  "authenticator",<br>  "controllerManager",<br>  "scheduler"<br>]</pre> | no |
+| <a name="input_cluster_log_kms_key_id"></a> [cluster\_log\_kms\_key\_id](#input\_cluster\_log\_kms\_key\_id) | If a KMS Key ARN is set, this key will be used to encrypt the corresponding log group. Please be sure that the KMS Key has an appropriate key policy (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html). | `string` | `""` | no |
+| <a name="input_cluster_log_retention_in_days"></a> [cluster\_log\_retention\_in\_days](#input\_cluster\_log\_retention\_in\_days) | Number of days to retain log events. Default retention - 90 days. | `number` | `90` | no |
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of your EKS cluster and associated resources. Must be 16 characters or less. | `string` | `""` | no |
+| <a name="input_cluster_version"></a> [cluster\_version](#input\_cluster\_version) | The version of Kubernetes to be installed. | `string` | `"1.18"` | no |
+| <a name="input_create_iam_policies_for_cluster_addon_services"></a> [create\_iam\_policies\_for\_cluster\_addon\_services](#input\_create\_iam\_policies\_for\_cluster\_addon\_services) | Whether to create IAM policies for the addon services running within the EKS cluster. For enhanced security, we allow for these IAM policies to be created seperately from this module. Defaults to "true". If set to "false", you must provide the ARNs for the IAM policys used by all addon services running on the cluster. | `bool` | `true` | no |
+| <a name="input_csi_helm_chart_name"></a> [csi\_helm\_chart\_name](#input\_csi\_helm\_chart\_name) | The name of the Helm chart in the repository for CSI. | `string` | `"aws-ebs-csi-driver"` | no |
+| <a name="input_csi_helm_chart_repository"></a> [csi\_helm\_chart\_repository](#input\_csi\_helm\_chart\_repository) | The repository containing the CSI helm chart | `string` | `"https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"` | no |
+| <a name="input_csi_policy_arn"></a> [csi\_policy\_arn](#input\_csi\_policy\_arn) | The arn for the IAM policy used by the CSI addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "StreamNativeCloudCsiPolicy". | `bool` | `null` | no |
 | <a name="input_csi_settings"></a> [csi\_settings](#input\_csi\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml for available options. | `map(any)` | `{}` | no |
 | <a name="input_disable_istio_sources"></a> [disable\_istio\_sources](#input\_disable\_istio\_sources) | Disables Istio sources for the External DNS configuration. Set to "false" by default. Set to "true" for debugging External DNS or if Istio is disabled. | `bool` | `false` | no |
+| <a name="input_enable_aws_load_balancer_controller"></a> [enable\_aws\_load\_balancer\_controller](#input\_enable\_aws\_load\_balancer\_controller) | Whether to enable the AWS Load Balancer Controller addon on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
+| <a name="input_enable_aws_node_termination_handler"></a> [enable\_aws\_node\_termination\_handler](#input\_enable\_aws\_node\_termination\_handler) | Whether to enable the AWS Node Termination Handler addon on the cluster. Defaults to "true", and in most situations is recommended for StreamNative Cloud. | `bool` | `true` | no |
+| <a name="input_enable_calico"></a> [enable\_calico](#input\_enable\_calico) | Enables the Calico networking service on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
+| <a name="input_enable_cert_manager"></a> [enable\_cert\_manager](#input\_enable\_cert\_manager) | Enables the Cert-Manager addon service on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
+| <a name="input_enable_cluster_autoscaler"></a> [enable\_cluster\_autoscaler](#input\_enable\_cluster\_autoscaler) | Enables the Cluster Autoscaler addon service on the cluster. Defaults to "true", and in most situations is recommened for StreamNative Cloud. | `bool` | `true` | no |
 | <a name="input_enable_csi"></a> [enable\_csi](#input\_enable\_csi) | Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS. | `bool` | `true` | no |
-| <a name="input_enable_external_secrets"></a> [enable\_external\_secrets](#input\_enable\_external\_secrets) | Enables kubernetes-external-secrets on the cluster, which uses AWS Secrets Manager as the secrets backend | `bool` | `true` | no |
-| <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool | `bool` | `false` | no |
+| <a name="input_enable_external_dns"></a> [enable\_external\_dns](#input\_enable\_external\_dns) | Enables the External DNS addon service on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
+| <a name="input_enable_external_secrets"></a> [enable\_external\_secrets](#input\_enable\_external\_secrets) | Enables kubernetes-external-secrets addon service on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
+| <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool. | `bool` | `false` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
 | <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"5.4.1"` | no |
-| <a name="input_external_dns_settings"></a> [external\_dns\_settings](#input\_external\_dns\_settings) | Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns | `map(any)` | `{}` | no |
-| <a name="input_external_secrets_helm_chart_name"></a> [external\_secrets\_helm\_chart\_name](#input\_external\_secrets\_helm\_chart\_name) | The name of the Helm chart in the repository for kubernetes-external-secrets | `string` | `"kubernetes-external-secrets"` | no |
-| <a name="input_external_secrets_helm_chart_repository"></a> [external\_secrets\_helm\_chart\_repository](#input\_external\_secrets\_helm\_chart\_repository) | The repository containing the kubernetes-external-secrets helm chart | `string` | `"https://external-secrets.github.io/kubernetes-external-secrets"` | no |
-| <a name="input_external_secrets_helm_chart_version"></a> [external\_secrets\_helm\_chart\_version](#input\_external\_secrets\_helm\_chart\_version) | Helm chart version for kubernetes-external-secrets. Defaults to "8.3.0". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates | `string` | `"8.3.0"` | no |
-| <a name="input_external_secrets_settings"></a> [external\_secrets\_settings](#input\_external\_secrets\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options | `map(any)` | `{}` | no |
+| <a name="input_external_dns_policy_arn"></a> [external\_dns\_policy\_arn](#input\_external\_dns\_policy\_arn) | The arn for the IAM policy used by the ExternalDNS addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "ExternalDnsPolicy". | `bool` | `null` | no |
+| <a name="input_external_dns_settings"></a> [external\_dns\_settings](#input\_external\_dns\_settings) | Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns. | `map(any)` | `{}` | no |
+| <a name="input_external_secrets_helm_chart_name"></a> [external\_secrets\_helm\_chart\_name](#input\_external\_secrets\_helm\_chart\_name) | The name of the Helm chart in the repository for kubernetes-external-secrets. | `string` | `"kubernetes-external-secrets"` | no |
+| <a name="input_external_secrets_helm_chart_repository"></a> [external\_secrets\_helm\_chart\_repository](#input\_external\_secrets\_helm\_chart\_repository) | The repository containing the kubernetes-external-secrets helm chart. | `string` | `"https://external-secrets.github.io/kubernetes-external-secrets"` | no |
+| <a name="input_external_secrets_helm_chart_version"></a> [external\_secrets\_helm\_chart\_version](#input\_external\_secrets\_helm\_chart\_version) | Helm chart version for kubernetes-external-secrets. Defaults to "8.3.0". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates. | `string` | `"8.3.0"` | no |
+| <a name="input_external_secrets_policy_arn"></a> [external\_secrets\_policy\_arn](#input\_external\_secrets\_policy\_arn) | The arn for the IAM policy used by the kubernetes-external-secrets addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "ExternalSecretsPolicy". | `string` | `null` | no |
+| <a name="input_external_secrets_settings"></a> [external\_secrets\_settings](#input\_external\_secrets\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options. | `map(any)` | `{}` | no |
 | <a name="input_func_pool_desired_size"></a> [func\_pool\_desired\_size](#input\_func\_pool\_desired\_size) | Desired number of worker nodes | `number` | `1` | no |
-| <a name="input_func_pool_disk_size"></a> [func\_pool\_disk\_size](#input\_func\_pool\_disk\_size) | Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided | `number` | `20` | no |
-| <a name="input_func_pool_disk_type"></a> [func\_pool\_disk\_type](#input\_func\_pool\_disk\_type) | Disk type for function worker nodes. Defaults to gp3 | `string` | `"gp3"` | no |
-| <a name="input_func_pool_instance_types"></a> [func\_pool\_instance\_types](#input\_func\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.large"]. Terraform will only perform drift detection if a configuration value is provided | `list(string)` | <pre>[<br>  "t3.large"<br>]</pre> | no |
-| <a name="input_func_pool_max_size"></a> [func\_pool\_max\_size](#input\_func\_pool\_max\_size) | The maximum size of the AutoScaling Group | `number` | `5` | no |
-| <a name="input_func_pool_min_size"></a> [func\_pool\_min\_size](#input\_func\_pool\_min\_size) | The minimum size of the AutoScaling Group | `number` | `1` | no |
-| <a name="input_func_pool_namespace"></a> [func\_pool\_namespace](#input\_func\_pool\_namespace) | The namespace where functions run | `string` | `"pulsar-funcs"` | no |
-| <a name="input_func_pool_sa_name"></a> [func\_pool\_sa\_name](#input\_func\_pool\_sa\_name) | The service account name the functions use | `string` | `"default"` | no |
-| <a name="input_hosted_zone_id"></a> [hosted\_zone\_id](#input\_hosted\_zone\_id) | The ID of the Route53 hosted zone used by the cluster's External DNS configuration | `string` | n/a | yes |
+| <a name="input_func_pool_disk_size"></a> [func\_pool\_disk\_size](#input\_func\_pool\_disk\_size) | Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided. | `number` | `20` | no |
+| <a name="input_func_pool_disk_type"></a> [func\_pool\_disk\_type](#input\_func\_pool\_disk\_type) | Disk type for function worker nodes. Defaults to gp3. | `string` | `"gp3"` | no |
+| <a name="input_func_pool_instance_types"></a> [func\_pool\_instance\_types](#input\_func\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.large"]. Terraform will only perform drift detection if a configuration value is provided. | `list(string)` | <pre>[<br>  "t3.large"<br>]</pre> | no |
+| <a name="input_func_pool_max_size"></a> [func\_pool\_max\_size](#input\_func\_pool\_max\_size) | The maximum size of the AutoScaling Group. | `number` | `5` | no |
+| <a name="input_func_pool_min_size"></a> [func\_pool\_min\_size](#input\_func\_pool\_min\_size) | The minimum size of the AutoScaling Group. | `number` | `1` | no |
+| <a name="input_func_pool_namespace"></a> [func\_pool\_namespace](#input\_func\_pool\_namespace) | The namespace where functions run. | `string` | `"pulsar-funcs"` | no |
+| <a name="input_func_pool_sa_name"></a> [func\_pool\_sa\_name](#input\_func\_pool\_sa\_name) | The service account name the functions use. | `string` | `"default"` | no |
+| <a name="input_hosted_zone_id"></a> [hosted\_zone\_id](#input\_hosted\_zone\_id) | The ID of the Route53 hosted zone used by the cluster's External DNS configuration. | `string` | n/a | yes |
 | <a name="input_kubeconfig_output_path"></a> [kubeconfig\_output\_path](#input\_kubeconfig\_output\_path) | Where to save the Kubectl config file (if `write_kubeconfig = true`). Assumed to be a directory if the value ends with a forward slash `/`. | `string` | `"./"` | no |
-| <a name="input_map_additional_aws_accounts"></a> [map\_additional\_aws\_accounts](#input\_map\_additional\_aws\_accounts) | Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap | `list(string)` | `[]` | no |
-| <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
-| <a name="input_map_additional_iam_users"></a> [map\_additional\_iam\_users](#input\_map\_additional\_iam\_users) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
-| <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool | `number` | n/a | yes |
-| <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided | `number` | `null` | no |
-| <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3 | `string` | `"gp3"` | no |
-| <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.medium"]. Terraform will only perform drift detection if a configuration value is provided | `list(string)` | <pre>[<br>  "t3.medium"<br>]</pre> | no |
-| <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group | `number` | n/a | yes |
-| <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group | `number` | n/a | yes |
+| <a name="input_map_additional_aws_accounts"></a> [map\_additional\_aws\_accounts](#input\_map\_additional\_aws\_accounts) | Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap. | `list(string)` | `[]` | no |
+| <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
+| <a name="input_map_additional_iam_users"></a> [map\_additional\_iam\_users](#input\_map\_additional\_iam\_users) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
+| <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | n/a | yes |
+| <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided. | `number` | `null` | no |
+| <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |
+| <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.medium"]. Terraform will only perform drift detection if a configuration value is provided. | `list(string)` | <pre>[<br>  "t3.medium"<br>]</pre> | no |
+| <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group. | `number` | n/a | yes |
+| <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | n/a | yes |
 | <a name="input_node_termination_handler_helm_chart_name"></a> [node\_termination\_handler\_helm\_chart\_name](#input\_node\_termination\_handler\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"aws-node-termination-handler"` | no |
 | <a name="input_node_termination_handler_helm_chart_repository"></a> [node\_termination\_handler\_helm\_chart\_repository](#input\_node\_termination\_handler\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Node Termination Handler. | `string` | `"https://aws.github.io/eks-charts"` | no |
 | <a name="input_node_termination_handler_settings"></a> [node\_termination\_handler\_settings](#input\_node\_termination\_handler\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Node Termination Handler. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
-| <a name="input_private_subnet_ids"></a> [private\_subnet\_ids](#input\_private\_subnet\_ids) | The ids of existing private subnets | `list(string)` | `[]` | no |
-| <a name="input_public_subnet_ids"></a> [public\_subnet\_ids](#input\_public\_subnet\_ids) | The ids of existing public subnets | `list(string)` | `[]` | no |
-| <a name="input_region"></a> [region](#input\_region) | The AWS region | `string` | `null` | no |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The ID of the AWS VPC to use | `string` | `""` | no |
-| <a name="input_wait_for_cluster_timeout"></a> [wait\_for\_cluster\_timeout](#input\_wait\_for\_cluster\_timeout) | Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module "terraform-aws-modules/eks/aws", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420 | `number` | `0` | no |
+| <a name="input_permissions_boundary_arn"></a> [permissions\_boundary\_arn](#input\_permissions\_boundary\_arn) | If required, provide the ARN of the IAM permissions boundary to use for restricting StreamNative's vendor access. | `string` | `null` | no |
+| <a name="input_private_subnet_ids"></a> [private\_subnet\_ids](#input\_private\_subnet\_ids) | The ids of existing private subnets. | `list(string)` | `[]` | no |
+| <a name="input_public_subnet_ids"></a> [public\_subnet\_ids](#input\_public\_subnet\_ids) | The ids of existing public subnets. | `list(string)` | `[]` | no |
+| <a name="input_region"></a> [region](#input\_region) | The AWS region. | `string` | `null` | no |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The ID of the AWS VPC to use. | `string` | `""` | no |
+| <a name="input_wait_for_cluster_timeout"></a> [wait\_for\_cluster\_timeout](#input\_wait\_for\_cluster\_timeout) | Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module "terraform-aws-modules/eks/aws", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420. | `number` | `0` | no |
 | <a name="input_write_kubeconfig"></a> [write\_kubeconfig](#input\_write\_kubeconfig) | Whether to write a Kubectl config file containing the cluster configuration. Saved to variable "kubeconfig\_output\_path". | `bool` | `true` | no |
 
 ## Outputs
