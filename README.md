@@ -46,13 +46,22 @@ provider "kubernetes" {
   config_path            = "./${local.cluster_name}-config" # This must match the module input
 }
 
+locals {
+  cluster_name = "sn-cluster-${var.region}"
+  hosted_zone_id = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+}
+
+variable "region" {
+  default = "us-east-1"
+}
+
 module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
   add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
   cluster_name             = local.cluster_name
   cluster_version          = "1.19"
-  hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+  hosted_zone_id           = local.hosted_zone_id
   kubeconfig_output_path   = "./${local.cluster_name}-config"
   node_pool_instance_types = ["m5.large"]
   node_pool_desired_size   = 3
@@ -230,7 +239,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region. | `list(string)` | `[]` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_name"></a> [aws\_load\_balancer\_controller\_helm\_chart\_name](#input\_aws\_load\_balancer\_controller\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"aws-load-balancer-controller"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_repository"></a> [aws\_load\_balancer\_controller\_helm\_chart\_repository](#input\_aws\_load\_balancer\_controller\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"https://aws.github.io/eks-charts"` | no |
-| <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml. | `string` | `"1.2.6"` | no |
+| <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml. | `string` | `"1.3.2"` | no |
 | <a name="input_aws_load_balancer_controller_policy_arn"></a> [aws\_load\_balancer\_controller\_policy\_arn](#input\_aws\_load\_balancer\_controller\_policy\_arn) | The arn for the IAM policy used by the AWS Load Balancer Controller addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input "create\_iam\_policies\_for\_cluster\_addon\_services" is set to "false". If created elsewhere, the expected name of the policy is "StreamNativeCloudAWSLoadBalancerControllerPolicy". | `string` | `null` | no |
 | <a name="input_aws_load_balancer_controller_settings"></a> [aws\_load\_balancer\_controller\_settings](#input\_aws\_load\_balancer\_controller\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
 | <a name="input_aws_partition"></a> [aws\_partition](#input\_aws\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies. | `string` | `"aws"` | no |
