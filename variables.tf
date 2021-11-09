@@ -404,6 +404,12 @@ variable "hosted_zone_id" {
   type        = string
 }
 
+variable "install_application_crd" {
+  default     = false
+  description = "Install the Application CRD. Defaults to \"false\"."
+  type        = bool
+}
+
 variable "istio_mesh_id" {
   default     = null
   description = "The ID used by the Istio mesh. This is also the ID of the StreamNative Cloud Pool used for the workload environments. This is required when \"enable_istio_operator\" is set to \"true\"."

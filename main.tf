@@ -68,7 +68,7 @@ resource "kubernetes_namespace" "sn_system" {
     name = "sn-system"
 
     labels = {
-      "istio-injection" = "enabled"
+      "istio.io/rev" = "sn-stable"
     }
   }
   depends_on = [

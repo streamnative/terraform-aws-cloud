@@ -29,8 +29,8 @@ resource "kubernetes_namespace" "istio_operator" {
   metadata {
     name = "istio-operator"
     labels = {
-    "istio-operator-managed" = "Reconcile"
-    "istio-injection" = "disabled"
+      "istio-operator-managed" = "Reconcile"
+      "istio-injection"        = "disabled"
     }
   }
 }
@@ -51,6 +51,7 @@ resource "helm_release" "istio_operator" {
     "controlPlane" : {
       "install" : true,
       "spec" : {
+        "namespace" : "${local.istio_namespace}",
         "profile" : "${var.istio_profile}",
         "revision" : "${var.istio_revision_tag}",
         "values" : {
@@ -73,9 +74,9 @@ resource "helm_release" "istio_operator" {
           }
         },
         "components" : {
-          "cni" : {
-            "enabled" : true
-          },
+          # "cni" : {
+          #   "enabled" : true
+          # },
           "ingressGateways" : [
             {
               "name" : "istio-ingressgateway",
@@ -164,7 +165,7 @@ resource "helm_release" "kiali_operator" {
       value = set.value
     }
   }
-  
+
   depends_on = [
     kubernetes_namespace.sn_system
   ]
