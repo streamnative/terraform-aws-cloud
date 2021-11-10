@@ -38,13 +38,13 @@ resource "kubernetes_namespace" "istio_operator" {
 resource "helm_release" "istio_operator" {
   count           = var.enable_istio_operator ? 1 : 0
   atomic          = true
-  chart           = var.istio_operator_chart_name
+  chart           = "${path.module}/charts/istio-operator" #var.istio_operator_chart_name
   cleanup_on_fail = true
   name            = "istio-operator"
   namespace       = local.istio_operator_namespace
   timeout         = 200
-  repository      = var.istio_operator_chart_repository
-  version         = var.istio_operator_chart_version
+  # repository      = var.istio_operator_chart_repository
+  # version         = var.istio_operator_chart_version
 
   values = [yamlencode({
     "istioNamespace" : "${local.istio_namespace}",
@@ -74,9 +74,9 @@ resource "helm_release" "istio_operator" {
           }
         },
         "components" : {
-          # "cni" : {
-          #   "enabled" : true
-          # },
+          "cni" : {
+            "enabled" : true
+          },
           "ingressGateways" : [
             {
               "name" : "istio-ingressgateway",
