@@ -279,6 +279,18 @@ variable "enable_func_pool" {
   type        = bool
 }
 
+variable "enable_istio_operator" {
+  default     = false
+  description = "Enables the Istio Operator. Set to \"false\" by default."
+  type        = bool
+}
+
+variable "enable_kiali_operator" {
+  default     = false
+  description = "Enables the Kiali Operator. Set to \"false\" by default."
+  type        = bool
+}
+
 variable "external_dns_helm_chart_name" {
   default     = "external-dns"
   description = "The name of the Helm chart in the repository for ExternalDNS."
@@ -390,6 +402,102 @@ variable "func_pool_sa_name" {
 variable "hosted_zone_id" {
   description = "The ID of the Route53 hosted zone used by the cluster's External DNS configuration."
   type        = string
+}
+
+variable "istio_mesh_id" {
+  default     = null
+  description = "The ID used by the Istio mesh. This is also the ID of the StreamNative Cloud Pool used for the workload environments. This is required when \"enable_istio_operator\" is set to \"true\"."
+  type        = string
+}
+
+variable "istio_namespace" {
+  default     = "sn-system"
+  description = "The namespace used for installing the Istio components."
+  type        = string
+}
+
+variable "istio_network" {
+  default     = null
+  description = "The name of network used for the Istio deployment. This is required when \"enable_istio_operator\" is set to \"true\"."
+  type        = string
+}
+
+variable "istio_profile" {
+  default     = "default"
+  description = "The path or name for an Istio profile to load. Set to the profile \"default\" if not specified."
+  type        = string
+}
+
+variable "istio_revision_tag" {
+  default     = "sn-stable"
+  description = "The revision tag value use for the Istio label \"istio.io/rev\"."
+  type        = string
+}
+
+variable "istio_trust_domain" {
+  default     = null
+  description = "The trust domain used for the Istio deployment, which corresponds to the root of a system. This is required when \"enable_istio_operator\" is set to \"true\"."
+  type        = string
+}
+
+variable "istio_operator_chart_name" {
+  default     = "istio-operator"
+  description = "The name of the Helm chart to install"
+  type        = string
+}
+
+variable "istio_operator_chart_repository" {
+  default     = "https://stevehipwell.github.io/helm-charts/"
+  description = "The repository containing the Helm chart to install"
+  type        = string
+}
+
+variable "istio_operator_chart_version" {
+  default     = "2.3.4"
+  description = "The version of the Helm chart to install"
+  type        = string
+}
+
+variable "istio_operator_namespace" {
+  default     = "istio-operator"
+  description = "The namespace used for the Istio operator deployment"
+  type        = string
+}
+
+variable "istio_operator_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values"
+  type        = map(any)
+}
+
+variable "kiali_operator_chart_name" {
+  default     = "kiali-operator"
+  description = "The name of the Helm chart to install"
+  type        = string
+}
+
+variable "kiali_operator_chart_repository" {
+  default     = "https://kiali.org/helm-charts"
+  description = "The repository containing the Helm chart to install"
+  type        = string
+}
+
+variable "kiali_operator_chart_version" {
+  default     = "1.42.0"
+  description = "The version of the Helm chart to install"
+  type        = string
+}
+
+variable "kiali_operator_namespace" {
+  default     = "sn-system"
+  description = "The namespace used for the Kiali operator."
+  type        = string
+}
+
+variable "kiali_operator_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values"
+  type        = map(any)
 }
 
 variable "kubeconfig_output_path" {

@@ -300,10 +300,10 @@ resource "helm_release" "aws_load_balancer_controller" {
     type  = "string"
   }
 
-  set {
-    name  = "defaultTags"
-    value = jsonencode({ Vendor = "StreamNative" }) #TODO - figure out how to pass multiple KV pairs
-  }
+  # set {
+  #   name  = "defaultTags"
+  #   value = jsonencode({ Vendor = "StreamNative" }) #TODO - figure out how to pass multiple KV pairs
+  # }
 
   set {
     name  = "serviceAccount.create"

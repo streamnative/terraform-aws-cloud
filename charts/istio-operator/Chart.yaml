@@ -1,0 +1,24 @@
+apiVersion: v2
+name: istio-operator
+description: Helm chart for the Istio Operator.
+type: application
+version: 2.3.4
+appVersion: 1.11.4
+keywords:
+  - kubernetes
+  - istio
+  - operator
+  - service
+  - mesh
+home: https://istio.io/
+icon: https://istio.io/latest/favicons/android-192x192.png
+sources:
+  - https://github.com/istio/istio/tree/master/operator
+  - https://github.com/stevehipwell/helm-charts/
+maintainers:
+  - name: stevehipwell
+    email: steve.hipwell@gmail.com
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: "Update Istio version to v1.11.4."

@@ -17,17 +17,6 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-  }
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 }
