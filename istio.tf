@@ -17,17 +17,19 @@
 # under the License.
 #
 
+# We install the istio control plane in the sn-system namespace, but this will optionally enable use of istio-system, which is convention
 resource "kubernetes_namespace" "istio_system" {
-  count = var.istio_namespace == "istio-system" ? 1 : 0
+  count = var.enable_istio_operator && var.istio_namespace == "istio-system" ? 1 : 0
   metadata {
     name = "istio-system"
   }
 }
 
+# The istio operator is conventionally installed installed in the istio-operator namespace, but can optionally be overridden
 resource "kubernetes_namespace" "istio_operator" {
-  count = var.istio_operator_namespace == "istio-operator" ? 1 : 0
+  count = var.enable_istio_operator ? 1 : 0
   metadata {
-    name = "istio-operator"
+    name = var.istio_operator_namespace
     labels = {
       "istio-operator-managed" = "Reconcile"
       "istio-injection"        = "disabled"
@@ -41,22 +43,22 @@ resource "helm_release" "istio_operator" {
   chart           = "${path.module}/charts/istio-operator" #var.istio_operator_chart_name
   cleanup_on_fail = true
   name            = "istio-operator"
-  namespace       = local.istio_operator_namespace
+  namespace       = kubernetes_namespace.istio_operator[0].metadata[0].name
   timeout         = 200
   # repository      = var.istio_operator_chart_repository
   # version         = var.istio_operator_chart_version
 
   values = [yamlencode({
-    "istioNamespace" : "${local.istio_namespace}",
+    "istioNamespace" : "${var.istio_namespace}",
     "controlPlane" : {
       "install" : true,
       "spec" : {
-        "namespace" : "${local.istio_namespace}",
+        "namespace" : "${var.istio_namespace}",
         "profile" : "${var.istio_profile}",
         "revision" : "${var.istio_revision_tag}",
         "values" : {
           "global" : {
-            "istioNamespace" : "${local.istio_namespace}",
+            "istioNamespace" : "${var.istio_namespace}",
             "meshID" : "${var.istio_mesh_id}",
             "multiCluster" : {
               "clusterName" : "${module.eks.cluster_id}"
@@ -138,7 +140,7 @@ resource "helm_release" "istio_operator" {
 }
 
 resource "helm_release" "kiali_operator" {
-  count           = var.enable_kiali_operator ? 1 : 0
+  count           = var.enable_istio_operator == true || var.enable_kiali_operator ? 1 : 0
   atomic          = true
   chart           = var.kiali_operator_chart_name
   cleanup_on_fail = true

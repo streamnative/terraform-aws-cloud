@@ -220,12 +220,6 @@ variable "csi_settings" {
   type        = map(any)
 }
 
-variable "disable_istio_sources" {
-  default     = false
-  description = "Disables Istio sources for the External DNS configuration. Set to \"false\" by default. Set to \"true\" for debugging External DNS or if Istio is disabled."
-  type        = bool
-}
-
 variable "enable_aws_load_balancer_controller" {
   default     = true
   description = "Whether to enable the AWS Load Balancer Controller addon on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
