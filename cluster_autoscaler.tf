@@ -89,7 +89,7 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
   count      = var.create_iam_policies_for_cluster_addon_services && var.enable_cluster_autoscaler ? 1 : 0
-  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cluster_autoscaler[0].arn : var.cluster_autoscaler_policy_arn
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cluster_autoscaler[0].arn :  "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudClusterAutoscalerPolicy"
   role       = aws_iam_role.cluster_autoscaler[0].name
 }
 

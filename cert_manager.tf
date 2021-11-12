@@ -91,7 +91,7 @@ resource "aws_iam_policy" "cert_manager" {
 
 resource "aws_iam_role_policy_attachment" "cert_manager" {
   count      = var.create_iam_policies_for_cluster_addon_services && var.enable_cert_manager ? 1 : 0
-  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cert_manager[0].arn : var.cert_manager_policy_arn
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cert_manager[0].arn : "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudCertManagerPolicy"  
   role       = aws_iam_role.cert_manager[0].name
 }
 
