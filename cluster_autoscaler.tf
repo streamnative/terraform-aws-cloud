@@ -80,7 +80,7 @@ resource "aws_iam_role" "cluster_autoscaler" {
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
-  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_cluster_autoscaler ? 1 : 0
+  count       = var.create_iam_policies_for_cluster_addon_services ? 1 : 0
   name        = "StreamNativeCloudClusterAutoscalerPolicy"
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -88,8 +88,8 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
-  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_cluster_autoscaler ? 1 : 0
-  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cluster_autoscaler[0].arn :  "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudClusterAutoscalerPolicy"
+  count      = var.enable_cluster_autoscaler ? 1 : 0
+  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cluster_autoscaler[0].arn : "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudClusterAutoscalerPolicy"
   role       = aws_iam_role.cluster_autoscaler[0].name
 }
 

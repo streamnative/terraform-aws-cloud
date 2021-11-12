@@ -155,7 +155,7 @@ resource "aws_iam_role" "csi" {
 }
 
 resource "aws_iam_policy" "csi" {
-  count       = var.create_iam_policies_for_cluster_addon_services && var.enable_csi ? 1 : 0
+  count       = var.create_iam_policies_for_cluster_addon_services ? 1 : 0
   name        = "StreamNativeCloudCsiPolicy"
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -163,7 +163,7 @@ resource "aws_iam_policy" "csi" {
 }
 
 resource "aws_iam_role_policy_attachment" "csi" {
-  count      = var.create_iam_policies_for_cluster_addon_services && var.enable_csi ? 1 : 0
+  count      = var.enable_csi ? 1 : 0
   policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.csi[0].arn : "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudCsiPolicy"   
   role       = aws_iam_role.csi[0].name
 }
