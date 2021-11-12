@@ -53,12 +53,6 @@ variable "aws_load_balancer_controller_helm_chart_version" {
   type        = string
 }
 
-variable "aws_load_balancer_controller_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used by the AWS Load Balancer Controller addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policies_for_cluster_addon_services\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudAWSLoadBalancerControllerPolicy\"."
-  type        = string
-}
-
 variable "aws_load_balancer_controller_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options."
@@ -113,12 +107,6 @@ variable "cert_manager_helm_chart_version" {
   type        = string
 }
 
-variable "cert_manager_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used by the cert-manager addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policies_for_cluster_addon_services\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudCertManagerPolicy\"."
-  type        = bool
-}
-
 variable "cert_manager_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for available options."
@@ -140,12 +128,6 @@ variable "cluster_autoscaler_helm_chart_repository" {
 variable "cluster_autoscaler_helm_chart_version" {
   default     = "9.10.4"
   description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
-  type        = string
-}
-
-variable "cluster_autoscaler_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used by the cluster-autoscaler addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policies_for_cluster_addon_services\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudClusterAutoscalerPolicy\"."
   type        = string
 }
 
@@ -206,12 +188,6 @@ variable "csi_helm_chart_repository" {
   default     = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"
   description = "The repository containing the CSI helm chart"
   type        = string
-}
-
-variable "csi_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used by the CSI addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policies_for_cluster_addon_services\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudCsiPolicy\"."
-  type        = bool
 }
 
 variable "csi_settings" {
@@ -303,12 +279,6 @@ variable "external_dns_helm_chart_version" {
   type        = string
 }
 
-variable "external_dns_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used by the ExternalDNS addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policies_for_cluster_addon_services\" is set to \"false\". If created elsewhere, the expected name of the policy is \"ExternalDnsPolicy\"."
-  type        = bool
-}
-
 variable "external_dns_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns."
@@ -330,12 +300,6 @@ variable "external_secrets_helm_chart_repository" {
 variable "external_secrets_helm_chart_version" {
   default     = "8.3.0"
   description = "Helm chart version for kubernetes-external-secrets. Defaults to \"8.3.0\". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates."
-  type        = string
-}
-
-variable "external_secrets_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used by the kubernetes-external-secrets addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policies_for_cluster_addon_services\" is set to \"false\". If created elsewhere, the expected name of the policy is \"ExternalSecretsPolicy\"."
   type        = string
 }
 
