@@ -273,7 +273,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   count       = var.enable_aws_load_balancer_controller ? 1 : 0
   name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
-  path        = format("/StreamNative/%s/", module.eks.cluster_id)
+  path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.aws_load_balancer_controller.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }

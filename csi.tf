@@ -158,7 +158,7 @@ resource "aws_iam_policy" "csi" {
   count       = var.enable_csi ? 1 : 0
   name        = format("%s-CsiPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
-  path        = format("/StreamNative/%s/", module.eks.cluster_id)
+  path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.csi.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }

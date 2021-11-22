@@ -75,7 +75,7 @@ resource "aws_iam_policy" "external_dns" {
   count       = var.enable_external_dns ? 1 : 0
   name        = format("%s-ExternalDnsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
-  path        = format("/StreamNative/%s/", module.eks.cluster_id)
+  path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.external_dns.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }

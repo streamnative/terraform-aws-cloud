@@ -83,7 +83,7 @@ resource "aws_iam_policy" "cluster_autoscaler" {
   count       = var.enable_cluster_autoscaler ? 1 : 0
   name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
-  path        = format("/StreamNative/%s/", module.eks.cluster_id)
+  path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.cluster_autoscaler.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }

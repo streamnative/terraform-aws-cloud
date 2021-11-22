@@ -85,7 +85,7 @@ resource "aws_iam_policy" "cert_manager" {
   count       = var.enable_cert_manager ? 1 : 0
   name        = format("%s-CertManagerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
-  path        = format("/StreamNative/%s/", module.eks.cluster_id)
+  path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.cert_manager.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
