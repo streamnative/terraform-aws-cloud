@@ -172,12 +172,6 @@ variable "cluster_version" {
   type        = string
 }
 
-variable "create_iam_policies_for_cluster_addon_services" {
-  default     = true
-  description = "Whether to create IAM policies for the addon services running within the EKS cluster. For enhanced security, we allow for these IAM policies to be created seperately from this module. Defaults to \"true\". If set to \"false\", you must provide the ARNs for the IAM policys used by all addon services running on the cluster."
-  type        = bool
-}
-
 variable "csi_helm_chart_name" {
   default     = "aws-ebs-csi-driver"
   description = "The name of the Helm chart in the repository for CSI."

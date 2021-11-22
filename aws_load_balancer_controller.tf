@@ -270,16 +270,17 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  count       = var.create_iam_policies_for_cluster_addon_services ? 1 : 0
-  name        = "StreamNativeCloudAWSLoadBalancerControllerPolicy"
+  count       = var.enable_aws_load_balancer_controller ? 1 : 0
+  name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
-  path        = "/StreamNative/"
+  path        = format("/StreamNative/%s/", module.eks.cluster_id)
   policy      = data.aws_iam_policy_document.aws_load_balancer_controller.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
 
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
   count      = var.enable_aws_load_balancer_controller ? 1 : 0
-  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.aws_load_balancer_controller[0].arn : "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudAWSLoadBalancerControllerPolicy" 
+  policy_arn = aws_iam_policy.aws_load_balancer_controller[0].arn
   role       = aws_iam_role.aws_load_balancer_controller[0].name
 }
 

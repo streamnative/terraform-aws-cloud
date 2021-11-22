@@ -82,16 +82,17 @@ resource "aws_iam_role" "cert_manager" {
 }
 
 resource "aws_iam_policy" "cert_manager" {
-  count       = var.create_iam_policies_for_cluster_addon_services ? 1 : 0
-  name        = "StreamNativeCloudCertManagerPolicy"
+  count       = var.enable_cert_manager ? 1 : 0
+  name        = format("%s-CertManagerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
-  path        = "/StreamNative/"
+  path        = format("/StreamNative/%s/", module.eks.cluster_id)
   policy      = data.aws_iam_policy_document.cert_manager.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
 
 resource "aws_iam_role_policy_attachment" "cert_manager" {
   count      = var.enable_cert_manager ? 1 : 0
-  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.cert_manager[0].arn : "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudCertManagerPolicy"  
+  policy_arn = aws_iam_policy.cert_manager[0].arn
   role       = aws_iam_role.cert_manager[0].name
 }
 

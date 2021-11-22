@@ -93,10 +93,11 @@ resource "aws_iam_role" "velero" {
 
 resource "aws_iam_policy" "velero" {
   count       = var.create_iam_policy_for_velero ? 1 : 0
-  name        = "StreamNativeCloudVeleroBackupPolicy"
+  name        = format("%s-VeleroBackupPolicy", var.cluster_name)
   description = "Policy that defines the permissions for the Velero backup addon service running in a StreamNative Cloud EKS cluster"
-  path        = "/StreamNative/"
+  path        = format("/StreamNative/%s/", var.cluster_name)
   policy      = data.aws_iam_policy_document.velero.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_iam_role_policy_attachment" "velero" {
