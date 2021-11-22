@@ -1,6 +1,6 @@
 # terraform-aws-cloud
 
-This repository contains Terraform modules used to deploy and configure an AWS EKS cluster for the StreamNative Platform. It is currently underpinned by the [`terraform-aws-eks`](https://github.com/terraform-aws-modules/terraform-aws-eks) module. 
+This repository contains opinionated Terraform modules used to deploy and configure an AWS EKS cluster for the StreamNative Platform. It is currently underpinned by the [`terraform-aws-eks`](https://github.com/terraform-aws-modules/terraform-aws-eks) module. 
 
 The working result is a Kubernetes cluster sized to your specifications, bootstrapped with StreamNative's Platform configuration, ready to receive a deployment of Apache Pulsar.
 
@@ -43,7 +43,6 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   insecure               = false
-  config_path            = "./${local.cluster_name}-config" # This must match the module input
 }
 
 locals {
@@ -64,53 +63,49 @@ module "sn_cluster" {
   hosted_zone_id           = local.hosted_zone_id
   kubeconfig_output_path   = "./${local.cluster_name}-config"
   node_pool_instance_types = ["m5.large"]
-  node_pool_desired_size   = 3
+  node_pool_desired_size   = 2
   node_pool_min_size       = 1
-  node_pool_max_size       = 5
+  node_pool_max_size       = 6
 
-  map_additional_iam_roles = [ # Map your IAM admin role for access within the Cluster
-    {
-      rolearn  = "arn:aws:iam::123456789012:role/my-aws-admin-role"
-      username = "management-admin"
-      groups   = ["system:masters"]
-    }
-  ]
-  
-  public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
-  private_subnet_ids = ["subnet-vwxyz123", "subnet-efgh242a", "subnet-lmno643b"]
+  ## Note: EKS requires two subnets, each in their own availability zone
+  public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a"]
+  private_subnet_ids = ["subnet-vwxyz123", "subnet-efgh242a"]
   region             = var.region
   vpc_id             = "vpc-1234556abcdef"
 }
 ```
 
-*Important Note: You will notice that a [Terraform Backend](https://www.terraform.io/docs/language/settings/backends/index.html) configuration is absent in this example, and a `local` backend (Terraform's default) will be used. For production deployments, we highly recommend using a `remote` backend with proper versioning and access controls, such as [Terraform Cloud](https://www.terraform.io/docs/cloud/index.html) or [S3](https://www.terraform.io/docs/language/settings/backends/s3.html).*
+In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.19`, with two node groups (one per subnet[^1]), each group being set with a desired capacity of two and a maximum scaling of six, meaning four `m5.large` worker nodes in total will initially be created, but depending on cluster usage it can autoscale up to twelve.
 
-In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.19`, with a desired node pool size of `3` `m5.large` instances and an auto-scaling capacity to `5`.
-
-It also adds the role `arn:aws:iam::123456789012:role/my-aws-admin-role` to the EKS auth config map, granting the identity (presumably an administrative management role) access to manage the cluster.
+_Note: If you are creating more than one EKS cluster in an AWS account, it is necessary to set the input `create_iam_policies_for_cluster_addon_services = false`. Otherwise Terraform will error stating that resources already exist with the desired name. This is a temporary workaround and will be improved in later versions of the module._
 
 ## Creating a StreamNative Platform EKS Cluster
-To apply the configuration, initialize the Terraform module in the directory containing **your own version** of the `main.tf` from the example above:
+To apply the configuration initialize the Terraform module in the directory containing **your own version** of the `main.tf` from the example above:
 
 ```shell
 terraform init
 ```
 
-Run a plan to validate what's being created:
-
-```shell
-terraform plan
-```
-
-Apply the configuration:
+Validate and apply the configuration:
 ```shell
 terraform apply
 ```
 
+This creates an EKS cluster to your specifications, along with the following addons (and required IAM resources), which are enabled by default:
+- [AWS CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver)
+- [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller)
+- [AWS Node Terminiation Handler](https://github.com/aws/aws-node-termination-handler)
+- [cert-manager](https://github.com/jetstack/cert-manager)
+- [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler)
+- [external-dns](https://github.com/kubernetes-sigs/external-dns)
+- [external-secrets](https://github.com/external-secrets/kubernetes-external-secrets)
+
 ## Deploy a StreamNative Platform Workload (an Apache Pulsar Cluster)
 We use a [Helm chart](https://github.com/streamnative/charts/tree/master/charts/sn-pulsar) to deploy StreamNative Platform on the receiving Kubernetes cluster (e.g. the one created prior from the Terraform module). 
 
-The example below will install StreamNative Platform using the default values file. 
+_Note: Since this module manages all of the Kubernetes addon dependencies, it is not neccesary to perform all of the [steps outlined in the Helm chart's README.](https://github.com/streamnative/charts/tree/master/charts/sn-platform#steps)_
+
+The example below will install StreamNative's Platform using the default values file. 
 
 ```shell
 helm upgrade --install \
@@ -118,7 +113,7 @@ helm upgrade --install \
 sn-platform \
 --repo https://charts.streamnative.io sn-platform \
 --values https://raw.githubusercontent.com/streamnative/examples/master/platform/values_cluster.yaml \
---version 1.1.9 \
+--version 1.2.19 \
 --set initialize=true
 --kubeconfig=/path/to/my-sn-platform-cluster-config 
 ```
@@ -345,3 +340,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
 | <a name="output_external_dns_role_arn"></a> [external\_dns\_role\_arn](#output\_external\_dns\_role\_arn) | The IAM Role ARN used by the ExternalDNS configuration |
 | <a name="output_sn_system_namespace"></a> [sn\_system\_namespace](#output\_sn\_system\_namespace) | The namespace used for StreamNative system resources, i.e. operators et all |
+
+
+---
+[^1]: When running Apache Pulsar in Kubernetes, we make use of EBS backed Kubernetes Persistent Volume Claims (PVC). EBS volumes themselves are zonal, which means [an EC2 instance can only mount a volume that exists in its same AWS Availability Zone](https://aws.amazon.com/blogs/containers/amazon-eks-cluster-multi-zone-auto-scaling-groups/). For this reason we have added node group "zone affinity" functionality into our module, where **an EKS node group is created per AWS Availability Zone**. This is controlled by the number of subnets you pass to the EKS module, creating one node group per subnet.
