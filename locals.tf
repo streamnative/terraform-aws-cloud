@@ -27,23 +27,29 @@ locals {
   oidc_issuer              = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
 
   ### Node Groups
-  func_pool_config = {
+  func_pool_defaults = {
     desired_capacity = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
     disk_size        = var.func_pool_disk_size
     instance_types   = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
+    k8s_labels       = { NodeGroup = "functions" }
     min_capacity     = coalesce(var.func_pool_min_size, var.node_pool_min_size)
     max_capacity     = coalesce(var.func_pool_max_size, var.node_pool_max_size)
-    name             = "snc-func-pool"
+    taints           = ["reserveGroup=functions:NoSchedule"]
   }
 
-  node_pool_config = {
+  node_pool_defaults = {
     desired_capacity = var.node_pool_desired_size
     disk_size        = var.node_pool_disk_size
     instance_types   = var.node_pool_instance_types
+    k8s_labels       = {}
     min_capacity     = var.node_pool_min_size
     max_capacity     = var.node_pool_max_size
-    name             = "snc-node-pool"
+    taints           = []
   }
+  
+  snc_node_config = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnet = var.private_subnet_ids[i], name = "snc-node-pool${i}" }) }
 
-  node_groups = var.enable_func_pool ? { "snc-node-pool" = local.node_pool_config, "snc-func-pool" = local.func_pool_config } : { "snc-node-pool" = local.node_pool_config }
+  snc_func_config = { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnet = var.private_subnet_ids[i], name = "snc-func-pool${i}" }) }
+
+  node_groups = (var.enable_func_pool ? merge(local.snc_node_config, local.snc_func_config) : local.snc_node_config)
 }
