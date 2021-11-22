@@ -82,10 +82,11 @@ resource "aws_iam_role" "tiered_storage" {
 
 resource "aws_iam_policy" "tiered_storage" {
   count       = var.create_iam_policy_for_tiered_storage ? 1 : 0
-  name        = "StreamNativeCloudTieredStoragePolicy"
+  name        = format("%s-TieredStoragePolicy", var.cluster_name)
   description = "Policy that defines the permissions for Pulsar's tiered storage offloading to S3, running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.tiered_storage.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_iam_role_policy_attachment" "tiered_storage" {

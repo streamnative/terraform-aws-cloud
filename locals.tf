@@ -46,7 +46,7 @@ locals {
     max_capacity     = var.node_pool_max_size
     taints           = []
   }
-  
+
   snc_node_config = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnet = var.private_subnet_ids[i], name = "snc-node-pool${i}" }) }
 
   snc_func_config = { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnet = var.private_subnet_ids[i], name = "snc-func-pool${i}" }) }

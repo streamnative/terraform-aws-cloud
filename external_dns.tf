@@ -72,16 +72,17 @@ resource "aws_iam_role" "external_dns" {
 }
 
 resource "aws_iam_policy" "external_dns" {
-  count       = var.create_iam_policies_for_cluster_addon_services ? 1 : 0
-  name        = "StreamNativeCloudExternalDnsPolicy"
+  count       = var.enable_external_dns ? 1 : 0
+  name        = format("%s-ExternalDnsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.external_dns.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
 
 resource "aws_iam_role_policy_attachment" "external_dns" {
   count      = var.enable_external_dns ? 1 : 0
-  policy_arn = var.create_iam_policies_for_cluster_addon_services ? aws_iam_policy.external_dns[0].arn : "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudExternalDnsPolicy"    
+  policy_arn = aws_iam_policy.external_dns[0].arn
   role       = aws_iam_role.external_dns[0].name
 }
 
@@ -137,7 +138,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "sources"
-    value = var.enable_istio_operator == true ? "{service,ingress,istio-gateway,istio-virtualservice}" :  "{service,ingress}" 
+    value = var.enable_istio_operator == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}"
   }
 
   set {

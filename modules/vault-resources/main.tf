@@ -130,10 +130,11 @@ resource "aws_iam_role" "vault" {
 
 resource "aws_iam_policy" "vault" {
   count       = var.create_iam_policy_for_vault ? 1 : 0
-  name        = "StreamNativeCloudVaultPolicy"
+  name        = format("%s-VaultPolicy", var.cluster_name)
   description = "Policy that defines the permissions for Hashicorp Vault, running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.vault.json
+  tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
 }
 
 resource "aws_iam_role_policy_attachment" "vault" {
