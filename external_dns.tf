@@ -55,7 +55,7 @@ data "aws_iam_policy_document" "external_dns_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "external-dns")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "external-dns")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
@@ -91,7 +91,7 @@ resource "helm_release" "external_dns" {
   atomic          = true
   chart           = var.external_dns_helm_chart_name
   cleanup_on_fail = true
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   name            = "external-dns"
   repository      = var.external_dns_helm_chart_repository
   timeout         = 300

@@ -23,7 +23,7 @@ resource "helm_release" "node_termination_handler" {
   chart           = var.node_termination_handler_helm_chart_name
   cleanup_on_fail = true
   name            = "node-termination-handler"
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   repository      = var.node_termination_handler_helm_chart_repository
   timeout         = 300
 

@@ -133,7 +133,7 @@ data "aws_iam_policy_document" "csi_sts" {
     }
     condition {
       test     = "StringEquals"
-      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "ebs-csi-controller-sa")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "ebs-csi-controller-sa")]
       variable = format("%s:sub", local.oidc_issuer)
     }
     condition {
@@ -175,7 +175,7 @@ resource "helm_release" "csi" {
   chart           = var.csi_helm_chart_name
   cleanup_on_fail = true
   name            = "aws-ebs-csi-driver"
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   repository      = var.csi_helm_chart_repository
   timeout         = 300
 

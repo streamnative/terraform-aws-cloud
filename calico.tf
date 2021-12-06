@@ -23,7 +23,7 @@ resource "helm_release" "calico" {
   chart           = var.calico_helm_chart_name
   cleanup_on_fail = true
   name            = "tigera-operator"
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   repository      = var.calico_helm_chart_repository
   timeout         = 300
   version         = var.calico_helm_chart_version
