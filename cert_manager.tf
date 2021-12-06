@@ -65,7 +65,7 @@ data "aws_iam_policy_document" "cert_manager_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "cert-manager")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "cert-manager")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
@@ -102,7 +102,7 @@ resource "helm_release" "cert_manager" {
   chart           = var.cert_manager_helm_chart_name
   cleanup_on_fail = true
   name            = "cert-manager"
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   repository      = var.cert_manager_helm_chart_repository
   timeout         = 300
   version         = var.cert_manager_helm_chart_version

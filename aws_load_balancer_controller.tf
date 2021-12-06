@@ -253,7 +253,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "aws-load-balancer-controller")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "aws-load-balancer-controller")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
@@ -290,7 +290,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   chart           = var.aws_load_balancer_controller_helm_chart_name
   cleanup_on_fail = true
   name            = "aws-load-balancer-controller"
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   repository      = var.aws_load_balancer_controller_helm_chart_repository
   timeout         = 300
   version         = var.aws_load_balancer_controller_helm_chart_version

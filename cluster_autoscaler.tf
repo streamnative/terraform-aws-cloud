@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "cluster-autoscaler")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "cluster-autoscaler")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
@@ -100,7 +100,7 @@ resource "helm_release" "cluster_autoscaler" {
   chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true
   name            = "cluster-autoscaler"
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   repository      = var.cluster_autoscaler_helm_chart_repository
   timeout         = 300
   version         = var.cluster_autoscaler_helm_chart_version

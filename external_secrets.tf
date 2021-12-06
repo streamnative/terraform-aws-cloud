@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "external_secrets_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", kubernetes_namespace.sn_system.id, "external-secrets")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "external-secrets")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
@@ -87,7 +87,7 @@ resource "helm_release" "external_secrets" {
   atomic          = true
   chart           = var.external_secrets_helm_chart_name
   cleanup_on_fail = true
-  namespace       = kubernetes_namespace.sn_system.id
+  namespace       = "kube-system"
   name            = "external-secrets"
   repository      = var.external_secrets_helm_chart_repository
   timeout         = 300
