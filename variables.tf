@@ -279,6 +279,12 @@ variable "external_dns_settings" {
   type        = map(any)
 }
 
+variable "external_dns_istio_sources_enabled" {
+  default     = false
+  description = "Indicates whether to configure external-dns to use Istio objects as a source of DNS records."
+  type        = bool
+}
+
 variable "external_secrets_helm_chart_name" {
   default     = "kubernetes-external-secrets"
   description = "The name of the Helm chart in the repository for kubernetes-external-secrets."
