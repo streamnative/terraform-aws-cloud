@@ -296,9 +296,9 @@ resource "helm_release" "aws_load_balancer_controller" {
   version         = var.aws_load_balancer_controller_helm_chart_version
   values = [yamlencode({
     clusterName = module.eks.cluster_id
-    defaultTags = merge(var.additional_tags, {
-      "Vendor" = "StreamNative"
-    })
+    # defaultTags = merge(var.additional_tags, {
+    #   "Vendor" = "StreamNative"
+    # })
     serviceAccount = {
       create = true
       name   = "aws-load-balancer-controller"
