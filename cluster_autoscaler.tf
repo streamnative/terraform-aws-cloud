@@ -94,6 +94,8 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
   role       = aws_iam_role.cluster_autoscaler[0].name
 }
 
+# Keep this issue in mind when running autoscaler, especially if you are seeing OOMKilled errors.
+# https://github.com/kubernetes/autoscaler/issues/3506
 resource "helm_release" "cluster_autoscaler" {
   count           = var.enable_cluster_autoscaler ? 1 : 0
   atomic          = true
@@ -104,6 +106,59 @@ resource "helm_release" "cluster_autoscaler" {
   repository      = var.cluster_autoscaler_helm_chart_repository
   timeout         = 300
   version         = var.cluster_autoscaler_helm_chart_version
+  values = [yamlencode({
+    autoDiscovery = {
+      clusterName = module.eks.cluster_id
+    }
+    awsRegion     = var.region
+    cloudProvider = "aws"
+    extraArgs = {
+      balance-similar-node-groups   = true
+      expander                      = "least-waste"
+      node-group-auto-discovery     = format("asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/%s", module.eks.cluster_id)
+      skip-nodes-with-system-pods   = false
+      skip-nodes-with-local-storage = false
+    }
+    extraVolumes = [
+      {
+        name = "ssl-certs"
+        hostPath = {
+          path = "/etc/ssl/certs/ca-bundle.crt"
+        }
+      }
+    ]
+    extraVolumeMounts = [
+      {
+        name      = "ssl-certs"
+        mountPath = "/etc/ssl/certs/ca-certificates.crt"
+        readOnly  = true
+      }
+    ]
+    rbac = {
+      create     = true
+      pspEnabled = true
+      serviceAccount = {
+        annotations = {
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler[0].arn
+        },
+        create                       = true
+        name                         = "cluster-autoscaler"
+        automountServiceAccountToken = true
+      }
+    }
+    replicaCount = "1"
+    resources = {
+      limits = {
+        cpu    = "100m"
+        memory = "1Gi"
+      },
+      requests = {
+        cpu    = "100m"
+        memory = "500Mi"
+      }
+    }
+    })
+  ]
 
   dynamic "set" {
     for_each = var.cluster_autoscaler_settings
@@ -112,61 +167,4 @@ resource "helm_release" "cluster_autoscaler" {
       value = set.value
     }
   }
-
-  # Keep this issue in mind when running autoscaler, especially if you are seeing OOMKilled errors.
-  # https://github.com/kubernetes/autoscaler/issues/3506
-  values = [
-    yamlencode({
-      "autoDiscovery" : {
-        "clusterName" : "${module.eks.cluster_id}",
-      }
-      "awsRegion" : "${var.region}"
-      "cloudProvider" : "aws"
-      "extraArgs" : {
-        "balance-similar-node-groups" : true,
-        "expander" : "least-waste",
-        "node-group-auto-discovery" : "asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${module.eks.cluster_id}"
-        "skip-nodes-with-system-pods" : false,
-        "skip-nodes-with-local-storage" : false,
-      }
-      "extraVolumes" : [
-        {
-          "name" : "ssl-certs",
-          "hostPath" : {
-            "path" : "/etc/ssl/certs/ca-bundle.crt"
-          }
-        }
-      ]
-      "extraVolumeMounts" : [
-        {
-          "name" : "ssl-certs",
-          "mountPath" : "/etc/ssl/certs/ca-certificates.crt",
-          "readOnly" : true
-        }
-      ]
-      "rbac" : {
-        "create" : true,
-        "pspEnabled" : true,
-        "serviceAccount" : {
-          "annotations" : {
-            "eks.amazonaws.com/role-arn" : "${aws_iam_role.cluster_autoscaler[0].arn}"
-          },
-          "create" : true,
-          "name" : "cluster-autoscaler",
-          "automountServiceAccountToken" : true
-        }
-      }
-      "replicaCount" : "1"
-      "resources" : {
-        "limits" : {
-          "cpu" : "100m",
-          "memory" : "500Mi"
-        },
-        "requests" : {
-          "cpu" : "100m",
-          "memory" : "500Mi"
-        }
-      }
-    })
-  ]
 }

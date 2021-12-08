@@ -106,32 +106,44 @@ resource "helm_release" "cert_manager" {
   repository      = var.cert_manager_helm_chart_repository
   timeout         = 300
   version         = var.cert_manager_helm_chart_version
+  values = [yamlencode({
+    installCRDs = true
+    controller = {
+      args = [
+        "--issuer-ambient-credentials=true"
+      ]
+    }
+    kubeVersion = var.cluster_version
+    podSecurityContext = {
+      fsGroup = 65534
+    }
+    serviceaccount = {
+      annotations = {
+        "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
+      }
+    }
+  })]
 
-  set {
-    name  = "installCRDs"
-    value = true
-  }
+  # set {
+  #   name  = "installCRDs"
+  #   value = true
+  # }
 
-  set {
-    name  = "serviceAccount.name"
-    value = "cert-manager"
-  }
+  # set {
+  #   name  = "extraArgs[0]"
+  #   value = "--issuer-ambient-credentials=true"
+  # }
 
-  set {
-    name  = "extraArgs[0]"
-    value = "--issuer-ambient-credentials=true"
-  }
+  # set {
+  #   name  = "securityContext.fsGroup"
+  #   value = "65534"
+  # }
 
-  set {
-    name  = "securityContext.fsGroup"
-    value = "65534"
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.cert_manager[0].arn
-    type  = "string"
-  }
+  # set {
+  #   name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
+  #   value = aws_iam_role.cert_manager[0].arn
+  #   type  = "string"
+  # }
 
   dynamic "set" {
     for_each = var.cert_manager_settings

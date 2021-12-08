@@ -26,6 +26,7 @@ resource "helm_release" "node_termination_handler" {
   namespace       = "kube-system"
   repository      = var.node_termination_handler_helm_chart_repository
   timeout         = 300
+  version         = var.node_termination_handler_chart_version
 
   dynamic "set" {
     for_each = var.node_termination_handler_settings
