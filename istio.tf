@@ -85,8 +85,8 @@ resource "helm_release" "istio_operator" {
               "namespace" : "${local.istio_namespace}",
               "enabled" : true,
               "label" : {
-                "cloud.streamnative.io/role" : "istio-gateway",
-                "istio" : "ingressgateway"
+                "cloud.streamnative.io/role" : "istio-ingressgateway"
+              
               },
               "k8s" : {
                 "service" : {
