@@ -138,7 +138,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "sources"
-    value = var.enable_istio_operator == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}"
+    value = var.external_dns_istio_sources_enabled == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}"
   }
 
   set {

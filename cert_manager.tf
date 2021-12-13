@@ -141,3 +141,27 @@ resource "helm_release" "cert_manager" {
     }
   }
 }
+
+resource "helm_release" "cert_issuer" {
+  count           = var.enable_cert_manager ? 1 : 0
+  atomic          = true
+  chart           = "${path.module}/charts/cert-issuer"
+  cleanup_on_fail = true
+  name            = "cert-issuer"
+  namespace       = "sn-system"
+  timeout         = 300
+
+  set {
+    name  = "supportEmail"
+    value = var.cert_issuer_support_email
+  }
+
+  set {
+    name  = "dns01.region"
+    value = var.region
+  }
+
+  depends_on = [
+    helm_release.cert_manager
+  ]
+}

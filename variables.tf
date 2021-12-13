@@ -113,6 +113,12 @@ variable "cert_manager_settings" {
   type        = map(any)
 }
 
+variable "cert_issuer_support_email" {
+  default     = "certs-support@streamnative.io"
+  description = "The email address to receive notifications from the cert issuer."
+  type        = string
+}
+
 variable "cluster_autoscaler_helm_chart_name" {
   default     = "cluster-autoscaler"
   description = "The name of the Helm chart in the repository for cluster-autoscaler."
@@ -277,6 +283,12 @@ variable "external_dns_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values, see https://hub.helm.sh/charts/bitnami/external-dns."
   type        = map(any)
+}
+
+variable "external_dns_istio_sources_enabled" {
+  default     = false
+  description = "Indicates whether to configure external-dns to use Istio objects as a source of DNS records."
+  type        = bool
 }
 
 variable "external_secrets_helm_chart_name" {
