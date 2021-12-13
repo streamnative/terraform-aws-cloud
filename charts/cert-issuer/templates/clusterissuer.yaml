@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: external
+  labels:
+  {{- include "cert-issuer.labels" . | nindent 4 }}
+spec:
+  acme:
+    email: {{ required "Required: supportEmail" .Values.supportEmail }}
+    privateKeySecretRef:
+      name: external-issuer-account-key
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          route53:
+            region: {{ required "Required: dns01.region" .Values.dns01.region }}

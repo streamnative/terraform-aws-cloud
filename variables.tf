@@ -113,6 +113,12 @@ variable "cert_manager_settings" {
   type        = map(any)
 }
 
+variable "cert_issuer_support_email" {
+  default     = "certs-support@streamnative.io"
+  description = "The email address to receive notifications from the cert issuer."
+  type        = string
+}
+
 variable "cluster_autoscaler_helm_chart_name" {
   default     = "cluster-autoscaler"
   description = "The name of the Helm chart in the repository for cluster-autoscaler."
