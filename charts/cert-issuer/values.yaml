@@ -1,0 +1,7 @@
+
+# The email address for ACME registration
+supportEmail:
+
+# the AWS region for DNS zone lookups
+dns01:
+  region:
