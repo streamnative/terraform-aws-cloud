@@ -27,12 +27,17 @@ resource "helm_release" "calico" {
   repository      = var.calico_helm_chart_repository
   timeout         = 300
   version         = var.calico_helm_chart_version
-
-  set {
-    name  = "installation.kubernetesProvider"
-    value = "EKS"
-    type  = "string"
-  }
+  values = [yamlencode({
+    installation = {
+      kubernetesProvider = "EKS"
+      enabled            = true
+      spec = {
+        cni = {
+          type = "AmazonVPC"
+        }
+      }
+    }
+  })]
 
   dynamic "set" {
     for_each = var.calico_settings

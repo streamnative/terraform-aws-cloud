@@ -78,7 +78,7 @@ variable "calico_helm_chart_repository" {
 }
 
 variable "calico_helm_chart_version" {
-  default     = "1.0.5"
+  default     = "1.5.0"
   description = "Helm chart version for Calico. Defaults to \"1.0.5\". See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available version releases."
   type        = string
 }
@@ -96,14 +96,14 @@ variable "cert_manager_helm_chart_name" {
 }
 
 variable "cert_manager_helm_chart_repository" {
-  default     = "https://charts.jetstack.io"
+  default     = "https://charts.bitnami.com/bitnami"
   description = "The repository containing the cert-manager helm chart."
   type        = string
 }
 
 variable "cert_manager_helm_chart_version" {
-  default     = "1.4.0"
-  description = "Helm chart version for the cert-manager. Defaults to \"1.4.0\". See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases."
+  default     = "0.1.27"
+  description = "Helm chart version for the cert-manager. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases."
   type        = string
 }
 
@@ -132,7 +132,7 @@ variable "cluster_autoscaler_helm_chart_repository" {
 }
 
 variable "cluster_autoscaler_helm_chart_version" {
-  default     = "9.10.4"
+  default     = "9.10.8"
   description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
   type        = string
 }
@@ -173,7 +173,7 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  default     = "1.18"
+  default     = "1.20"
   description = "The version of Kubernetes to be installed."
   type        = string
 }
@@ -187,6 +187,12 @@ variable "csi_helm_chart_name" {
 variable "csi_helm_chart_repository" {
   default     = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"
   description = "The repository containing the CSI helm chart"
+  type        = string
+}
+
+variable "csi_helm_chart_version" {
+  default     = "2.4.1"
+  description = "Helm chart version for CSI"
   type        = string
 }
 
@@ -209,8 +215,8 @@ variable "enable_aws_node_termination_handler" {
 }
 
 variable "enable_calico" {
-  default     = true
-  description = "Enables the Calico networking service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
+  default     = false
+  description = "Enables the Calico networking service on the cluster. Defaults to \"false\"."
   type        = bool
 }
 
@@ -274,7 +280,7 @@ variable "external_dns_helm_chart_repository" {
 }
 
 variable "external_dns_helm_chart_version" {
-  default     = "5.4.1"
+  default     = "5.5.2"
   description = "Helm chart version for ExternalDNS. Defaults to \"4.9.0\". See https://hub.helm.sh/charts/bitnami/external-dns for updates."
   type        = string
 }
@@ -512,6 +518,12 @@ variable "node_termination_handler_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values for the AWS Node Termination Handler. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options."
   type        = map(string)
+}
+
+variable "node_termination_handler_chart_version" {
+  default     = "0.16.0"
+  description = "The version of the Helm chart to use for the AWS Node Termination Handler."
+  type        = string
 }
 
 variable "node_pool_desired_size" {

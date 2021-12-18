@@ -178,28 +178,21 @@ resource "helm_release" "csi" {
   namespace       = "kube-system"
   repository      = var.csi_helm_chart_repository
   timeout         = 300
-
-  set {
-    name  = "controller.extraVolumeTags"
-    value = jsonencode({ Vendor = "StreamNative" })
-  }
-  set {
-    name  = "controller.serviceAccount.create"
-    value = "true"
-    type  = "string"
-  }
-
-  set {
-    name  = "controller.serviceAccount.name"
-    value = "ebs-csi-controller-sa"
-    type  = "string"
-  }
-
-  set {
-    name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.csi[0].arn
-    type  = "string"
-  }
+  version         = var.csi_helm_chart_version
+  values = [yamlencode({
+    controller = {
+      extraVolumeTags = merge(var.additional_tags, {
+        "Vendor" = "StreamNative"
+      })
+      serviceAccount = {
+        create = true
+        name   = "ebs-csi-controller-sa"
+        annotations = {
+          "eks.amazonaws.com/role-arn" = aws_iam_role.csi[0].arn
+        }
+      }
+    }
+  })]
 
   dynamic "set" {
     for_each = var.csi_settings

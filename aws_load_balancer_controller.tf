@@ -294,33 +294,19 @@ resource "helm_release" "aws_load_balancer_controller" {
   repository      = var.aws_load_balancer_controller_helm_chart_repository
   timeout         = 300
   version         = var.aws_load_balancer_controller_helm_chart_version
-
-  set {
-    name  = "clusterName"
-    value = module.eks.cluster_id
-    type  = "string"
-  }
-
-  # set {
-  #   name  = "defaultTags"
-  #   value = jsonencode({ Vendor = "StreamNative" }) #TODO - figure out how to pass multiple KV pairs
-  # }
-
-  set {
-    name  = "serviceAccount.create"
-    value = "true"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = "aws-load-balancer-controller"
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.aws_load_balancer_controller[0].arn
-    type  = "string"
-  }
+  values = [yamlencode({
+    clusterName = module.eks.cluster_id
+    # defaultTags = merge(var.additional_tags, {
+    #   "Vendor" = "StreamNative"
+    # })
+    serviceAccount = {
+      create = true
+      name   = "aws-load-balancer-controller"
+      annotations = {
+        "eks.amazonaws.com/role-arn" = aws_iam_role.aws_load_balancer_controller[0].arn
+      }
+    }
+  })]
 
   dynamic "set" {
     for_each = var.aws_load_balancer_controller_settings

@@ -20,11 +20,24 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  account_id               = data.aws_caller_identity.current.account_id
-  cluster_subnet_ids       = concat(var.private_subnet_ids, var.public_subnet_ids)
+  account_id         = data.aws_caller_identity.current.account_id
+  cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
+  oidc_issuer        = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+
+  k8s_to_autoscaler_version = {
+    "1.18" = "v1.18.3",
+    "1.19" = "v1.19.2",
+    "1.20" = "v1.20.1",
+    "1.21" = "v1.21.1",
+    "1.22" = "v1.22.1",
+  }
+
+  ### Istio Config
+  default_sources          = ["service", "ingress"]
   istio_namespace          = var.istio_namespace == "istio-system" ? "istio-system" : var.istio_namespace
   istio_operator_namespace = var.istio_operator_namespace == "istio-operator" ? "istio-operator" : var.istio_operator_namespace
-  oidc_issuer              = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+  istio_sources            = ["istio-gateway", "istio-virtualservice"]
+  sources                  = var.enable_istio_operator ? concat(local.istio_sources, local.default_sources) : local.default_sources
 
   ### Node Groups
   func_pool_defaults = {

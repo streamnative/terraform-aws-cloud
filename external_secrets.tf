@@ -92,27 +92,20 @@ resource "helm_release" "external_secrets" {
   repository      = var.external_secrets_helm_chart_repository
   timeout         = 300
   version         = var.external_secrets_helm_chart_version
-
-  set {
-    name  = "env.AWS_REGION"
-    value = var.region
-  }
-
-  set {
-    name  = "securityContext.fsGroup"
-    value = "65534"
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.external_secrets[0].arn
-    type  = "string"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = "external-secrets"
-  }
+  values = [yamlencode({
+    env = {
+      AWS_REGION = var.region
+    }
+    securityContext = {
+      fsGroup = 65534
+    }
+    serviceAccount = {
+      annotations = {
+        "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets[0].arn
+      }
+      name = "external-secrets"
+    }
+  })]
 
   dynamic "set" {
     for_each = var.external_secrets_settings

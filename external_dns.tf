@@ -96,55 +96,28 @@ resource "helm_release" "external_dns" {
   repository      = var.external_dns_helm_chart_repository
   timeout         = 300
   version         = var.external_dns_helm_chart_version
-
-  set {
-    name  = "aws.region"
-    value = var.region
-  }
-
-  set {
-    name  = "podSecurityContext.fsGroup"
-    value = "65534"
-  }
-
-  set {
-    name  = "podSecurityContext.runAsUser"
-    value = "0"
-  }
-
-  set {
-    name  = "rbac.create"
-    value = "true"
-    type  = "string"
-  }
-
-  set {
-    name  = "serviceAccount.create"
-    value = "true"
-    type  = "string"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = "external-dns"
-    type  = "string"
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-    value = aws_iam_role.external_dns[0].arn
-    type  = "string"
-  }
-
-  set {
-    name  = "sources"
-    value = var.external_dns_istio_sources_enabled == true ? "{service,ingress,istio-gateway,istio-virtualservice}" : "{service,ingress}"
-  }
-
-  set {
-    name  = "txtOwnerId"
-    value = module.eks.cluster_id
-  }
+  
+  values = [yamlencode({
+    aws = {
+      region = var.region
+    }
+    podSecurityContext = {
+      fsGroup   = 65534
+      runAsUser = 0
+    }
+    rbac = {
+      create = true
+    }
+    serviceAccount = {
+      create = true
+      name   = "external-dns"
+      annotations = {
+        "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns[0].arn
+      }
+    }
+    sources    = local.sources
+    txtOwnerId = module.eks.cluster_id
+  })]
 
   dynamic "set" {
     for_each = var.external_dns_settings
