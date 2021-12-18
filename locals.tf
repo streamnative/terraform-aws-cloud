@@ -24,6 +24,14 @@ locals {
   cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
   oidc_issuer        = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
 
+  k8s_to_autoscaler_version = {
+    "1.18" = "v1.18.3",
+    "1.19" = "v1.19.2",
+    "1.20" = "v1.20.1",
+    "1.21" = "v1.21.1",
+    "1.22" = "v1.22.1",
+  }
+
   ### Istio Config
   default_sources          = ["service", "ingress"]
   istio_namespace          = var.istio_namespace == "istio-system" ? "istio-system" : var.istio_namespace

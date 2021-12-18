@@ -30,8 +30,8 @@ resource "helm_release" "calico" {
   values = [yamlencode({
     installation = {
       kubernetesProvider = "EKS"
-      enabled = true 
-      spec = { 
+      enabled            = true
+      spec = {
         cni = {
           type = "AmazonVPC"
         }

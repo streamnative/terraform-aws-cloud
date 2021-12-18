@@ -209,8 +209,8 @@ variable "enable_aws_node_termination_handler" {
 }
 
 variable "enable_calico" {
-  default     = true
-  description = "Enables the Calico networking service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
+  default     = false
+  description = "Enables the Calico networking service on the cluster. Defaults to \"false\"."
   type        = bool
 }
 
