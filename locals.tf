@@ -33,11 +33,9 @@ locals {
   }
 
   ### Istio Config
-  default_sources          = ["service", "ingress"]
-  istio_namespace          = var.istio_namespace == "istio-system" ? "istio-system" : var.istio_namespace
-  istio_operator_namespace = var.istio_operator_namespace == "istio-operator" ? "istio-operator" : var.istio_operator_namespace
-  istio_sources            = ["istio-gateway", "istio-virtualservice"]
-  sources                  = var.enable_istio_operator ? concat(local.istio_sources, local.default_sources) : local.default_sources
+  default_sources = ["service", "ingress"]
+  istio_sources   = ["istio-gateway", "istio-virtualservice"]
+  sources         = var.enable_istio ? concat(local.istio_sources, local.default_sources) : local.default_sources
 
   ### Node Groups
   func_pool_defaults = {

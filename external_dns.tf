@@ -96,7 +96,7 @@ resource "helm_release" "external_dns" {
   repository      = var.external_dns_helm_chart_repository
   timeout         = 300
   version         = var.external_dns_helm_chart_version
-  
+
   values = [yamlencode({
     aws = {
       region = var.region
