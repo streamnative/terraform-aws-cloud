@@ -375,7 +375,7 @@ variable "istio_mesh_id" {
 }
 
 variable "istio_network" {
-  default     = "network1"
+  default     = "default"
   description = "The name of network used for the Istio deployment. This is required when \"enable_istio_operator\" is set to \"true\"."
   type        = string
 }
