@@ -124,27 +124,6 @@ resource "helm_release" "cert_manager" {
     }
   })]
 
-  # set {
-  #   name  = "installCRDs"
-  #   value = true
-  # }
-
-  # set {
-  #   name  = "extraArgs[0]"
-  #   value = "--issuer-ambient-credentials=true"
-  # }
-
-  # set {
-  #   name  = "securityContext.fsGroup"
-  #   value = "65534"
-  # }
-
-  # set {
-  #   name  = "serviceAccount.annotations.eks\\.amazonaws\\.com\\/role\\-arn"
-  #   value = aws_iam_role.cert_manager[0].arn
-  #   type  = "string"
-  # }
-
   dynamic "set" {
     for_each = var.cert_manager_settings
     content {
@@ -152,6 +131,10 @@ resource "helm_release" "cert_manager" {
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }
 
 resource "helm_release" "cert_issuer" {

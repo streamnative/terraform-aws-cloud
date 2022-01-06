@@ -33,10 +33,11 @@ variable "private_subnet_ids" {
   description = "The ids of existing private subnets"
   type        = list(string)
 
-  validation {
-    condition     = length(var.private_subnet_ids[0]) > 7 && substr(var.private_subnet_ids[0], 0, 7) == "subnet-"
-    error_message = "The value for variable \"private_subnet_ids\" must be a valid subnet id, starting with \"subnet-\"."
-  }
+  ### Need to fix these validations to support an empty input in the case of private OR public clusters (current expectiation was there would be both)
+  # validation {
+  #   condition     = length(var.private_subnet_ids[0]) > 7 && substr(var.private_subnet_ids[0], 0, 7) == "subnet-"
+  #   error_message = "The value for variable \"private_subnet_ids\" must be a valid subnet id, starting with \"subnet-\"."
+  # }
 }
 
 variable "public_subnet_ids" {
@@ -44,10 +45,11 @@ variable "public_subnet_ids" {
   description = "The ids of existing public subnets"
   type        = list(string)
 
-  validation {
-    condition     = length(var.public_subnet_ids[0]) > 7 && substr(var.public_subnet_ids[0], 0, 7) == "subnet-"
-    error_message = "The value for variable \"public_subnet_ids\" must be a valid subnet id, starting with \"subnet-\"."
-  }
+  ### Need to fix these validations to support an empty input in the case of private OR public clusters (current expectiation was there would be both)
+  # validation {
+  #   condition     = length(var.public_subnet_ids[0]) > 7 && substr(var.public_subnet_ids[0], 0, 7) == "subnet-"
+  #   error_message = "The value for variable \"public_subnet_ids\" must be a valid subnet id, starting with \"subnet-\"."
+  # }
 }
 
 variable "vpc_id" {

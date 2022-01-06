@@ -315,4 +315,8 @@ resource "helm_release" "aws_load_balancer_controller" {
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }

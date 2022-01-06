@@ -46,4 +46,8 @@ resource "helm_release" "calico" {
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }

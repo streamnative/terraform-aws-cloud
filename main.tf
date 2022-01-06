@@ -17,9 +17,41 @@
 # under the License.
 #
 
+data "aws_caller_identity" "current" {}
+
+locals {
+  account_id         = data.aws_caller_identity.current.account_id
+  cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
+  oidc_issuer        = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+
+  func_pool_defaults = {
+    desired_capacity = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
+    disk_size        = var.func_pool_disk_size
+    instance_types   = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
+    k8s_labels       = { NodeGroup = "functions" }
+    min_capacity     = coalesce(var.func_pool_min_size, var.node_pool_min_size)
+    max_capacity     = coalesce(var.func_pool_max_size, var.node_pool_max_size)
+    taints           = ["reserveGroup=functions:NoSchedule"]
+  }
+
+  node_pool_defaults = {
+    desired_capacity = var.node_pool_desired_size
+    disk_size        = var.node_pool_disk_size
+    instance_types   = var.node_pool_instance_types
+    k8s_labels       = {}
+    min_capacity     = var.node_pool_min_size
+    max_capacity     = var.node_pool_max_size
+    taints           = []
+  }
+
+  snc_node_config = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-node-pool${i}" }) }
+  snc_func_config = { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-func-pool${i}" }) }
+  node_groups     = (var.enable_func_pool ? merge(local.snc_node_config, local.snc_func_config) : local.snc_node_config)
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "17.23.0"
+  version = "17.24.0"
 
   # cluster_iam_role_name        = aws_iam_role.cluster.name
   cluster_name                  = var.cluster_name
@@ -54,7 +86,6 @@ module "eks" {
       var.additional_tags
     )
     # iam_role_arn = aws_iam_role.nodes.arn
-    subnets = var.private_subnet_ids
   }
 
   tags = {

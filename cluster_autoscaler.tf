@@ -101,6 +101,17 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
 # Also Refer to the CA FAQ for troubleshooting or configuration options
 # https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca
 ############
+
+locals {
+  k8s_to_autoscaler_version = {
+    "1.18" = "v1.18.3",
+    "1.19" = "v1.19.2",
+    "1.20" = "v1.20.1",
+    "1.21" = "v1.21.1",
+    "1.22" = "v1.22.1",
+  }
+
+}
 resource "helm_release" "cluster_autoscaler" {
   count           = var.enable_cluster_autoscaler ? 1 : 0
   atomic          = true
@@ -175,4 +186,8 @@ resource "helm_release" "cluster_autoscaler" {
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }
