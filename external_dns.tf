@@ -86,6 +86,12 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
   role       = aws_iam_role.external_dns[0].name
 }
 
+locals {
+  default_sources = ["service", "ingress"]
+  istio_sources   = ["istio-gateway", "istio-virtualservice"]
+  sources         = var.enable_istio ? concat(local.istio_sources, local.default_sources) : local.default_sources
+}
+
 resource "helm_release" "external_dns" {
   count           = var.enable_external_dns ? 1 : 0
   atomic          = true
@@ -96,7 +102,7 @@ resource "helm_release" "external_dns" {
   repository      = var.external_dns_helm_chart_repository
   timeout         = 300
   version         = var.external_dns_helm_chart_version
-  
+
   values = [yamlencode({
     aws = {
       region = var.region

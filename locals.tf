@@ -32,13 +32,6 @@ locals {
     "1.22" = "v1.22.1",
   }
 
-  ### Istio Config
-  default_sources          = ["service", "ingress"]
-  istio_namespace          = var.istio_namespace == "istio-system" ? "istio-system" : var.istio_namespace
-  istio_operator_namespace = var.istio_operator_namespace == "istio-operator" ? "istio-operator" : var.istio_operator_namespace
-  istio_sources            = ["istio-gateway", "istio-virtualservice"]
-  sources                  = var.enable_istio_operator ? concat(local.istio_sources, local.default_sources) : local.default_sources
-
   ### Node Groups
   func_pool_defaults = {
     desired_capacity = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)

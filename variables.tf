@@ -255,15 +255,9 @@ variable "enable_func_pool" {
   type        = bool
 }
 
-variable "enable_istio_operator" {
+variable "enable_istio" {
   default     = false
-  description = "Enables the Istio Operator. Set to \"false\" by default."
-  type        = bool
-}
-
-variable "enable_kiali_operator" {
-  default     = false
-  description = "Enables the Kiali Operator. Set to \"false\" by default."
+  description = "Enables Istio on the cluster. Set to \"false\" by default."
   type        = bool
 }
 
@@ -380,14 +374,8 @@ variable "istio_mesh_id" {
   type        = string
 }
 
-variable "istio_namespace" {
-  default     = "sn-system"
-  description = "The namespace used for installing the Istio components."
-  type        = string
-}
-
 variable "istio_network" {
-  default     = null
+  default     = "default"
   description = "The name of network used for the Istio deployment. This is required when \"enable_istio_operator\" is set to \"true\"."
   type        = string
 }
@@ -405,63 +393,15 @@ variable "istio_revision_tag" {
 }
 
 variable "istio_trust_domain" {
-  default     = null
+  default     = "cluster.local"
   description = "The trust domain used for the Istio deployment, which corresponds to the root of a system. This is required when \"enable_istio_operator\" is set to \"true\"."
   type        = string
 }
 
-variable "istio_operator_chart_name" {
-  default     = "istio-operator"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "istio_operator_chart_repository" {
-  default     = "https://stevehipwell.github.io/helm-charts/"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "istio_operator_chart_version" {
-  default     = "2.3.4"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "istio_operator_namespace" {
-  default     = "istio-operator"
-  description = "The namespace used for the Istio operator deployment"
-  type        = string
-}
-
-variable "istio_operator_settings" {
+variable "istio_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
-}
-
-variable "kiali_operator_chart_name" {
-  default     = "kiali-operator"
-  description = "The name of the Helm chart to install"
-  type        = string
-}
-
-variable "kiali_operator_chart_repository" {
-  default     = "https://kiali.org/helm-charts"
-  description = "The repository containing the Helm chart to install"
-  type        = string
-}
-
-variable "kiali_operator_chart_version" {
-  default     = "1.42.0"
-  description = "The version of the Helm chart to install"
-  type        = string
-}
-
-variable "kiali_operator_namespace" {
-  default     = "sn-system"
-  description = "The namespace used for the Kiali operator."
-  type        = string
 }
 
 variable "kiali_operator_settings" {
@@ -580,6 +520,12 @@ variable "public_subnet_ids" {
 variable "region" {
   default     = null
   description = "The AWS region."
+  type        = string
+}
+
+variable "service_domain" {
+  default     = null
+  description = "The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail."
   type        = string
 }
 

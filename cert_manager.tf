@@ -160,7 +160,7 @@ resource "helm_release" "cert_issuer" {
   chart           = "${path.module}/charts/cert-issuer"
   cleanup_on_fail = true
   name            = "cert-issuer"
-  namespace       = "sn-system"
+  namespace       = kubernetes_namespace.sn_system.metadata[0].name
   timeout         = 300
 
   set {
