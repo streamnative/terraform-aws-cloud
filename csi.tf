@@ -201,6 +201,10 @@ resource "helm_release" "csi" {
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }
 
 resource "kubernetes_storage_class" "sn_default" {

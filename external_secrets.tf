@@ -114,4 +114,8 @@ resource "helm_release" "external_secrets" {
       value = set.value
     }
   }
+
+  depends_on = [
+    module.eks
+  ]
 }
