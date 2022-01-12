@@ -1,11 +1,11 @@
 # terraform-aws-cloud
 
-This repository contains opinionated Terraform modules used to deploy and configure an AWS EKS cluster for the StreamNative Platform. It is currently underpinned by the [`terraform-aws-eks`](https://github.com/terraform-aws-modules/terraform-aws-eks) module. 
+This repository contains opinionated Terraform modules used to deploy and configure an AWS EKS cluster for the StreamNative Platform. It is currently underpinned by the [`terraform-aws-eks`](https://github.com/terraform-aws-modules/terraform-aws-eks) module.
 
 The working result is a Kubernetes cluster sized to your specifications, bootstrapped with StreamNative's Platform configuration, ready to receive a deployment of Apache Pulsar.
 
 For more information on StreamNative Platform, head on over to our [official documentation](https://docs.streamnative.io/platform).
-## Prerequisities
+## Prerequisites
 The [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) command line tool is required and must be installed. It's what we're using to manage the creation of a Kubernetes cluster and its bootstrap configuration, along with the necessary cloud provider infrastructure.
 
 We use [Helm](https://helm.sh/docs/intro/install/) for deploying the [StreamNative Platform charts](https://github.com/streamnative/charts) on the cluster, and while not necessary, it's recommended to have it installed for debugging purposes.
@@ -14,7 +14,7 @@ Your caller identity must also have the necessary AWS IAM permissions to create 
 
 ### Other Recommendations for AWS
 - [`aws`](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) command-line tool
-- [`aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html) command line tool 
+- [`aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html) command line tool
 
 ## Getting Started
 A bare minimum configuration to execute the module:
@@ -57,12 +57,12 @@ variable "region" {
 module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
-  add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
+  add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery
   cluster_name             = local.cluster_name
-  cluster_version          = "1.19"
+  cluster_version          = "1.20"
   hosted_zone_id           = local.hosted_zone_id
   kubeconfig_output_path   = "./${local.cluster_name}-config"
-  node_pool_instance_types = ["m5.large"]
+  node_pool_instance_types = ["c6i.large"]
   node_pool_desired_size   = 2
   node_pool_min_size       = 1
   node_pool_max_size       = 6
@@ -75,21 +75,9 @@ module "sn_cluster" {
 }
 ```
 
-In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.19`, with two node groups (one per subnet[^1]), each group being set with a desired capacity of two and a maximum scaling of six, meaning four `m5.large` worker nodes in total will initially be created, but depending on cluster usage it can autoscale up to twelve.
+In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.20`, with two node groups (one per subnet[^1]), each group being set with a desired capacity of two and a maximum scaling of six, meaning four `c6i.large` worker nodes in total will initially be created, but depending on cluster usage it can autoscale up to twelve.
 
 _Note: If you are creating more than one EKS cluster in an AWS account, it is necessary to set the input `create_iam_policies_for_cluster_addon_services = false`. Otherwise Terraform will error stating that resources already exist with the desired name. This is a temporary workaround and will be improved in later versions of the module._
-
-## Creating a StreamNative Platform EKS Cluster
-To apply the configuration initialize the Terraform module in the directory containing **your own version** of the `main.tf` from the example above:
-
-```shell
-terraform init
-```
-
-Validate and apply the configuration:
-```shell
-terraform apply
-```
 
 This creates an EKS cluster to your specifications, along with the following addons (and required IAM resources), which are enabled by default:
 - [AWS CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver)
@@ -100,24 +88,91 @@ This creates an EKS cluster to your specifications, along with the following add
 - [external-dns](https://github.com/kubernetes-sigs/external-dns)
 - [external-secrets](https://github.com/external-secrets/kubernetes-external-secrets)
 
-## Deploy a StreamNative Platform Workload (an Apache Pulsar Cluster)
-We use a [Helm chart](https://github.com/streamnative/charts/tree/master/charts/sn-pulsar) to deploy StreamNative Platform on the receiving Kubernetes cluster (e.g. the one created prior from the Terraform module). 
+## Creating a StreamNative Platform EKS Cluster
+When deploying StreamNative Platform, there are additional resources to be created alongside (and inside!) the EKS cluster:
 
-_Note: Since this module manages all of the Kubernetes addon dependencies, it is not neccesary to perform all of the [steps outlined in the Helm chart's README.](https://github.com/streamnative/charts/tree/master/charts/sn-platform#steps)_
+- StreamNative operators for Pulsar
+- Vault Operator
+- Vault Resources
+- Tiered Storage Resources (optional)
 
-The example below will install StreamNative's Platform using the default values file. 
+We have made this easy by creating additional Terraform modules that can be included alongside your EKS module composition. Consider adding the following to the example `main.tf` file above:
+
+```hcl
+#######
+### This module creates resources used for tiered storage offloading in Pulsar
+#######
+module "sn_tiered_storage_resources" {
+  source = "streamnative/cloud/aws//modules/tiered-storage-resources"
+
+  cluster_name         = module.sn_cluster.eks_cluster_id
+  oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
+  pulsar_namespace     = "my-pulsar-namespace"
+  service_account_name = "pulsar"
+
+  tags = {
+    Project     = "StreamNative Platform"
+    Environment = var.environment
+  }
+
+  depends_on = [
+    module.sn_cluster
+  ]
+}
+
+#######
+### This module creates resources used by Vault for storing and retrieving secrets related to the Pulsar cluster
+#######
+module "sn_tiered_storage_vault_resources" {
+  source = "streamnative/cloud/aws//modules/vault-resources"
+
+  cluster_name         = module.sn_cluster.eks_cluster_id
+  oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
+  pulsar_namespace     = "my-pulsar-namespace" # The namespace where you will be installing Pulsar
+  service_account_name = "vault"               # The name of the service account used by Vault in the Pulsar namespace
+
+  tags = {
+    Project     = "StreamNative Platform"
+    Environment = var.environment
+  }
+
+  depends_on = [
+    module.sn_cluster
+  ]
+}
+
+#######
+### This module installs the necessary operators for StreamNative Platform
+### See: https://registry.terraform.io/modules/streamnative/charts/helm/latest
+#######
+module "sn_bootstrap" {
+  source = "streamnative/charts/helm"
+
+  enable_function_mesh_operator = true
+  enable_vault_operator         = true
+  enable_pulsar_operator        = true
+
+  depends_on = [
+    module.sn_cluster,
+  ]
+}
+```
+
+To apply the configuration initialize the Terraform module in the directory containing **your own version** of the `main.tf` from the examples above:
 
 ```shell
-helm upgrade --install \
---namespace pulsar-demo \
-sn-platform \
---repo https://charts.streamnative.io sn-platform \
---values https://raw.githubusercontent.com/streamnative/examples/master/platform/values_cluster.yaml \
---version 1.2.19 \
---set initialize=true
---kubeconfig=/path/to/my-sn-platform-cluster-config 
+terraform init
 ```
-*Important Note: If this is your first time installing the helm chart, you must override the initialize value to `true` (e.g. `--set initialize=true`)*
+
+Validate and apply the configuration:
+```shell
+terraform apply
+```
+
+## Deploy a StreamNative Platform Workload (an Apache Pulsar Cluster)
+We use a [Helm chart](https://github.com/streamnative/charts/tree/master/charts/sn-platform) to deploy StreamNative Platform on the receiving Kubernetes cluster. Refer to our [official documentation](https://docs.streamnative.io/platform/v1.0.0/overview/) for more info.
+
+_Note: Since this module manages all of the Kubernetes addon dependencies required by StreamNative Platform, it is not necessary to perform all of the [steps outlined in the Helm chart's README.](https://github.com/streamnative/charts/tree/master/charts/sn-platform#steps). Please [reach out](https://support.streamnative.io) to your customer representative if you have questions._
 
 ## Using kubenertes-external-secrets with Amazon Secrets Manager
 By default, `kubernetes-external-secrets` is enabled on the EKS cluster and the corresponding IRSA has access to retrieve all secrets created in the cluster's region. To clamp down access, you can specify the ARNs for just the secrets needed by passing a list to the input `asm_secret_arns` in your composition:
@@ -152,31 +207,7 @@ spec:
 
 Refer to [the official docs](https://github.com/external-secrets/kubernetes-external-secrets#add-a-secret) for more details.
 
-You can also disable `kubernetes-external-secrets` by setting the input `enable-external-secret` to false.
-
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >=3.61.0 |
-| <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.2.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >=2.6.1 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >=3.61.0 |
-| <a name="provider_helm"></a> [helm](#provider\_helm) | 2.2.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >=2.6.1 |
-
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 17.23.0 |
-| <a name="module_vpc_tags"></a> [vpc\_tags](#module\_vpc\_tags) | ./modules/eks-vpc-tags | n/a |
+You can also disable `kubernetes-external-secrets` by setting the input `enable-external-secret = false` in your composition of the `terraform-aws-cloud` (this) module.
 
 ## Requirements
 
@@ -250,6 +281,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [aws_iam_policy_document.external_dns_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_kms_key.ebs_default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
 
 ## Inputs
 
@@ -285,6 +317,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_csi_helm_chart_repository"></a> [csi\_helm\_chart\_repository](#input\_csi\_helm\_chart\_repository) | The repository containing the CSI helm chart | `string` | `"https://kubernetes-sigs.github.io/aws-ebs-csi-driver/"` | no |
 | <a name="input_csi_helm_chart_version"></a> [csi\_helm\_chart\_version](#input\_csi\_helm\_chart\_version) | Helm chart version for CSI | `string` | `"2.4.1"` | no |
 | <a name="input_csi_settings"></a> [csi\_settings](#input\_csi\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml for available options. | `map(any)` | `{}` | no |
+| <a name="input_disk_encryption_kms_key_id"></a> [disk\_encryption\_kms\_key\_id](#input\_disk\_encryption\_kms\_key\_id) | The KMS Key ARN to use for disk encryption. | `string` | `""` | no |
 | <a name="input_enable_aws_load_balancer_controller"></a> [enable\_aws\_load\_balancer\_controller](#input\_enable\_aws\_load\_balancer\_controller) | Whether to enable the AWS Load Balancer Controller addon on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
 | <a name="input_enable_aws_node_termination_handler"></a> [enable\_aws\_node\_termination\_handler](#input\_enable\_aws\_node\_termination\_handler) | Whether to enable the AWS Node Termination Handler addon on the cluster. Defaults to "true", and in most situations is recommended for StreamNative Cloud. | `bool` | `true` | no |
 | <a name="input_enable_calico"></a> [enable\_calico](#input\_enable\_calico) | Enables the Calico networking service on the cluster. Defaults to "false". | `bool` | `false` | no |
@@ -305,9 +338,9 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_external_secrets_helm_chart_version"></a> [external\_secrets\_helm\_chart\_version](#input\_external\_secrets\_helm\_chart\_version) | Helm chart version for kubernetes-external-secrets. Defaults to "8.3.0". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates. | `string` | `"8.3.0"` | no |
 | <a name="input_external_secrets_settings"></a> [external\_secrets\_settings](#input\_external\_secrets\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options. | `map(any)` | `{}` | no |
 | <a name="input_func_pool_desired_size"></a> [func\_pool\_desired\_size](#input\_func\_pool\_desired\_size) | Desired number of worker nodes | `number` | `1` | no |
-| <a name="input_func_pool_disk_size"></a> [func\_pool\_disk\_size](#input\_func\_pool\_disk\_size) | Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided. | `number` | `20` | no |
+| <a name="input_func_pool_disk_size"></a> [func\_pool\_disk\_size](#input\_func\_pool\_disk\_size) | Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided. | `number` | `50` | no |
 | <a name="input_func_pool_disk_type"></a> [func\_pool\_disk\_type](#input\_func\_pool\_disk\_type) | Disk type for function worker nodes. Defaults to gp3. | `string` | `"gp3"` | no |
-| <a name="input_func_pool_instance_types"></a> [func\_pool\_instance\_types](#input\_func\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.large"]. Terraform will only perform drift detection if a configuration value is provided. | `list(string)` | <pre>[<br>  "t3.large"<br>]</pre> | no |
+| <a name="input_func_pool_instance_types"></a> [func\_pool\_instance\_types](#input\_func\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.large"]. Terraform will only perform drift detection if a configuration value is provided. | `list(string)` | <pre>[<br>  "c6i.large"<br>]</pre> | no |
 | <a name="input_func_pool_max_size"></a> [func\_pool\_max\_size](#input\_func\_pool\_max\_size) | The maximum size of the AutoScaling Group. | `number` | `5` | no |
 | <a name="input_func_pool_min_size"></a> [func\_pool\_min\_size](#input\_func\_pool\_min\_size) | The minimum size of the AutoScaling Group. | `number` | `1` | no |
 | <a name="input_func_pool_namespace"></a> [func\_pool\_namespace](#input\_func\_pool\_namespace) | The namespace where functions run. | `string` | `"pulsar-funcs"` | no |
@@ -325,9 +358,9 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_map_additional_iam_users"></a> [map\_additional\_iam\_users](#input\_map\_additional\_iam\_users) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | n/a | yes |
-| <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided. | `number` | `null` | no |
+| <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `50` | no |
 | <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |
-| <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["t3.medium"]. Terraform will only perform drift detection if a configuration value is provided. | `list(string)` | <pre>[<br>  "t3.medium"<br>]</pre> | no |
+| <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["c6i.large"]. | `list(string)` | <pre>[<br>  "c6i.large"<br>]</pre> | no |
 | <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group. | `number` | n/a | yes |
 | <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | n/a | yes |
 | <a name="input_node_termination_handler_chart_version"></a> [node\_termination\_handler\_chart\_version](#input\_node\_termination\_handler\_chart\_version) | The version of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"0.16.0"` | no |
@@ -356,6 +389,3 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
 | <a name="output_external_dns_role_arn"></a> [external\_dns\_role\_arn](#output\_external\_dns\_role\_arn) | The IAM Role ARN used by the ExternalDNS configuration |
 | <a name="output_sn_system_namespace"></a> [sn\_system\_namespace](#output\_sn\_system\_namespace) | The namespace used for StreamNative system resources, i.e. operators et all |
-
----
-[^1]: When running Apache Pulsar in Kubernetes, we make use of EBS backed Kubernetes Persistent Volume Claims (PVC). EBS volumes themselves are zonal, which means [an EC2 instance can only mount a volume that exists in its same AWS Availability Zone](https://aws.amazon.com/blogs/containers/amazon-eks-cluster-multi-zone-auto-scaling-groups/). For this reason we have added node group "zone affinity" functionality into our module, where **an EKS node group is created per AWS Availability Zone**. This is controlled by the number of subnets you pass to the EKS module, creating one node group per subnet.

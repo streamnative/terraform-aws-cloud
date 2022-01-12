@@ -202,6 +202,12 @@ variable "csi_settings" {
   type        = map(any)
 }
 
+variable "disk_encryption_kms_key_id" {
+  default     = ""
+  description = "The KMS Key ARN to use for disk encryption."
+  type        = string
+}
+
 variable "enable_aws_load_balancer_controller" {
   default     = true
   description = "Whether to enable the AWS Load Balancer Controller addon on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
@@ -322,7 +328,7 @@ variable "func_pool_desired_size" {
 }
 
 variable "func_pool_disk_size" {
-  default     = 20
+  default     = 50
   description = "Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided."
   type        = number
 }
@@ -334,7 +340,7 @@ variable "func_pool_disk_type" {
 }
 
 variable "func_pool_instance_types" {
-  default     = ["t3.large"]
+  default     = ["c6i.large"]
   description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.large\"]. Terraform will only perform drift detection if a configuration value is provided."
   type        = list(string)
 }
@@ -472,8 +478,8 @@ variable "node_pool_desired_size" {
 }
 
 variable "node_pool_disk_size" {
-  default     = null
-  description = "Disk size in GiB for worker nodes in the node pool. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided."
+  default     = 50
+  description = "Disk size in GiB for worker nodes in the node pool. Defaults to 50."
   type        = number
 }
 
@@ -484,8 +490,8 @@ variable "node_pool_disk_type" {
 }
 
 variable "node_pool_instance_types" {
-  default     = ["t3.medium"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided."
+  default     = ["c6i.large"]
+  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"c6i.large\"]."
   type        = list(string)
 }
 

@@ -178,7 +178,6 @@ module "sn_bootstrap" {
   enable_vault_operator         = true
   enable_function_mesh_operator = true
   enable_istio_operator         = true
-  enable_prometheus_operator    = true
   enable_pulsar_operator        = true
 
   depends_on = [
