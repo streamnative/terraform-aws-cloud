@@ -17,6 +17,14 @@
 # under the License.
 #
 
+data "aws_kms_key" "ebs_default" {
+  key_id = "alias/aws/ebs"
+}
+
+locals {
+  kms_key = var.disk_encryption_kms_key_id == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_id
+}
+
 data "aws_iam_policy_document" "csi" {
   statement {
     actions = [
@@ -119,6 +127,31 @@ data "aws_iam_policy_document" "csi" {
       values   = ["true"]
     }
   }
+  statement {
+    actions = [
+      "kms:CreateGrant",
+      "kms:ListGrants",
+      "kms:RevokeGrant",
+    ]
+    resources = [local.kms_key]
+    effect    = "Allow"
+    condition {
+      test     = "Bool"
+      variable = "kms:GrantIsForAWSResource"
+      values   = ["true"]
+    }
+  }
+  statement {
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey"
+    ]
+    resources = [local.kms_key]
+    effect    = "Allow"
+  }
 }
 
 data "aws_iam_policy_document" "csi_sts" {
@@ -208,13 +241,14 @@ resource "helm_release" "csi" {
 }
 
 resource "kubernetes_storage_class" "sn_default" {
-  count = var.enable_csi ? 1 : 0
   metadata {
     name = "sn-default"
   }
-  storage_provisioner = "kubernetes.io/aws-ebs"
+  storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
   parameters = {
-    type = "gp2"
+    type       = "gp3"
+    encryption = "true"
+    kmsKeyId   = local.kms_key
   }
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
@@ -222,13 +256,14 @@ resource "kubernetes_storage_class" "sn_default" {
 }
 
 resource "kubernetes_storage_class" "sn_ssd" {
-  count = var.enable_csi ? 1 : 0
   metadata {
     name = "sn-ssd"
   }
-  storage_provisioner = "kubernetes.io/aws-ebs"
+  storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
   parameters = {
-    type = "gp2"
+    type       = "gp3"
+    encryption = "true"
+    kmsKeyId   = local.kms_key
   }
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
