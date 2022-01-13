@@ -22,7 +22,7 @@ EKS has multiple modes of network configuration for how you access the EKS clust
 This Terraform module supports the following:
 
 - **Public (EKS) / Private (Node Groups)**: The EKS cluster API server is accessible from the internet, and node groups use a private VPC endpoint to communicate with the cluster's controle plane **_(default configuration)_**
-- **Public (EKS) / Public (Node Groups)**: The EKS cluster API server is accessible from the internet, and node groups use a public EKS endpoint to communicate with the cluster's control plane. This can be disabled by setting the input `enable_node_group_private_networking = false` in the module.
+- **Public (EKS) / Public (Node Groups)**: The EKS cluster API server is accessible from the internet, and node groups use a public EKS endpoint to communicate with the cluster's control plane. This mode can be enabled by setting the input `enable_node_group_private_networking = false` in the module.
 
 **Note:** _Currently we do not support fully private EKS clusters with this module (i.e. all network traffic remains internal to the AWS VPC)_
 
