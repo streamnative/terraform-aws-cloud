@@ -12,9 +12,29 @@ We use [Helm](https://helm.sh/docs/intro/install/) for deploying the [StreamNati
 
 Your caller identity must also have the necessary AWS IAM permissions to create and work with EC2 (EKS, VPCs, etc.) and Route53.
 
-### Other Recommendations for AWS
+### Other Recommendations
 - [`aws`](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) command-line tool
 - [`aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html) command line tool
+
+## Networking
+EKS has multiple modes of network configuration for how you access the EKS cluster endpoint, as well as how the node groups communicate with the EKS control plane.
+
+This Terraform module supports the following:
+
+- **Public (EKS) / Private (Node Groups)**: The EKS cluster API server is accessible from the internet, and node groups use a private VPC endpoint to communicate with the cluster's controle plane **_(default configuration)_**
+- **Public (EKS) / Public (Node Groups)**: The EKS cluster API server is accessible from the internet, and node groups use a public EKS endpoint to communicate with the cluster's control plane. This can be disabled by setting the input `enable_node_group_private_networking = false` in the module.
+
+**Note:** _Currently we do not support fully private EKS clusters with this module (i.e. all network traffic remains internal to the AWS VPC)_
+
+For your VPC configuration we require sets of public and private subnets (minimum of two each, one per AWS AZ). Both groups of subnets must have an outbound configuration to the internet. We also recommend using a seperate VPC reserved for the EKS cluster, with a minimum CIDR block per subnet of `/24`.
+
+A Terraform [sub-module](https://github.com/streamnative/terraform-aws-cloud/tree/master/modules/vpc) is available that manages the VPC configuration to our specifications. It can be used in composition to the root module in this repo _(see this [example](https://github.com/streamnative/terraform-aws-cloud/blob/master/examples/example-with-vpc/main.tf))_.
+
+For more information on how EKS networking can be configured, refer to the following AWS guides:
+- [Networking in EKS](https://aws.github.io/aws-eks-best-practices/reliability/docs/networkmanagement/)
+- [Amazon EKS cluster endpoint access control](https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
+- [De-mystifying cluster networking for Amazon EKS worker nodes](https://aws.amazon.com/blogs/containers/de-mystifying-cluster-networking-for-amazon-eks-worker-nodes/)
+
 
 ## Getting Started
 A bare minimum configuration to execute the module:
@@ -45,11 +65,6 @@ provider "kubernetes" {
   insecure               = false
 }
 
-locals {
-  cluster_name = "sn-cluster-${var.region}"
-  hosted_zone_id = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
-}
-
 variable "region" {
   default = "us-east-1"
 }
@@ -57,10 +72,9 @@ variable "region" {
 module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
-  add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery
-  cluster_name             = local.cluster_name
+  cluster_name             = "sn-cluster-${var.region}"
   cluster_version          = "1.20"
-  hosted_zone_id           = local.hosted_zone_id
+  hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
   kubeconfig_output_path   = "./${local.cluster_name}-config"
   node_pool_instance_types = ["c6i.large"]
   node_pool_desired_size   = 2
@@ -282,6 +296,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [aws_iam_policy_document.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_kms_key.ebs_default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
+| [aws_subnet.private_cidrs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 
 ## Inputs
 
@@ -289,6 +304,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 |------|-------------|------|---------|:--------:|
 | <a name="input_add_vpc_tags"></a> [add\_vpc\_tags](#input\_add\_vpc\_tags) | Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to "true". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module. | `bool` | `true` | no |
 | <a name="input_additional_tags"></a> [additional\_tags](#input\_additional\_tags) | Additional tags to be added to the resources created by this module. | `map(any)` | `{}` | no |
+| <a name="input_allowed_public_cidrs"></a> [allowed\_public\_cidrs](#input\_allowed\_public\_cidrs) | List of CIDR blocks that are allowed to access the EKS cluster's public endpoint. Defaults to "0.0.0.0/0" (any). | `list(string)` | <pre>[<br>  "0.0.0.0/0"<br>]</pre> | no |
 | <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region. | `list(string)` | `[]` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_name"></a> [aws\_load\_balancer\_controller\_helm\_chart\_name](#input\_aws\_load\_balancer\_controller\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"aws-load-balancer-controller"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_repository"></a> [aws\_load\_balancer\_controller\_helm\_chart\_repository](#input\_aws\_load\_balancer\_controller\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"https://aws.github.io/eks-charts"` | no |
@@ -328,6 +344,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_enable_external_secrets"></a> [enable\_external\_secrets](#input\_enable\_external\_secrets) | Enables kubernetes-external-secrets addon service on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool. | `bool` | `false` | no |
 | <a name="input_enable_istio"></a> [enable\_istio](#input\_enable\_istio) | Enables Istio on the cluster. Set to "false" by default. | `bool` | `false` | no |
+| <a name="input_enable_node_group_private_networking"></a> [enable\_node\_group\_private\_networking](#input\_enable\_node\_group\_private\_networking) | Enables private networking for the EKS node groups (not the EKS cluster endpoint, which remains public), meaning Kubernetes API requests that originate within the cluster's VPC use a private VPC endpoint for EKS. Defaults to "true". | `bool` | `true` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
 | <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"5.5.2"` | no |
