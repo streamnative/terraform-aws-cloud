@@ -29,6 +29,12 @@ variable "add_vpc_tags" {
   type        = bool
 }
 
+variable "allowed_public_cidrs" {
+  default     = ["0.0.0.0/0"]
+  description = "List of CIDR blocks that are allowed to access the EKS cluster's public endpoint. Defaults to \"0.0.0.0/0\" (any)."
+  type        = list(string)
+}
+
 variable "asm_secret_arns" {
   default     = []
   description = "The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region."
@@ -264,6 +270,12 @@ variable "enable_func_pool" {
 variable "enable_istio" {
   default     = false
   description = "Enables Istio on the cluster. Set to \"false\" by default."
+  type        = bool
+}
+
+variable "enable_node_group_private_networking" {
+  default     = true
+  description = "Enables private networking for the EKS node groups (not the EKS cluster endpoint, which remains public), meaning Kubernetes API requests that originate within the cluster's VPC use a private VPC endpoint for EKS. Defaults to \"true\"."
   type        = bool
 }
 

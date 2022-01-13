@@ -19,10 +19,16 @@
 
 data "aws_caller_identity" "current" {}
 
+data "aws_subnet" "private_cidrs" {
+  count = length(var.private_subnet_ids)
+  id    = var.private_subnet_ids[count.index]
+}
+
 locals {
-  account_id         = data.aws_caller_identity.current.account_id
-  cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
-  oidc_issuer        = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+  account_id           = data.aws_caller_identity.current.account_id
+  cluster_subnet_ids   = concat(var.private_subnet_ids, var.public_subnet_ids)
+  oidc_issuer          = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+  private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_cidrs[i].cidr_block]
 
   func_pool_defaults = {
     create_launch_template = true
@@ -62,23 +68,27 @@ module "eks" {
   version = "17.24.0"
 
   # cluster_iam_role_name        = aws_iam_role.cluster.name
-  cluster_name                  = var.cluster_name
-  cluster_version               = var.cluster_version
-  cluster_enabled_log_types     = var.cluster_enabled_log_types
-  cluster_log_kms_key_id        = var.cluster_log_kms_key_id
-  cluster_log_retention_in_days = var.cluster_log_retention_in_days
-  enable_irsa                   = true
-  kubeconfig_output_path        = var.kubeconfig_output_path
-  iam_path                      = "/StreamNative/"
-  manage_cluster_iam_resources  = true
-  manage_worker_iam_resources   = true
-  map_accounts                  = var.map_additional_aws_accounts
-  map_roles                     = var.map_additional_iam_roles
-  map_users                     = var.map_additional_iam_users
-  permissions_boundary          = var.permissions_boundary_arn
-  subnets                       = local.cluster_subnet_ids
-  vpc_id                        = var.vpc_id
-  wait_for_cluster_timeout      = var.wait_for_cluster_timeout // This was added in version 17.1.0, and if set above 0, causes TF to crash.
+  cluster_name                                   = var.cluster_name
+  cluster_version                                = var.cluster_version
+  cluster_create_endpoint_private_access_sg_rule = var.enable_node_group_private_networking
+  cluster_endpoint_private_access                = var.enable_node_group_private_networking
+  cluster_endpoint_private_access_cidrs          = local.private_subnet_cidrs
+  cluster_endpoint_public_access_cidrs           = var.allowed_public_cidrs
+  cluster_enabled_log_types                      = var.cluster_enabled_log_types
+  cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
+  cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
+  enable_irsa                                    = true
+  kubeconfig_output_path                         = var.kubeconfig_output_path
+  iam_path                                       = "/StreamNative/"
+  manage_cluster_iam_resources                   = true
+  manage_worker_iam_resources                    = true
+  map_accounts                                   = var.map_additional_aws_accounts
+  map_roles                                      = var.map_additional_iam_roles
+  map_users                                      = var.map_additional_iam_users
+  permissions_boundary                           = var.permissions_boundary_arn
+  subnets                                        = local.cluster_subnet_ids
+  vpc_id                                         = var.vpc_id
+  wait_for_cluster_timeout                       = var.wait_for_cluster_timeout // This was added in version 17.1.0, and if set above 0, causes TF to crash.
   # workers_role_name            = aws_iam_role.nodes.name
   write_kubeconfig = var.write_kubeconfig
 
