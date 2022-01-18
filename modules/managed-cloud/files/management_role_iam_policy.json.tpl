@@ -19,7 +19,7 @@
       "Resource": "*"
     },
     {
-      "Sid": "AllowedIAMActions",
+      "Sid": "AllowedIAMReadActions",
       "Effect": "Allow",
       "Action": [
         "iam:GetPolicy*",
@@ -33,6 +33,48 @@
         "arn:aws:iam::aws:policy/*"
       ]
     },
+    {
+			"Sid": "IamRequireRequestTag",
+			"Effect": "Allow",
+			"Action": [
+        "iam:AttachRolePolicy",
+				"iam:CreateRole",
+				"iam:DeleteRole",
+				"iam:DetachRolePolicy",
+				"iam:PutRolePermissionsBoundary",
+				"iam:SetDefaultPolicyVersion",
+				"iam:TagRole",
+				"iam:UpdateAssumeRolePolicy",
+				"iam:UpdateRole",
+				"iam:UpdateRoleDescription"
+			],
+			"Resource": [
+				"arn:aws:iam::${account_id}:role/StreamNative/*",
+				"arn:aws:iam::${account_id}:policy/StreamNative/*",
+			],
+			"Condition": {
+				"StringEqualsIgnoreCase": {
+					"aws:RequestTag/Vendor": "StreamNative"
+				}
+			}
+		},
+		{
+			"Sid": "IamRequireResourceTag",
+			"Effect": "Allow",
+			"Action": [
+
+			],
+			"Resource": [
+				"arn:aws:iam::${account_id}:role/StreamNative/*",
+				"arn:aws:iam::${account_id}:policy/StreamNative/*",
+				"arn:aws:iam::${account_id}:oidc-provider/*"
+			],
+			"Condition": {
+				"StringEqualsIgnoreCase": {
+					"aws:ResourceTag/Vendor": "StreamNative"
+				}
+			}
+		},
     {
       "Sid": "RestrictedActions",
       "Effect": "Allow",
