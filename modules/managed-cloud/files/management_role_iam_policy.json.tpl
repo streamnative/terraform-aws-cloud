@@ -50,7 +50,7 @@
 			],
 			"Resource": [
 				"arn:aws:iam::${account_id}:role/StreamNative/*",
-				"arn:aws:iam::${account_id}:policy/StreamNative/*",
+				"arn:aws:iam::${account_id}:policy/StreamNative/*"
 			],
 			"Condition": {
 				"StringEqualsIgnoreCase": {

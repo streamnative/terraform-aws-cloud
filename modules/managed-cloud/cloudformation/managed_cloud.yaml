@@ -51,7 +51,7 @@ Resources:
                 Effect: Allow
                 Principal:
                   AWS:
-                    - !Ref ControlPlaneManagerArn
+                    - !Ref ControlPlaneManagementArn
                     - !Ref VendorSupportRoleArn
                 Action: sts:AssumeRole
               - Sid: AllowStreamNativeControlPlaneAccess
@@ -77,7 +77,7 @@ Resources:
         Properties:
             ManagedPolicyName: "StreamNativeCloudPermissionBoundary"
             Path: "/StreamNative/"
-            PolicyDocument: |
+            PolicyDocument: !Sub |
                 {
                 	"Version": "2012-10-17",
                 	"Statement": [
@@ -152,11 +152,11 @@ Resources:
                 			],
                 			"Resource": [
                 				"arn:aws:iam::aws:policy/*",
-                				"arn:aws:iam::738562057640:role/StreamNative/*",
-                				"arn:aws:iam::738562057640:policy/StreamNative/*",
-                				"arn:aws:iam::738562057640:oidc-provider/*",
-                				"arn:aws:iam::738562057640:instance-profile/*",
-                				"arn:aws:iam::738562057640:server-certificate/*"
+                				"arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                				"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*",
+                				"arn:aws:iam::${AWS::AccountId}:oidc-provider/*",
+                				"arn:aws:iam::${AWS::AccountId}:instance-profile/*",
+                				"arn:aws:iam::${AWS::AccountId}:server-certificate/*"
                 			]
                 		},
                 		{
@@ -165,7 +165,7 @@ Resources:
                 			"Action": [
                 				"iam:PassRole"
                 			],
-                			"Resource": "arn:aws:iam::738562057640:role/StreamNative/*",
+                			"Resource": "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
                 			"Condition": {
                 				"StringEquals": {
                 					"iam:PassedToService": "eks.amazonaws.com"
@@ -178,21 +178,21 @@ Resources:
                 			"Action": [
                 				"iam:AttachRolePolicy"
                 			],
-                			"Resource": "arn:aws:iam::738562057640:role/StreamNative/*",
+                			"Resource": "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
                 			"Condition": {
                 				"ArnNotLike": {
                 					"iam:PolicyARN": [ 
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudAWSLoadBalancerControllerPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudCertManagerPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudClusterAutoscalerPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudCsiPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudExternalDnsPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudExternalSecretsPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudPermissionBoundary",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudTieredStoragePolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudVaultPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/StreamNativeCloudVeleroBackupPolicy",
-                						"arn:aws:iam::738562057640:policy/StreamNative/*-elb-sl-role-*",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudAWSLoadBalancerControllerPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudCertManagerPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudClusterAutoscalerPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudCsiPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudExternalDnsPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudExternalSecretsPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudPermissionBoundary",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudTieredStoragePolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudVaultPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudVeleroBackupPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-elb-sl-role-*",
                 						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
                 						"arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
                 						"arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
@@ -209,7 +209,7 @@ Resources:
                 			"Action": [
                 				"iam:CreateRole"
                 			],
-                			"Resource": "arn:aws:iam::738562057640:role/StreamNative/*",
+                			"Resource": "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
                 			"Condition": {
                 				"StringEqualsIgnoreCase": {
                 					"aws:ResourceTag/Vendor": "StreamNative",
@@ -232,8 +232,8 @@ Resources:
                 			],
                 			"Resource": [
                 				"arn:aws:iam:::policy/StreamNative/StreamNativeCloudPermissionBoundary",
-                				"arn:aws:iam::738562057640:role/StreamNative/StreamNativeBootstrapRole",
-                				"arn:aws:iam::738562057640:role/StreamNative/StreamNativeManagementRole"
+                				"arn:aws:iam::${AWS::AccountId}:role/StreamNative/StreamNativeBootstrapRole",
+                				"arn:aws:iam::${AWS::AccountId}:role/StreamNative/StreamNativeManagementRole"
                 			]
                 		}
                 	]
@@ -244,7 +244,7 @@ Resources:
         Properties:
             ManagedPolicyName: "StreamNativeCloudBootstrapPolicy"
             Path: "/StreamNative/"
-            PolicyDocument: |
+            PolicyDocument: !Sub |
                 {
                 	"Version": "2012-10-17",
                 	"Statement": [
@@ -306,8 +306,8 @@ Resources:
                 				"iam:DeletePolicyVersion"
                 			],
                 			"Resource": [
-                				"arn:aws:eks:us-west-2:738562057640:nodegroup/*/snc-*-pool/*",
-                				"arn:aws:iam::738562057640:policy/StreamNative/*"
+                				"arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/*/snc-*-pool/*",
+                				"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*"
                 			]
                 		},
                 		{
@@ -448,8 +448,8 @@ Resources:
                 				"dynamodb:Update*"
                 			],
                 			"Resource": [
-                				"arn:aws:dynamodb:us-west-2:738562057640:table/*vault-table",
-                				"arn:aws:dynamodb:us-west-2:738562057640:global-table/*vault-table"
+                				"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*vault-table",
+                				"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:global-table/*vault-table"
                 			]
                 		},
                 		{
@@ -464,9 +464,9 @@ Resources:
                 				"iam:TagOpenIDConnectProvider"
                 			],
                 			"Resource": [
-                				"arn:aws:iam::738562057640:role/StreamNative/*",
-                				"arn:aws:iam::738562057640:policy/StreamNative/*",
-                				"arn:aws:iam::738562057640:oidc-provider/*"
+                				"arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                				"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*",
+                				"arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
                 			],
                 			"Condition": {
                 				"StringEqualsIgnoreCase": {
@@ -494,9 +494,9 @@ Resources:
                 				"iam:UpdateRoleDescription"
                 			],
                 			"Resource": [
-                				"arn:aws:iam::738562057640:role/StreamNative/*",
-                				"arn:aws:iam::738562057640:policy/StreamNative/*",
-                				"arn:aws:iam::738562057640:oidc-provider/*"
+                				"arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                				"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*",
+                				"arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
                 			],
                 			"Condition": {
                 				"StringEqualsIgnoreCase": {
@@ -525,7 +525,7 @@ Resources:
         Properties:
             ManagedPolicyName: "StreamNativeCloudManagementPolicy"
             Path: "/StreamNative/"
-            PolicyDocument: |
+            PolicyDocument: !Sub |
                 {
                   "Version": "2012-10-17",
                   "Statement": [
@@ -556,8 +556,8 @@ Resources:
                         "iam:ListPolic*"
                       ],
                       "Resource": [
-                        "arn:aws:iam::738562057640:role/StreamNative/*",
-                        "arn:aws:iam::738562057640:policy/StreamNative/*",
+                        "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                        "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*",
                         "arn:aws:iam::aws:policy/*"
                       ]
                     },
@@ -577,8 +577,8 @@ Resources:
                         "iam:UpdateRoleDescription"
                       ],
                       "Resource": [
-                        "arn:aws:iam::${account_id}:role/StreamNative/*",
-                        "arn:aws:iam::${account_id}:policy/StreamNative/*",
+                        "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                        "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*"
                       ],
                       "Condition": {
                         "StringEqualsIgnoreCase": {
