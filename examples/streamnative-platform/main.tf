@@ -98,7 +98,7 @@ locals {
 ### After you apply the targeted VPC module, you can then proceed with `terraform apply` on the entire module.
 #######
 module "vpc" {
-  source = "github.com/streamnative/terraform-aws-cloud//modules/vpc?ref=v2.0.0-alpha"
+  source = "github.com/streamnative/terraform-aws-cloud//modules/vpc?ref=v2.0.1-alpha"
 
   num_azs  = 3 # A minimum of 2 AWS availability zones is required for EKS clusters
   vpc_cidr = "10.80.0.0/16"
@@ -110,7 +110,7 @@ module "vpc" {
 ### Creates an EKS cluster for StreamNative Platform
 ########
 module "sn_cluster" {
-  source = "github.com/streamnative/terraform-aws-cloud?ref=v2.0.0-alpha"
+  source = "github.com/streamnative/terraform-aws-cloud?ref=v2.0.1-alpha"
 
   cluster_name             = local.cluster_name
   cluster_version          = "1.20"
@@ -149,7 +149,7 @@ module "sn_bootstrap" {
 ### Creates resources used for tiered storage offloading in Pulsar 
 #######
 module "sn_tiered_storage_resources" {
-  source = "github.com/streamnative/terraform-aws-cloud//modules/tiered-storage-resources?ref=v2.0.0-alpha"
+  source = "github.com/streamnative/terraform-aws-cloud//modules/tiered-storage-resources?ref=v2.0.1-alpha"
 
   cluster_name     = module.sn_cluster.eks_cluster_id
   oidc_issuer      = module.sn_cluster.eks_cluster_identity_oidc_issuer_string
@@ -169,7 +169,7 @@ module "sn_tiered_storage_resources" {
 ### Creates resources used by Vault for storing and retrieving secrets related to the Pulsar cluster
 #######
 module "sn_tiered_storage_vault_resources" {
-  source = "github.com/streamnative/terraform-aws-cloud//modules/vault-resources?ref=v2.0.0-alpha"
+  source = "github.com/streamnative/terraform-aws-cloud//modules/vault-resources?ref=v2.0.1-alpha"
 
   cluster_name     = module.sn_cluster.eks_cluster_id
   oidc_issuer      = module.sn_cluster.eks_cluster_identity_oidc_issuer_string
