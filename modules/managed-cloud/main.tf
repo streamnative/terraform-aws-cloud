@@ -17,6 +17,17 @@
 # under the License.
 #
 
+terraform {
+  required_version = ">=1.0.0"
+
+  required_providers {
+    aws = {
+      version = ">=3.61.0"
+      source  = "hashicorp/aws"
+    }
+  }
+}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "streamnative_vendor_access" {
@@ -29,6 +40,33 @@ data "aws_iam_policy_document" "streamnative_vendor_access" {
       identifiers = [
         var.streamnative_vendor_access_role_arn
       ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "streamnative_control_plane_access" {
+  statement {
+    sid     = "AllowStreamNativeVendorAccess"
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type = "AWS"
+      identifiers = [
+        var.streamnative_vendor_access_role_arn,
+        var.streamnative_control_plane_role_arn
+      ]
+    }
+  }
+
+  statement {
+    sid     = "AllowStreamNativeControlPlaneAccess"
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    condition {
+      test     = "StringEquals"
+      values   = [var.streamnative_google_account_id]
+      variable = "accounts.google.com:aud"
     }
   }
 }
@@ -116,7 +154,7 @@ resource "aws_iam_policy" "management_role" {
 resource "aws_iam_role" "management_role" {
   name                 = "StreamNativeCloudManagementRole"
   description          = "This role is used by StreamNative for the day to day management of the StreamNative Cloud deployment."
-  assume_role_policy   = data.aws_iam_policy_document.streamnative_vendor_access.json
+  assume_role_policy   = data.aws_iam_policy_document.streamnative_control_plane_access.json
   path                 = "/StreamNative/"
   permissions_boundary = aws_iam_policy.permission_boundary.arn
   tags                 = merge({ Vendor = "StreamNative" }, var.tags)
