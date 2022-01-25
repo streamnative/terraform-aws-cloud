@@ -24,12 +24,6 @@ variable "create_bootstrap_role" {
 
 }
 
-variable "google_account_id" {
-  default     = "108050666045451143798"
-  description = "The Google Cloud service account ID used by StreamNative for Control Plane operations"
-  type        = string
-}
-
 variable "region" {
   description = "The AWS region where your instance of StreamNative Cloud is deployed, i.e. \"us-west-2\""
   type        = string
@@ -38,6 +32,12 @@ variable "region" {
 variable "streamnative_control_plane_role_arn" {
   default     = "arn:aws:iam::311022431024:role/cloud-manager"
   description = "The ARN of the role that is used by StreamNative for Control Plane operations"
+  type        = string
+}
+
+variable "streamnative_google_account_id" {
+  default     = "108050666045451143798"
+  description = "The Google Cloud service account ID used by StreamNative for Control Plane operations"
   type        = string
 }
 

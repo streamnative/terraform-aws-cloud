@@ -52,6 +52,13 @@ data "aws_iam_policy_document" "streamnative_control_plane_access" {
     sid     = "AllowStreamNativeControlPlaneAccess"
     effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type = "Federated"
+      identifiers = [
+        "accounts.google.com"
+      ]
+    }
     condition {
       test     = "StringEquals"
       values   = [var.streamnative_google_account_id]

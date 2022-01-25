@@ -33,20 +33,13 @@
         "arn:aws:iam::aws:policy/*"
       ]
     },
-    {
+		{
 			"Sid": "IamRequireRequestTag",
 			"Effect": "Allow",
 			"Action": [
-        "iam:AttachRolePolicy",
 				"iam:CreateRole",
-				"iam:DeleteRole",
-				"iam:DetachRolePolicy",
-				"iam:PutRolePermissionsBoundary",
-				"iam:SetDefaultPolicyVersion",
-				"iam:TagRole",
-				"iam:UpdateAssumeRolePolicy",
-				"iam:UpdateRole",
-				"iam:UpdateRoleDescription"
+				"iam:TagPolicy",
+				"iam:TagRole"
 			],
 			"Resource": [
 				"arn:aws:iam::${account_id}:role/StreamNative/*",
@@ -62,12 +55,17 @@
 			"Sid": "IamRequireResourceTag",
 			"Effect": "Allow",
 			"Action": [
-
+				"iam:DeleteRole",
+				"iam:DetachRolePolicy",
+				"iam:PutRolePermissionsBoundary",
+				"iam:SetDefaultPolicyVersion",
+				"iam:UpdateAssumeRolePolicy",
+				"iam:UpdateRole",
+				"iam:UpdateRoleDescription"
 			],
 			"Resource": [
 				"arn:aws:iam::${account_id}:role/StreamNative/*",
-				"arn:aws:iam::${account_id}:policy/StreamNative/*",
-				"arn:aws:iam::${account_id}:oidc-provider/*"
+				"arn:aws:iam::${account_id}:policy/StreamNative/*"
 			],
 			"Condition": {
 				"StringEqualsIgnoreCase": {

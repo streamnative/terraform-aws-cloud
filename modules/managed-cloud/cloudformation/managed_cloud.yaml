@@ -561,31 +561,46 @@ Resources:
                         "arn:aws:iam::aws:policy/*"
                       ]
                     },
-                    {
-                      "Sid": "IamRequireRequestTag",
-                      "Effect": "Allow",
-                      "Action": [
-                        "iam:AttachRolePolicy",
-                        "iam:CreateRole",
-                        "iam:DeleteRole",
-                        "iam:DetachRolePolicy",
-                        "iam:PutRolePermissionsBoundary",
-                        "iam:SetDefaultPolicyVersion",
-                        "iam:TagRole",
-                        "iam:UpdateAssumeRolePolicy",
-                        "iam:UpdateRole",
-                        "iam:UpdateRoleDescription"
-                      ],
-                      "Resource": [
-                        "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
-                        "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*"
-                      ],
-                      "Condition": {
-                        "StringEqualsIgnoreCase": {
-                          "aws:RequestTag/Vendor": "StreamNative"
-                        }
-                      }
+                		{
+                		  "Sid": "IamRequireRequestTag",
+                		  "Effect": "Allow",
+                		  "Action": [
+                			  "iam:CreateRole",
+                			  "iam:TagPolicy",
+                			  "iam:TagRole"
+                		  ],
+                		  "Resource": [
+                			  "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                			  "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*"
+                		  ],
+                		  "Condition": {
+                			  "StringEqualsIgnoreCase": {
+                				  "aws:RequestTag/Vendor": "StreamNative"
+                			  }
+                		  }
                     },
+                		{
+                			"Sid": "IamRequireResourceTag",
+                			"Effect": "Allow",
+                			"Action": [
+                				"iam:DeleteRole",
+                				"iam:DetachRolePolicy",
+                				"iam:PutRolePermissionsBoundary",
+                				"iam:SetDefaultPolicyVersion",
+                				"iam:UpdateAssumeRolePolicy",
+                				"iam:UpdateRole",
+                				"iam:UpdateRoleDescription"
+                			],
+                			"Resource": [
+                			  "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
+                			  "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*"
+                		  ],
+                		  "Condition": {
+                			  "StringEqualsIgnoreCase": {
+                				  "aws:ResourceTag/Vendor": "StreamNative"
+                			  }
+                		  }
+                		},
                     {
                       "Sid": "RestrictedActions",
                       "Effect": "Allow",
