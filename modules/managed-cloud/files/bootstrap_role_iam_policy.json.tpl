@@ -12,10 +12,13 @@
 				"dynamodb:ListGlobalTables",
 				"dynamodb:ListTables",
 				"dynamodb:ListTagsOfResource",
+				"ec2:AuthorizeSecurityGroup*",
 				"ec2:Describe*",
 				"ec2:Get*",
 				"eks:Describe*",
 				"eks:List*",
+				"ec2:RevokeSecurityGroup*",
+				"ec2:RunInstances",
 				"iam:AttachRolePolicy",
 				"iam:GetInstanceProfile",
 				"iam:GetOpenIDConnectProvider",
@@ -43,6 +46,8 @@
 				"logs:CreateLogGroup",
 				"logs:DescribeLogGroups",
 				"logs:ListTagsLogGroup",
+				"route53:GetHostedZone",
+				"route53:ListHostedZones",
 				"s3:ListAllMyBuckets",
 				"s3:ListBucket"
 			],
@@ -59,12 +64,12 @@
 				"iam:DeletePolicyVersion"
 			],
 			"Resource": [
-				"arn:aws:eks:${region}:${account_id}:nodegroup/*/snc-*-pool/*",
+				"arn:aws:eks:${region}:${account_id}:nodegroup/*/snc-*-pool*/*",
 				"arn:aws:iam::${account_id}:policy/StreamNative/*"
 			]
 		},
 		{
-			"Sid": "RequireRequestTag",
+			"Sid": "RequireAWSRequestTag",
 			"Effect": "Allow",
 			"Action": [
 				"acm:AddTagsToCertificate",
@@ -92,19 +97,19 @@
 				"ec2:CreateVpc",
 				"ec2:CreateVpcEndpoint",
 				"ec2:CreateTags",
-				"ec2:RunInstances",
 				"eks:Create*",
+				"eks:RegisterCluster",
 				"eks:TagResource"
 			],
 			"Resource": "*",
 			"Condition": {
-				"ForAnyValue:StringEqualsIgnoreCase": {
+				"StringEquals": {
 					"aws:RequestTag/Vendor": "StreamNative"
 				}
 			}
 		},
 		{
-			"Sid": "RequireResourceTag",
+			"Sid": "RequireAWSResourceTag",
 			"Effect": "Allow",
 			"Action": [
 				"acm:DeleteCertificate",
@@ -117,16 +122,14 @@
 				"autoscaling:AttachInstances",
 				"autoscaling:CreateOrUpdateTags",
 				"autoscaling:Delete*",
-				"ec2:AllocateAddress",
 				"ec2:AssignPrivateIpAddresses",
 				"ec2:Associate*",
 				"ec2:AttachInternetGateway",
-				"ec2:AuthorizeSecurityGroup*",
 				"ec2:CreateLaunchTemplateVersion",
 				"ec2:CreateNatGateway",
 				"ec2:CreateNetworkInterface",
 				"ec2:CreateRoute",
-				"ec2:CreateRouteTable",
+                                "ec2:CreateRouteTable",
 				"ec2:CreateSecurityGroup",
 				"ec2:CreateSubnet",
 				"ec2:CreateTags",
@@ -139,14 +142,18 @@
 				"ec2:Revoke*",
 				"ec2:RunInstances",
 				"ec2:Update*",
-				"eks:Delete*",
+				"eks:DeleteAddon",
+				"eks:DeleteCluster",
+				"eks:DeleteFargateProfile",
+				"eks:DeregisterCluster",
+				"eks:DisassociateIdentityProviderConfig",
 				"eks:U*",
 				"logs:DeleteLogGroup",
 				"logs:PutRetentionPolicy"
 			],
 			"Resource": "*",
 			"Condition": {
-				"StringEqualsIgnoreCase": {
+				"StringEquals": {
 					"aws:ResourceTag/Vendor": "StreamNative"
 				}
 			}
