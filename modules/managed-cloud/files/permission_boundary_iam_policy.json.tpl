@@ -112,6 +112,7 @@
 						"arn:aws:iam::${account_id}:policy/StreamNative/*-VaultPolicy",
 						"arn:aws:iam::${account_id}:policy/StreamNative/*-VeleroBackupPolicy",
 						"arn:aws:iam::${account_id}:policy/StreamNative/*-elb-sl-role-*",
+						"arn:aws:iam::${account_id}:policy/StreamNative/*-deny-log-group*",
 						"arn:aws:iam::${account_id}:policy/StreamNative/StreamNativeCloudPermissionBoundary",
 						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
 						"arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
@@ -141,7 +142,6 @@
 			"Sid": "RestrictChangesToVendorAccess",
 			"Effect": "Deny",
 			"Action": [
-				"iam:Attach",
 				"iam:Create*",
 				"iam:Delete*",
 				"iam:Put",

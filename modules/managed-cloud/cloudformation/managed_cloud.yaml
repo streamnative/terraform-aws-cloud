@@ -5,9 +5,6 @@ Parameters:
   VendorSupportRoleArn:
     Description: "The IAM Role ARN used by StreamNative for vendor access into your AWS account. This is provided to you by StreamNative."
     Type: String
-  ControlPlaneManagementArn:
-    Description: "The IAM Role ARN used by StreamNative for control plane management into your AWS account."
-    Type: String
     Default: "arn:aws:iam::311022431024:role/cloud-manager"
   ControlPlaneSAID:
     Description: "The SA ID used by the StreamNative Cloud Control Plane"
@@ -51,7 +48,6 @@ Resources:
                 Effect: Allow
                 Principal:
                   AWS:
-                    - !Ref ControlPlaneManagementArn
                     - !Ref VendorSupportRoleArn
                 Action: sts:AssumeRole
               - Sid: AllowStreamNativeControlPlaneAccess
@@ -182,17 +178,18 @@ Resources:
                 			"Condition": {
                 				"ArnNotLike": {
                 					"iam:PolicyARN": [ 
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudAWSLoadBalancerControllerPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudCertManagerPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudClusterAutoscalerPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudCsiPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudExternalDnsPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudExternalSecretsPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudPermissionBoundary",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudTieredStoragePolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudVaultPolicy",
-                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudVeleroBackupPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-AWSLoadBalancerControllerPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-CertManagerPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-ClusterAutoscalerPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-CsiPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-ExternalDnsPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-ExternalSecretsPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-TieredStoragePolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-VaultPolicy",
+                						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-VeleroBackupPolicy",
                 						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-elb-sl-role-*",
+                            "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-deny-log-group*",
+                            "arn:aws:iam::${AWS::AccountId}:policy/StreamNative/StreamNativeCloudPermissionBoundary",
                 						"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
                 						"arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
                 						"arn:aws:iam::aws:policy/AmazonEKSVPCResourceController",
@@ -259,8 +256,11 @@ Resources:
                 				"dynamodb:ListGlobalTables",
                 				"dynamodb:ListTables",
                 				"dynamodb:ListTagsOfResource",
+                        "ec2:AuthorizeSecurityGroup*",
                 				"ec2:Describe*",
                 				"ec2:Get*",
+                        "ec2:RevokeSecurityGroup*",
+                        "ec2:RunInstances",
                 				"eks:Describe*",
                 				"eks:List*",
                 				"iam:AttachRolePolicy",
@@ -290,6 +290,8 @@ Resources:
                 				"logs:CreateLogGroup",
                 				"logs:DescribeLogGroups",
                 				"logs:ListTagsLogGroup",
+                        "route53:GetHostedZone",
+                        "route53:ListHostedZones",
                 				"s3:ListAllMyBuckets",
                 				"s3:ListBucket"
                 			],
@@ -306,12 +308,12 @@ Resources:
                 				"iam:DeletePolicyVersion"
                 			],
                 			"Resource": [
-                				"arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/*/snc-*-pool/*",
+                				"arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/*/snc-*-pool*/*",
                 				"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*"
                 			]
                 		},
                 		{
-                			"Sid": "RequireRequestTag",
+                			"Sid": "RequireAWSRequestTag",
                 			"Effect": "Allow",
                 			"Action": [
                 				"acm:AddTagsToCertificate",
@@ -339,19 +341,19 @@ Resources:
                 				"ec2:CreateVpc",
                 				"ec2:CreateVpcEndpoint",
                 				"ec2:CreateTags",
-                				"ec2:RunInstances",
                 				"eks:Create*",
+                        "eks:RegisterCluster",
                 				"eks:TagResource"
                 			],
                 			"Resource": "*",
                 			"Condition": {
-                				"ForAnyValue:StringEqualsIgnoreCase": {
+                				"StringEquals": {
                 					"aws:RequestTag/Vendor": "StreamNative"
                 				}
                 			}
                 		},
                 		{
-                			"Sid": "RequireResourceTag",
+                			"Sid": "RequireAWSResourceTag",
                 			"Effect": "Allow",
                 			"Action": [
                 				"acm:DeleteCertificate",
@@ -364,11 +366,9 @@ Resources:
                 				"autoscaling:AttachInstances",
                 				"autoscaling:CreateOrUpdateTags",
                 				"autoscaling:Delete*",
-                				"ec2:AllocateAddress",
                 				"ec2:AssignPrivateIpAddresses",
                 				"ec2:Associate*",
                 				"ec2:AttachInternetGateway",
-                				"ec2:AuthorizeSecurityGroup*",
                 				"ec2:CreateLaunchTemplateVersion",
                 				"ec2:CreateNatGateway",
                 				"ec2:CreateNetworkInterface",
@@ -386,14 +386,18 @@ Resources:
                 				"ec2:Revoke*",
                 				"ec2:RunInstances",
                 				"ec2:Update*",
-                				"eks:Delete*",
+                        "eks:DeleteAddon",
+                        "eks:DeleteCluster",
+                        "eks:DeleteFargateProfile",
+                        "eks:DeregisterCluster",
+                        "eks:DisassociateIdentityProviderConfig",
                 				"eks:U*",
                 				"logs:DeleteLogGroup",
                 				"logs:PutRetentionPolicy"
                 			],
                 			"Resource": "*",
                 			"Condition": {
-                				"StringEqualsIgnoreCase": {
+                				"StringEquals": {
                 					"aws:ResourceTag/Vendor": "StreamNative"
                 				}
                 			}
