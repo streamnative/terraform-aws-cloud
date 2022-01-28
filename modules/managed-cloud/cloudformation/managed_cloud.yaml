@@ -148,6 +148,7 @@ Resources:
                 			],
                 			"Resource": [
                 				"arn:aws:iam::aws:policy/*",
+                        "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*",
                 				"arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
                 				"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*",
                 				"arn:aws:iam::${AWS::AccountId}:oidc-provider/*",
@@ -292,6 +293,7 @@ Resources:
                 				"logs:ListTagsLogGroup",
                         "route53:GetHostedZone",
                         "route53:ListHostedZones",
+                        "route53:ListTagsForResource",
                 				"s3:ListAllMyBuckets",
                 				"s3:ListBucket"
                 			],
@@ -434,7 +436,6 @@ Resources:
                 				"arn:aws:s3:::*-storage-offload-*",
                 				"arn:aws:s3:::*-backup-*"
                 			 ]
-                			 
                 		},
                 		{
                 			"Sid": "RestrictDynamoAccess",
@@ -483,7 +484,6 @@ Resources:
                 			"Effect": "Allow",
                 			"Action": [
                 				"iam:AddRoleToInstanceProfile",
-                				"iam:CreateServiceLinkedRole",
                 				"iam:DeleteInstanceProfile",
                 				"iam:DeleteOpenIDConnectProvider",
                 				"iam:DeleteRole",
@@ -507,6 +507,12 @@ Resources:
                 					"aws:ResourceTag/Vendor": "StreamNative"
                 				}
                 			}
+                		},
+                		{
+                			"Sid": "AllowAWSServiceRoleCreation",
+                			"Effect": "Allow",
+                			"Action": "iam:CreateServiceLinkedRole",
+                			"Resource":  "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*"
                 		},
                 		{
                 			"Sid": "RestrictPassRoleToEKS",
@@ -636,4 +642,3 @@ Resources:
                     }
                   ]
                 }
-
