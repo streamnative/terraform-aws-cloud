@@ -41,7 +41,11 @@ locals {
     k8s_labels             = { NodeGroup = "functions" }
     min_capacity           = coalesce(var.func_pool_min_size, var.node_pool_min_size)
     max_capacity           = coalesce(var.func_pool_max_size, var.node_pool_max_size)
-    taints                 = ["reserveGroup=functions:NoSchedule"]
+    taints = [{
+      key    = "reserveGroup"
+      value  = "functions"
+      effect = "NO_SCHEDULE"
+    }]
   }
 
   node_pool_defaults = {
