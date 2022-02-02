@@ -65,7 +65,7 @@ data "aws_iam_policy_document" "cert_manager_sts" {
     }
     condition {
       test     = "StringLike"
-      values   = [format("system:serviceaccount:%s:%s", "kube-system", "cert-manager")]
+      values   = [format("system:serviceaccount:%s:%s", "kube-system", "cert-manager-controller")]
       variable = format("%s:sub", local.oidc_issuer)
     }
   }
@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "cert_manager_sts" {
 
 resource "aws_iam_role" "cert_manager" {
   count                = var.enable_cert_manager ? 1 : 0
-  name                 = format("%s-cert-manager-role", module.eks.cluster_id)
+  name                 = format("%s-cm-role", module.eks.cluster_id)
   description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
   path                 = "/StreamNative/"
@@ -112,16 +112,17 @@ resource "helm_release" "cert_manager" {
       args = [
         "--issuer-ambient-credentials=true"
       ]
-    }
-    kubeVersion = var.cluster_version
-    podSecurityContext = {
-      fsGroup = 65534
-    }
-    serviceaccount = {
-      annotations = {
-        "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
+      serviceAccount = {
+        annotations = {
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
+        }
+      }
+      podSecurityContext = {
+        fsGroup = 65534
       }
     }
+    kubeVersion = var.cluster_version
+
   })]
 
   dynamic "set" {

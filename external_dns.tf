@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "external_dns_sts" {
 
 resource "aws_iam_role" "external_dns" {
   count                = var.enable_external_dns ? 1 : 0
-  name                 = format("%s-external-dns-role", module.eks.cluster_id)
+  name                 = format("%s-extdns-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA external-dns on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
   path                 = "/StreamNative/"

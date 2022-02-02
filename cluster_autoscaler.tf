@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
 
 resource "aws_iam_role" "cluster_autoscaler" {
   count                = var.enable_cluster_autoscaler ? 1 : 0
-  name                 = format("%s-cluster-autoscaler-role", module.eks.cluster_id)
+  name                 = format("%s-ca-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cluster_autoscaler_sts.json
   path                 = "/StreamNative/"

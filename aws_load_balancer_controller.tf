@@ -261,7 +261,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
   count                = var.enable_aws_load_balancer_controller ? 1 : 0
-  name                 = format("%s-aws-load-balancer-controller-role", module.eks.cluster_id)
+  name                 = format("%s-lbc-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
   path                 = "/StreamNative/"
