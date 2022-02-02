@@ -117,7 +117,8 @@ resource "helm_release" "cert_manager" {
     podSecurityContext = {
       fsGroup = 65534
     }
-    serviceaccount = {
+    serviceAccount = {
+      name = "cert-manager"
       annotations = {
         "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
       }
