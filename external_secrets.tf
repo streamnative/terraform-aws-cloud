@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "external_secrets_sts" {
 
 resource "aws_iam_role" "external_secrets" {
   count                = var.enable_external_secrets ? 1 : 0
-  name                 = format("%s-external-secrets-role", module.eks.cluster_id)
+  name                 = format("%s-extsec-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA external-secrets on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.external_secrets_sts.json
   path                 = "/StreamNative/"

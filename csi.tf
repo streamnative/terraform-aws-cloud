@@ -246,9 +246,9 @@ resource "kubernetes_storage_class" "sn_default" {
   }
   storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
   parameters = {
-    type       = "gp3"
+    type      = "gp3"
     encrypted = "true"
-    kmsKeyId   = local.kms_key
+    kmsKeyId  = local.kms_key
   }
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
@@ -261,9 +261,9 @@ resource "kubernetes_storage_class" "sn_ssd" {
   }
   storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
   parameters = {
-    type       = "gp3"
+    type      = "gp3"
     encrypted = "true"
-    kmsKeyId   = local.kms_key
+    kmsKeyId  = local.kms_key
   }
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
