@@ -111,7 +111,7 @@
       "Effect": "Allow",
       "Action": [
         "acm:AddTagsToCertificate",
-        "acm:ImportCertificate",
+        "acm:ImportCertificate"
       ],
       "Resource": [
         "*"
