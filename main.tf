@@ -82,7 +82,6 @@ module "eks" {
   cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
   cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
   enable_irsa                                    = true
-  kubeconfig_output_path                         = var.kubeconfig_output_path
   iam_path                                       = "/StreamNative/"
   manage_cluster_iam_resources                   = true
   manage_worker_iam_resources                    = true
@@ -93,9 +92,8 @@ module "eks" {
   subnets                                        = local.cluster_subnet_ids
   vpc_id                                         = var.vpc_id
   wait_for_cluster_timeout                       = var.wait_for_cluster_timeout // This was added in version 17.1.0, and if set above 0, causes TF to crash.
+  write_kubeconfig                               = false
   # workers_role_name            = aws_iam_role.nodes.name
-  write_kubeconfig = var.write_kubeconfig
-
 
   node_groups = local.node_groups
 

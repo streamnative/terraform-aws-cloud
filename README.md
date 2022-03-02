@@ -54,7 +54,9 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    config_path = "./${local.cluster_name}-config" # This must match the module input
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
 
@@ -75,7 +77,6 @@ module "sn_cluster" {
   cluster_name             = "sn-cluster-${var.region}"
   cluster_version          = "1.20"
   hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
-  kubeconfig_output_path   = "./${local.cluster_name}-config"
   node_pool_instance_types = ["c6i.large"]
   node_pool_desired_size   = 2
   node_pool_min_size       = 1
@@ -370,7 +371,6 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_istio_settings"></a> [istio\_settings](#input\_istio\_settings) | Additional settings which will be passed to the Helm chart values | `map(any)` | `{}` | no |
 | <a name="input_istio_trust_domain"></a> [istio\_trust\_domain](#input\_istio\_trust\_domain) | The trust domain used for the Istio deployment, which corresponds to the root of a system. This is required when "enable\_istio\_operator" is set to "true". | `string` | `"cluster.local"` | no |
 | <a name="input_kiali_operator_settings"></a> [kiali\_operator\_settings](#input\_kiali\_operator\_settings) | Additional settings which will be passed to the Helm chart values | `map(any)` | `{}` | no |
-| <a name="input_kubeconfig_output_path"></a> [kubeconfig\_output\_path](#input\_kubeconfig\_output\_path) | Where to save the Kubectl config file (if `write_kubeconfig = true`). Assumed to be a directory if the value ends with a forward slash `/`. | `string` | `"./"` | no |
 | <a name="input_map_additional_aws_accounts"></a> [map\_additional\_aws\_accounts](#input\_map\_additional\_aws\_accounts) | Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap. | `list(string)` | `[]` | no |
 | <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_map_additional_iam_users"></a> [map\_additional\_iam\_users](#input\_map\_additional\_iam\_users) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
@@ -391,7 +391,6 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_service_domain"></a> [service\_domain](#input\_service\_domain) | The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail. | `string` | `null` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The ID of the AWS VPC to use. | `string` | `""` | no |
 | <a name="input_wait_for_cluster_timeout"></a> [wait\_for\_cluster\_timeout](#input\_wait\_for\_cluster\_timeout) | Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module "terraform-aws-modules/eks/aws", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420. | `number` | `0` | no |
-| <a name="input_write_kubeconfig"></a> [write\_kubeconfig](#input\_write\_kubeconfig) | Whether to write a Kubectl config file containing the cluster configuration. Saved to variable "kubeconfig\_output\_path". | `bool` | `true` | no |
 
 ## Outputs
 
@@ -406,3 +405,4 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
 | <a name="output_external_dns_role_arn"></a> [external\_dns\_role\_arn](#output\_external\_dns\_role\_arn) | The IAM Role ARN used by the ExternalDNS configuration |
 | <a name="output_sn_system_namespace"></a> [sn\_system\_namespace](#output\_sn\_system\_namespace) | The namespace used for StreamNative system resources, i.e. operators et all |
+

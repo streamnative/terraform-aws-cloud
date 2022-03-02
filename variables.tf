@@ -422,12 +422,6 @@ variable "kiali_operator_settings" {
   type        = map(any)
 }
 
-variable "kubeconfig_output_path" {
-  default     = "./"
-  description = "Where to save the Kubectl config file (if `write_kubeconfig = true`). Assumed to be a directory if the value ends with a forward slash `/`."
-  type        = string
-}
-
 variable "map_additional_aws_accounts" {
   default     = []
   description = "Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap."
@@ -555,10 +549,4 @@ variable "wait_for_cluster_timeout" {
   default     = 0
   description = "Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module \"terraform-aws-modules/eks/aws\", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420."
   type        = number
-}
-
-variable "write_kubeconfig" {
-  default     = true
-  description = "Whether to write a Kubectl config file containing the cluster configuration. Saved to variable \"kubeconfig_output_path\"."
-  type        = bool
 }
