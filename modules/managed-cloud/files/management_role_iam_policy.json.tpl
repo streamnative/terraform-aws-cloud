@@ -5,6 +5,7 @@
       "Sid": "AllowedServices",
       "Effect": "Allow",
       "Action": [
+        "acm:List*",
         "cloudwatch:Describe*",
         "cloudwatch:List*",
         "cloudwatch:Get*",
@@ -74,9 +75,12 @@
 			}
 		},
     {
-      "Sid": "RestrictedActions",
+      "Sid": "RequireResourceTag",
       "Effect": "Allow",
       "Action": [
+        "acm:DeleteCertificate",
+        "acm:DescribeCertificate",
+        "acm:GetCertificate",
         "autoscaling:CancelInstanceRefresh",
         "autoscaling:Describe*",
         "autoscaling:PutScalingPolicy",
@@ -99,6 +103,22 @@
       "Condition": {
         "StringEqualsIgnoreCase": {
           "aws:ResourceTag/Vendor": "StreamNative"
+        }
+      }
+    },
+    {
+      "Sid": "RequireRequestTag",
+      "Effect": "Allow",
+      "Action": [
+        "acm:AddTagsToCertificate",
+        "acm:ImportCertificate"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEqualsIgnoreCase": {
+          "aws:RequestTag/Vendor": "StreamNative"
         }
       }
     }
