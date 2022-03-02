@@ -42,7 +42,7 @@ resource "aws_ec2_tag" "private_subnet_tag" {
 }
 
 resource "aws_ec2_tag" "public_subnet_tag" {
-  count       = length(var.private_subnet_ids)
+  count       = length(var.public_subnet_ids)
   resource_id = var.public_subnet_ids[count.index]
   key         = "kubernetes.io/role/elb"
   value       = "1"
