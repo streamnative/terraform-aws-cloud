@@ -6,7 +6,7 @@
 			"Effect": "Allow",
 			"Action": [
 				"acm:ListCertificates",
-				"acm:ListTagsForCertificate",	
+				"acm:ListTagsForCertificate",
 				"autoscaling:Describe*",
 				"dynamodb:ListBackups",
 				"dynamodb:ListGlobalTables",
@@ -100,7 +100,8 @@
 				"ec2:CreateTags",
 				"eks:Create*",
 				"eks:RegisterCluster",
-				"eks:TagResource"
+				"eks:TagResource",
+				"route53:CreateHostedZone"
 			],
 			"Resource": "*",
 			"Condition": {
@@ -150,7 +151,8 @@
 				"eks:DisassociateIdentityProviderConfig",
 				"eks:U*",
 				"logs:DeleteLogGroup",
-				"logs:PutRetentionPolicy"
+				"logs:PutRetentionPolicy",
+				"route53:DeleteHostedZone"
 			],
 			"Resource": "*",
 			"Condition": {
@@ -191,7 +193,7 @@
 				"arn:aws:s3:::*-storage-offload-*",
 				"arn:aws:s3:::*-backup-*"
 			 ]
-			 
+
 		},
 		{
 			"Sid": "RestrictDynamoAccess",
