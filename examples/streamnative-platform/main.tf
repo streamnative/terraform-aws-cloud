@@ -17,24 +17,6 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">=3.72.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "2.2.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">=2.7.1"
-    }
-  }
-}
-
 provider "aws" {
   region = local.region
 }
@@ -44,7 +26,6 @@ provider "helm" {
     host                   = data.aws_eks_cluster.cluster.endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
     token                  = data.aws_eks_cluster_auth.cluster.token
-    insecure               = false
   }
 }
 
@@ -115,8 +96,7 @@ module "sn_cluster" {
   cluster_name             = local.cluster_name
   cluster_version          = "1.20"
   hosted_zone_id           = "*" # Specify the hosted zone ID where you want DNS records to be created and managed. This scopes access to the External DNS service.
-  kubeconfig_output_path   = "./${local.cluster_name}-config"
-  node_pool_instance_types = ["c6i.large"]
+  node_pool_instance_types = ["c6i.xlarge"]
   node_pool_desired_size   = 1 # This module creates 1 node pool per private subnet. Based on this configuration, the cluster will have 3 node pools with 1 x c6i.large instance, 3 instances total.
   node_pool_min_size       = 1
   node_pool_max_size       = 5

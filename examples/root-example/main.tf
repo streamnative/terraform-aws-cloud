@@ -17,25 +17,6 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
-
-  required_providers {
-    aws = {
-      version = ">= 3.45.0"
-      source  = "hashicorp/aws"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "2.2.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.2.0"
-    }
-  }
-}
-
 #######
 ### These data sources are required by the Kubernetes and Helm providers in order to connect to the newly provisioned cluster
 #######
@@ -53,7 +34,9 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    config_path = "./${local.cluster_name}-config" # This must match the module input
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
 
@@ -62,7 +45,6 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   insecure               = false
-  config_path            = "./${local.cluster_name}-config" # This must match the module input
 }
 
 #######
@@ -75,7 +57,6 @@ module "sn_cluster" {
   cluster_name             = local.cluster_name
   cluster_version          = "1.19"
   hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
-  kubeconfig_output_path   = "./${local.cluster_name}-config"
   node_pool_instance_types = ["m5.large"]
   node_pool_desired_size   = 3
   node_pool_min_size       = 1
