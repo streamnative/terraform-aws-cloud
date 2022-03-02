@@ -345,7 +345,8 @@ Resources:
                 				"ec2:CreateTags",
                 				"eks:Create*",
                         "eks:RegisterCluster",
-                				"eks:TagResource"
+                				"eks:TagResource",
+                        "route53:CreateHostedZone"
                 			],
                 			"Resource": "*",
                 			"Condition": {
@@ -395,7 +396,8 @@ Resources:
                         "eks:DisassociateIdentityProviderConfig",
                 				"eks:U*",
                 				"logs:DeleteLogGroup",
-                				"logs:PutRetentionPolicy"
+                				"logs:PutRetentionPolicy",
+                        "route53:DeleteHostedZone"
                 			],
                 			"Resource": "*",
                 			"Condition": {
