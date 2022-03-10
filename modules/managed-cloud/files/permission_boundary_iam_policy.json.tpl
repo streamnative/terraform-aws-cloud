@@ -102,7 +102,7 @@
 			"Resource": "arn:aws:iam::${account_id}:role/StreamNative/*",
 			"Condition": {
 				"ArnNotLike": {
-					"iam:PolicyARN": [ 
+					"iam:PolicyARN": [
 						"arn:aws:iam::${account_id}:policy/StreamNative/*-AWSLoadBalancerControllerPolicy",
 						"arn:aws:iam::${account_id}:policy/StreamNative/*-CertManagerPolicy",
 						"arn:aws:iam::${account_id}:policy/StreamNative/*-ClusterAutoscalerPolicy",
@@ -153,6 +153,8 @@
 			],
 			"Resource": [
 				"arn:aws:iam:::policy/StreamNative/StreamNativeCloudPermissionBoundary",
+				"arn:aws:iam:::policy/StreamNative/StreamNativeCloudBootstrapPolicy",
+				"arn:aws:iam:::policy/StreamNative/StreamNativeCloudManagementPolicy",
 				"arn:aws:iam::${account_id}:role/StreamNative/StreamNativeBootstrapRole",
 				"arn:aws:iam::${account_id}:role/StreamNative/StreamNativeManagementRole"
 			]

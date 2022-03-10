@@ -25,7 +25,26 @@ variable "create_bootstrap_role" {
 }
 
 variable "region" {
-  description = "The AWS region where your instance of StreamNative Cloud is deployed, i.e. \"us-west-2\""
+  default     = "*"
+  description = "The AWS region where your instance of StreamNative Cloud is deployed. Defaults to all regions \"*\""
+  type        = string
+}
+
+variable "external_id" {
+  default     = ""
+  description = "The external ID, provided by StreamNative, which is used for all assume role calls. If not provided, no check for external_id is added. (NOTE: a future version will force the passing of this parameter)"
+  type        = string
+}
+
+variable "source_identities" {
+  default     = []
+  description = "Place an additional constraint on source identity, disabled by default and only to be used if specified by StreamNative"
+  type        = list
+}
+
+variable "source_identity_test" {
+  default     = "ForAnyValue:StringLike"
+  description = "The test to use for source identity"
   type        = string
 }
 
@@ -42,6 +61,7 @@ variable "streamnative_google_account_id" {
 }
 
 variable "streamnative_vendor_access_role_arn" {
+  default     = "arn:aws:iam::311022431024:role/cloud-manager"
   description = "The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account"
   type        = string
 }

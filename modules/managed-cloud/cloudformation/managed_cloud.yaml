@@ -17,25 +17,25 @@ Resources:
         Properties:
             Path: "/StreamNative/"
             RoleName: "StreamNativeCloudBootstrapRole"
-            AssumeRolePolicyDocument: 
+            AssumeRolePolicyDocument:
               Version: '2012-10-17'
               Statement:
               - Sid: AllowStreamNativeVendorAccess
                 Effect: Allow
                 Principal:
-                  AWS: 
+                  AWS:
                     - !Ref VendorSupportRoleArn
                 Action: sts:AssumeRole
             MaxSessionDuration: 3600
             PermissionsBoundary: !Ref PermissionBoundaryPolicy
-            ManagedPolicyArns: 
+            ManagedPolicyArns:
               - !Ref BootstrapPolicy
             Description: "This role is used to bootstrap the StreamNative Cloud within the AWS account. It is limited in scope to the attached policy and also the permission boundary."
-            Tags: 
-              - 
+            Tags:
+              -
                 Key: "Vendor"
                 Value: "StreamNative"
-  
+
     ManagementRole:
         Type: "AWS::IAM::Role"
         Properties:
@@ -60,11 +60,11 @@ Resources:
                     accounts.google.com:aud: !Ref ControlPlaneSAID
             MaxSessionDuration: 3600
             PermissionsBoundary: !Ref PermissionBoundaryPolicy
-            ManagedPolicyArns: 
+            ManagedPolicyArns:
               - !Ref ManagementPolicy
             Description: "This role is used by StreamNative for the day to day management of the StreamNative Cloud deployment."
-            Tags: 
-              - 
+            Tags:
+              -
                 Key: "Vendor"
                 Value: "StreamNative"
 
@@ -178,7 +178,7 @@ Resources:
                 			"Resource": "arn:aws:iam::${AWS::AccountId}:role/StreamNative/*",
                 			"Condition": {
                 				"ArnNotLike": {
-                					"iam:PolicyARN": [ 
+                					"iam:PolicyARN": [
                 						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-AWSLoadBalancerControllerPolicy",
                 						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-CertManagerPolicy",
                 						"arn:aws:iam::${AWS::AccountId}:policy/StreamNative/*-ClusterAutoscalerPolicy",
@@ -251,7 +251,7 @@ Resources:
                 			"Effect": "Allow",
                 			"Action": [
                 				"acm:ListCertificates",
-                				"acm:ListTagsForCertificate",	
+                				"acm:ListTagsForCertificate",
                 				"autoscaling:Describe*",
                 				"dynamodb:ListBackups",
                 				"dynamodb:ListGlobalTables",
@@ -291,6 +291,9 @@ Resources:
                 				"logs:CreateLogGroup",
                 				"logs:DescribeLogGroups",
                 				"logs:ListTagsLogGroup",
+                        "route53:CreateHostedZone",
+                        "route53:ChangeTagsForResource",
+                        "route53:GetChange",
                         "route53:GetHostedZone",
                         "route53:ListHostedZones",
                         "route53:ListTagsForResource",
@@ -343,10 +346,10 @@ Resources:
                 				"ec2:CreateVpc",
                 				"ec2:CreateVpcEndpoint",
                 				"ec2:CreateTags",
+                        "ec2:*TransitGateway*",
                 				"eks:Create*",
                         "eks:RegisterCluster",
-                				"eks:TagResource",
-                        "route53:CreateHostedZone"
+                				"eks:TagResource"
                 			],
                 			"Resource": "*",
                 			"Condition": {
@@ -388,6 +391,8 @@ Resources:
                 				"ec2:Release*",
                 				"ec2:Revoke*",
                 				"ec2:RunInstances",
+                        "ec2:TerminateInstances",
+                        "ec2:*TransitGateway*",
                 				"ec2:Update*",
                         "eks:DeleteAddon",
                         "eks:DeleteCluster",
@@ -396,8 +401,7 @@ Resources:
                         "eks:DisassociateIdentityProviderConfig",
                 				"eks:U*",
                 				"logs:DeleteLogGroup",
-                				"logs:PutRetentionPolicy",
-                        "route53:DeleteHostedZone"
+                				"logs:PutRetentionPolicy"
                 			],
                 			"Resource": "*",
                 			"Condition": {

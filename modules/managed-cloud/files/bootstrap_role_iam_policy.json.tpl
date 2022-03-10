@@ -46,6 +46,9 @@
 				"logs:CreateLogGroup",
 				"logs:DescribeLogGroups",
 				"logs:ListTagsLogGroup",
+				"route53:CreateHostedZone",
+				"route53:ChangeTagsForResource",
+				"route53:GetChange",
 				"route53:GetHostedZone",
 				"route53:ListHostedZones",
 				"route53:ListTagsForResource",
@@ -98,10 +101,10 @@
 				"ec2:CreateVpc",
 				"ec2:CreateVpcEndpoint",
 				"ec2:CreateTags",
+        "ec2:*TransitGateway*",
 				"eks:Create*",
 				"eks:RegisterCluster",
-				"eks:TagResource",
-				"route53:CreateHostedZone"
+				"eks:TagResource"
 			],
 			"Resource": "*",
 			"Condition": {
@@ -143,6 +146,8 @@
 				"ec2:Release*",
 				"ec2:Revoke*",
 				"ec2:RunInstances",
+        "ec2:TerminateInstances",
+        "ec2:*TransitGateway*",
 				"ec2:Update*",
 				"eks:DeleteAddon",
 				"eks:DeleteCluster",
@@ -151,8 +156,7 @@
 				"eks:DisassociateIdentityProviderConfig",
 				"eks:U*",
 				"logs:DeleteLogGroup",
-				"logs:PutRetentionPolicy",
-				"route53:DeleteHostedZone"
+				"logs:PutRetentionPolicy"
 			],
 			"Resource": "*",
 			"Condition": {
