@@ -33,6 +33,12 @@ data "aws_iam_policy_document" "streamnative_vendor_access" {
   }
 }
 
+locals {
+  external_id = (var.external_id != "" ? [{test: "StringEquals", variable: "sts:ExternalId", values: [var.external_id]}] : [])
+  source_identity = (length(var.source_identities) > 0 ? [{test: var.source_identity_test, variable: "sts:SourceIdentity", values: var.source_identities}] : [])
+  assume_conditions = concat(local.external_id, local.source_identity)
+}
+
 data "aws_iam_policy_document" "streamnative_control_plane_access" {
   statement {
     sid     = "AllowStreamNativeVendorAccess"
@@ -45,6 +51,14 @@ data "aws_iam_policy_document" "streamnative_control_plane_access" {
         var.streamnative_vendor_access_role_arn,
         var.streamnative_control_plane_role_arn
       ]
+    }
+    dynamic "condition" {
+      for_each = local.assume_conditions
+      content {
+        test     = condition.value["test"]
+        values   = condition.value["values"]
+        variable = condition.value["variable"]
+      }
     }
   }
 
