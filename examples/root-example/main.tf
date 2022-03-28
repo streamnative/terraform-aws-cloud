@@ -17,15 +17,24 @@
 # under the License.
 #
 
+locals {
+  cluster_name = "sn-aws"
+}
+
+variable "region" {
+  type        = string
+  description = "The region of AWS"
+}
+
 #######
 ### These data sources are required by the Kubernetes and Helm providers in order to connect to the newly provisioned cluster
 #######
 data "aws_eks_cluster" "cluster" {
-  name = module.eks_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_id
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_id
 }
 
 provider "aws" {
