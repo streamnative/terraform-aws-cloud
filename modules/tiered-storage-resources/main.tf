@@ -22,18 +22,29 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "tiered_storage" {
-  acl    = "private"
   bucket = format("%s-storage-offload-%s", var.cluster_name, data.aws_region.current.name)
+  tags   = merge({ "Vendor" = "StreamNative", "Attributes" = "offload", "Name" = "offload" }, var.tags)
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "aws:kms"
-      }
+  lifecycle {
+    ignore_changes = [
+      bucket,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "tiered_storage" {
+  bucket = aws_s3_bucket.tiered_storage.bucket
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = var.kms_key_id
+      sse_algorithm     = "aws:kms"
     }
   }
+}
 
-  tags = merge({ "Vendor" = "StreamNative", "Attributes" = "offload", "Name" = "offload" }, var.tags)
+resource "aws_s3_bucket_acl" "tiered_storage" {
+  bucket = aws_s3_bucket.tiered_storage.id
+  acl    = "private"
 }
 
 data "aws_iam_policy_document" "tiered_storage" {
