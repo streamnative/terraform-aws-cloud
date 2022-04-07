@@ -40,6 +40,12 @@ variable "iam_policy_arn" {
   type        = string
 }
 
+variable "kms_key_id" {
+  default     = "aws/s3"
+  description = "The KMS key ID to use for server side encryption. Defaults to \"aws/s3\"."
+  type        = string
+}
+
 variable "oidc_issuer" {
   description = "The OIDC issuer for the EKS cluster"
   type        = string
