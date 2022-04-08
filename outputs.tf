@@ -61,3 +61,8 @@ output "sn_system_namespace" {
   value       = join("", kubernetes_namespace.sn_system.*.id)
   description = "The namespace used for StreamNative system resources, i.e. operators et all"
 }
+
+output "worker_iam_role_arn" {
+  value       = module.eks.worker_iam_role_arn
+  description = "The IAM Role ARN used by the Worker configuration"
+}
