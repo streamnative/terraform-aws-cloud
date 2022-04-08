@@ -126,6 +126,12 @@ resource "aws_iam_role" "vault" {
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
   tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+
+  lifecycle {
+    ignore_changes = [
+      assume_role_policy
+    ]
+  }
 }
 
 resource "aws_iam_policy" "vault" {
@@ -135,6 +141,12 @@ resource "aws_iam_policy" "vault" {
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.vault.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
+
+  lifecycle {
+    ignore_changes = [
+      policy
+    ]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "vault" {

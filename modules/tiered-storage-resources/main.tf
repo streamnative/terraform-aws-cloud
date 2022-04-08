@@ -89,6 +89,12 @@ resource "aws_iam_role" "tiered_storage" {
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
   tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+
+  lifecycle {
+    ignore_changes = [
+      assume_role_policy
+    ]
+  }
 }
 
 resource "aws_iam_policy" "tiered_storage" {
@@ -98,6 +104,12 @@ resource "aws_iam_policy" "tiered_storage" {
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.tiered_storage.json
   tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
+
+  lifecycle {
+    ignore_changes = [
+      policy
+    ]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "tiered_storage" {
