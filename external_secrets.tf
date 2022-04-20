@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "external_secrets" {
       "secretsmanager:ListSecretVersionIds",
       "secretsmanager:ListSecrets",
     ]
-    resources = coalescelist(var.asm_secret_arns, ["arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:*"]) # Defaults to allow access to all secrets for ASM in the module's region
+    resources = coalescelist(var.asm_secret_arns, ["arn:*:secretsmanager:${var.region}:${local.account_id}:secret:*"]) # Defaults to allow access to all secrets for ASM in the module's region
     effect    = "Allow"
   }
 }
