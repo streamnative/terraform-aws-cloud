@@ -59,7 +59,7 @@ variable "tags" {
 
 variable "vpc_cidr" {
   validation {
-    condition     = can(regex("^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}/16", var.vpc_cidr))
-    error_message = "The vpc_cidr must be a 10.x.x.x range with /16 CIDR."
+    condition     = can(regex("^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}/\\d{1,2}", var.vpc_cidr))
+    error_message = "The vpc_cidr must be a 10.x.x.x range with CIDR."
   }
 }
