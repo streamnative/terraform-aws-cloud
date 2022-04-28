@@ -72,7 +72,6 @@ data "aws_iam_policy_document" "cert_manager_sts" {
 }
 
 resource "aws_iam_role" "cert_manager" {
-  count                = var.enable_cert_manager ? 1 : 0
   name                 = format("%s-cm-role", module.eks.cluster_id)
   description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
@@ -82,7 +81,7 @@ resource "aws_iam_role" "cert_manager" {
 }
 
 resource "aws_iam_policy" "cert_manager" {
-  count       = var.enable_cert_manager ? 1 : 0
+  count       = var.sncloud_services_iam_policy_arn == "" ? 1 : 0
   name        = format("%s-CertManagerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -91,13 +90,11 @@ resource "aws_iam_policy" "cert_manager" {
 }
 
 resource "aws_iam_role_policy_attachment" "cert_manager" {
-  count      = var.enable_cert_manager ? 1 : 0
-  policy_arn = aws_iam_policy.cert_manager[0].arn
+  policy_arn = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_policy_arn : aws_iam_policy.cert_manager[0].arn
   role       = aws_iam_role.cert_manager[0].name
 }
 
 resource "helm_release" "cert_manager" {
-  count           = var.enable_cert_manager ? 1 : 0
   atomic          = true
   chart           = var.cert_manager_helm_chart_name
   cleanup_on_fail = true
@@ -139,7 +136,6 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "helm_release" "cert_issuer" {
-  count           = var.enable_cert_manager ? 1 : 0
   atomic          = true
   chart           = "${path.module}/charts/cert-issuer"
   cleanup_on_fail = true

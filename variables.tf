@@ -214,18 +214,6 @@ variable "disk_encryption_kms_key_id" {
   type        = string
 }
 
-variable "enable_aws_load_balancer_controller" {
-  default     = true
-  description = "Whether to enable the AWS Load Balancer Controller addon on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_aws_node_termination_handler" {
-  default     = true
-  description = "Whether to enable the AWS Node Termination Handler addon on the cluster. Defaults to \"true\", and in most situations is recommended for StreamNative Cloud."
-  type        = bool
-}
-
 variable "enable_calico" {
   default     = false
   description = "Enables the Calico networking service on the cluster. Defaults to \"false\"."
@@ -235,18 +223,6 @@ variable "enable_calico" {
 variable "enable_cert_manager" {
   default     = true
   description = "Enables the Cert-Manager addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_cluster_autoscaler" {
-  default     = true
-  description = "Enables the Cluster Autoscaler addon service on the cluster. Defaults to \"true\", and in most situations is recommened for StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_csi" {
-  default     = true
-  description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
   type        = bool
 }
 
@@ -532,6 +508,12 @@ variable "region" {
 variable "service_domain" {
   default     = null
   description = "The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail."
+  type        = string
+}
+
+variable "sncloud_services_iam_policy_arn" {
+  default     = ""
+  description = "The IAM policy ARN to be used for all StreamNative Cloud Services that need to interact with AWS services external to EKS. This policy is typically created by the \"modules/managed-cloud\" sub-module in this repository, as a seperate customer driven process for managing StreamNative's Vendor Access into AWS. If no policy ARN is provided, the module will generate the policies needed by each cluster service we install and expects that the caller identity has appropriate IAM permissions that allow \"iam:CreatePolicy\" action. Otherwise the module will fail to run properly."
   type        = string
 }
 
