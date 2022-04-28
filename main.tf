@@ -31,16 +31,17 @@ locals {
   private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_cidrs[i].cidr_block]
 
   func_pool_defaults = {
-    create_launch_template = true
-    desired_capacity       = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
-    disk_size              = var.func_pool_disk_size
-    disk_encrypted         = true
-    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
-    disk_type              = var.func_pool_disk_type
-    instance_types         = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
-    k8s_labels             = { NodeGroup = "functions" }
-    min_capacity           = coalesce(var.func_pool_min_size, var.node_pool_min_size)
-    max_capacity           = coalesce(var.func_pool_max_size, var.node_pool_max_size)
+    ami_id               = var.func_pool_ami_id
+    ami_is_eks_optimized = var.func_pool_ami_is_eks_optimized
+    enable_monintoring   = var.enable_func_pool_monitoring
+    desired_capacity     = var.func_pool_desired_size
+    disk_size            = var.func_pool_disk_size
+    disk_type            = var.func_pool_disk_type
+    instance_types       = var.func_pool_instance_types
+    k8s_labels           = merge(var.func_pool_labels, { NodeGroup = "functions" })
+    min_capacity         = var.func_pool_min_size
+    max_capacity         = var.func_pool_max_size
+    pre_userdata         = var.func_pool_pre_userdata
     taints = [{
       key    = "reserveGroup"
       value  = "functions"
@@ -49,17 +50,18 @@ locals {
   }
 
   node_pool_defaults = {
-    create_launch_template = true
-    desired_capacity       = var.node_pool_desired_size
-    disk_size              = var.node_pool_disk_size
-    disk_encrypted         = true
-    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
-    disk_type              = var.node_pool_disk_type
-    instance_types         = var.node_pool_instance_types
-    k8s_labels             = {}
-    min_capacity           = var.node_pool_min_size
-    max_capacity           = var.node_pool_max_size
-    taints                 = []
+    ami_id               = var.node_pool_ami_id
+    ami_is_eks_optimized = var.node_pool_ami_is_eks_optimized
+    enable_monintoring   = var.enable_node_pool_monitoring
+    desired_capacity     = var.node_pool_desired_size
+    disk_size            = var.node_pool_disk_size
+    disk_type            = var.node_pool_disk_type
+    instance_types       = var.node_pool_instance_types
+    k8s_labels           = var.node_pool_labels
+    min_capacity         = var.node_pool_min_size
+    max_capacity         = var.node_pool_max_size
+    pre_userdata         = var.node_pool_pre_userdata
+    taints               = []
   }
 
   snc_node_config = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-node-pool${i}" }) }
@@ -71,7 +73,6 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "17.24.0"
 
-  # cluster_iam_role_name        = aws_iam_role.cluster.name
   cluster_name                                   = var.cluster_name
   cluster_version                                = var.cluster_version
   cluster_create_endpoint_private_access_sg_rule = var.enable_node_group_private_networking
@@ -82,7 +83,7 @@ module "eks" {
   cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
   cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
   enable_irsa                                    = true
-  iam_path                                       = "/StreamNative/"
+  iam_path                                       = var.iam_path
   manage_cluster_iam_resources                   = true
   manage_worker_iam_resources                    = true
   map_accounts                                   = var.map_additional_aws_accounts
@@ -93,7 +94,6 @@ module "eks" {
   vpc_id                                         = var.vpc_id
   wait_for_cluster_timeout                       = var.wait_for_cluster_timeout // This was added in version 17.1.0, and if set above 0, causes TF to crash.
   write_kubeconfig                               = false
-  # workers_role_name            = aws_iam_role.nodes.name
 
   node_groups = local.node_groups
 
@@ -104,7 +104,9 @@ module "eks" {
       "Vendor"                                                 = "StreamNative"
       },
     )
-    # iam_role_arn = aws_iam_role.nodes.arn
+    create_launch_template = true
+    disk_encrypted         = true
+    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
   }
 
   tags = {
@@ -125,107 +127,3 @@ resource "kubernetes_namespace" "sn_system" {
     module.eks
   ]
 }
-
-######
-### IAM Resources for the EKS Cluster
-######
-# data "aws_iam_policy_document" "cluster_assume_role_policy" {
-#   statement {
-#     actions = [
-#       "sts:AssumeRole"
-#     ]
-#     effect = "Allow"
-#     principals {
-#       type        = "Service"
-#       identifiers = ["eks.amazonaws.com"]
-#     }
-#   }
-# }
-
-# data "aws_iam_policy_document" "cluster_elb_sl_role_creation" {
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "ec2:DescribeAccountAttributes",
-#       "ec2:DescribeInternetGateways",
-#       "ec2:DescribeAddresses"
-#     ]
-#     resources = ["*"]
-#   }
-# }
-
-# resource "aws_iam_policy" "cluster_elb_sl_role_creation" {
-#   name_prefix = "${var.cluster_name}-elb-sl-role-creation"
-#   description = "Permissions for EKS to create AWSServiceRoleForElasticLoadBalancing service-linked role"
-#   policy      = data.aws_iam_policy_document.cluster_elb_sl_role_creation.json
-#   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
-# }
-
-# resource "aws_iam_role" "cluster" {
-#   name                 = format("%s-cluster-role", var.cluster_name)
-#   description          = format("The IAM Role used by the %s EKS cluster", var.cluster_name)
-#   assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy.json
-#   tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
-#   path                 = "/StreamNative/"
-#   permissions_boundary = format("arn:aws:iam::%s:policy/StreamNativePermissionBoundary", local.account_id)
-# }
-
-# resource "aws_iam_role_policy_attachment" "cluster_elb_sl_role_creation" {
-#   policy_arn = aws_iam_policy.cluster_elb_sl_role_creation.arn
-#   role       = aws_iam_role.cluster.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSClusterPolicy" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-#   role       = aws_iam_role.cluster.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSServicePolicy" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-#   role       = aws_iam_role.cluster.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSVPCResourceControllerPolicy" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
-#   role       = aws_iam_role.cluster.name
-# }
-
-# ######
-# ### IAM Resources for the node groups
-# ######
-# data "aws_iam_policy_document" "nodes_assume_role_policy" {
-#   statement {
-#     actions = [
-#       "sts:AssumeRole"
-#     ]
-#     effect = "Allow"
-#     principals {
-#       type        = "Service"
-#       identifiers = ["ec2.amazonaws.com"]
-#     }
-#   }
-# }
-
-# resource "aws_iam_role" "nodes" {
-#   name               = format("%s-nodes-role", var.cluster_name)
-#   description        = format("The IAM Role used by the %s EKS cluster's node groups", var.cluster_name)
-#   assume_role_policy = data.aws_iam_policy_document.nodes_assume_role_policy.json
-#   tags               = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
-#   path               = "/StreamNative/"
-#   permissions_boundary = format("arn:aws:iam::%s:policy/StreamNativePermissionBoundary", local.account_id)
-# }
-
-# resource "aws_iam_role_policy_attachment" "nodes_AmazonEKSnodeNodePolicy" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-#   role       = aws_iam_role.nodes.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "nodes_AmazonEKS_CNI_Policy" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-#   role       = aws_iam_role.nodes.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "nodes_AmazonEC2ContainerRegistryReadOnly" {
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-#   role       = aws_iam_role.nodes.name
-# }
