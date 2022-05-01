@@ -104,6 +104,16 @@ resource "aws_iam_policy" "permission_boundary" {
   tags = local.tag_set
 }
 
+resource "local_file" "permission_boundary_policy" {
+  count    = var.write_policy_files ? 1 : 0
+  content  = templatefile(local.perm_boundary_policy_path,
+    {
+      account_id = local.account_id
+      region     = var.region
+  })
+  filename = "permission_boundary_policy.json"
+}
+
 ######
 #-- Create the IAM role for bootstraping of the StreamNative Cloud
 #-- This role is only needed for the initial StreamNative Cloud
@@ -133,6 +143,17 @@ resource "aws_iam_policy" "bootstrap_policy" {
   tags = local.tag_set
 }
 
+resource "local_file" "bootstrap_policy" {
+  count    = var.write_policy_files ? 1 : 0
+  content  = templatefile(local.bootstrap_policy_path,
+    {
+      account_id = local.account_id
+      region     = var.region
+      vpc_ids    = local.arn_like_vpcs_str
+  })
+  filename = "bootstrap_policy.json"
+}
+
 resource "aws_iam_role_policy_attachment" "bootstrap_policy" {
   count      = var.create_bootstrap_role ? 1 : 0
   policy_arn = aws_iam_policy.bootstrap_policy[0].arn
@@ -154,6 +175,16 @@ resource "aws_iam_policy" "management_role" {
       region     = var.region
   })
   tags = local.tag_set
+}
+
+resource "local_file" "management_policy" {
+  count    = var.write_policy_files ? 1 : 0
+  content  = templatefile("${path.module}/files/management_role_iam_policy.json.tpl",
+    {
+      account_id = data.aws_caller_identity.current.account_id
+      region     = var.region
+  })
+  filename = "management_policy.json"
 }
 
 resource "aws_iam_role" "management_role" {

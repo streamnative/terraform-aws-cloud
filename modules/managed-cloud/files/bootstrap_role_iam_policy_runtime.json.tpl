@@ -31,7 +31,8 @@
 				"route53:ListTagsForResource",
 				"s3:ListAllMyBuckets",
 				"s3:ListBucket"
-			]
+			],
+			"Resource": "*"
 		},
 		{
 			"Sid": "PEMBResRW",
@@ -42,7 +43,7 @@
 			"Resource": "*"
 		},
 		{
-			"Sid": "UnResAccessRW",
+			"Sid": "SecGroupVPC",
 			"Effect": "Allow",
 			"Action": [
 				"ec2:AuthorizeSecurityGroup*",
@@ -50,10 +51,10 @@
 			],
 			"Resource": "*",
 			"Condition": {
-			 "ArnLike": {
-						"ec2:Vpc": "arn:aws:ec2:${region}:${account_id}:vpc/${vpc_id}"
-				}
-			}
+        "ArnLike": {
+          "ec2:Vpc": ${vpc_ids}
+        }
+      }
 		},
 		{
 			"Sid": "UnResAccessRW",
@@ -87,7 +88,7 @@
 				"autoscaling:CreateOrUpdateTags",
 				"eks:TagResource"
 			],
-			"Resource": "*"
+			"Resource": "*",
 			"Condition": {
 				"StringLike": {
 					"aws:RequestTag/cluster-name": "sn-*"
@@ -98,22 +99,17 @@
 			"Sid": "ReqReqTag",
 			"Effect": "Allow",
 			"Action": [
-				"acm:*Certificate",
+				"acm:AddTagsToCertificate",
+				"acm:ImportCertificate",
+				"acm:RemoveTagsFromCertificate",
+				"acm:RequestCertificate",
 				"autoscaling:Create*",
-				"autoscaling:Detach*",
-				"autoscaling:SetDesired*",
-				"autoscaling:Update*",
-				"autoscaling:Suspend*",
 				"ec2:*TransitGateway*",
 				"ec2:AllocateAddress",
+				"ec2:Create*",
 				"eks:Create*",
 				"eks:RegisterCluster",
-				"eks:TagResource",
-				"elasticloadbalancer:*Listener,
-				"elasticloadbalancer:*LoadBalancer*,
-				"elasticloadbalancer:*Rule",
-				"elasticloadbalancer:*TargetGroup",
-				"elasticloadbalancer:Set*
+				"eks:TagResource"
 			],
 			"Resource": "*",
 			"Condition": {
@@ -126,14 +122,33 @@
 			"Sid": "ReqResTag",
 			"Effect": "Allow",
 			"Action": [
-				"acm:*Certificate",
+				"acm:DeleteCertificate",
+				"acm:DescribeCertificate",
+				"acm:ExportCertificate",
+				"acm:GetCertificate",
+				"acm:ImportCertificate",
+				"acm:RemoveTagsFromCertificate",
+				"acm:ResendValidationEmail",
 				"autoscaling:AttachInstances",
 				"autoscaling:CreateOrUpdateTags",
 				"autoscaling:Delete*",
+				"autoscaling:Detach*",
+				"autoscaling:Update*",
+				"autoscaling:Resume*",
+				"autoscaling:Suspend*",
+				"autoscaling:SetDesired*",
 				"ec2:AssignPrivateIpAddresses",
 				"ec2:Associate*",
 				"ec2:AttachInternetGateway",
-				"ec2:Create*",
+				"ec2:CreateLaunchTemplateVersion",
+				"ec2:CreateNatGateway",
+				"ec2:CreateNetworkInterface",
+				"ec2:CreateRoute",
+				"ec2:CreateRouteTable",
+				"ec2:CreateSecurityGroup",
+				"ec2:CreateSubnet",
+				"ec2:CreateTags",
+				"ec2:CreateVpcEndpoint",
 				"ec2:Delete*",
 				"ec2:Detach*",
 				"ec2:Disassociate*",
@@ -150,6 +165,11 @@
 				"eks:DeregisterCluster",
 				"eks:DisassociateIdentityProviderConfig",
 				"eks:U*",
+				"elastcloadbalancing:*Listener",
+				"elastcloadbalancing:*LoadBalancer*",
+				"elastcloadbalancing:*Rule",
+				"elastcloadbalancing:*TargetGroup",
+				"elastcloadbalancing:Set*",
 				"logs:DeleteLogGroup",
 				"logs:PutRetentionPolicy"
 			],
@@ -175,13 +195,13 @@
 				"s3:PutAccessPointPolicy",
 				"s3:PutAccountPublicAccessBlock",
 				"s3:PutAnalyticsConfiguration",
-				"s3:DeleteBucket*"
-				"s3:DeleteObject*"
+				"s3:DeleteBucket*",
+				"s3:DeleteObject*",
 				"s3:DeleteLifecycle*"
 			 ],
 			 "Resource": [
 					"arn:aws:s3:::sn-*",
-					"arn:aws:s3:::sn-*/*",
+					"arn:aws:s3:::sn-*/*"
 			 ]
 		},
 		{

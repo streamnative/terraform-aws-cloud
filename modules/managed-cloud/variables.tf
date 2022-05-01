@@ -108,14 +108,21 @@ variable "runtime_s3_cluster_prefix" {
   type        = string
 }
 
+variable "sn_policy_version" {
+  default     = "2.0"
+  description = "The value of SNVersion tag"
+  type        = string
+}
+
 variable "tags" {
   default     = {}
   description = "Extra tags to apply to the resources created by this module."
   type        = map(string)
 }
 
-variable "sn_policy_version" {
-  default     = "2.0"
-  description = "The value of SNVersion tag"
-  type        = string
+
+variable "write_policy_files" {
+  default     = false
+  description = "Write the policy files locally to disk for debugging and validation"
+  type        = bool
 }

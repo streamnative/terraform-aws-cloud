@@ -35,12 +35,12 @@ locals {
   default_service_arn    = "arn:aws:iam::${local.account_id}:role/StreamNative/StreamNativeCloudRuntimePolicy"
   lb_policy_arn          = var.sncloud_services_lb_policy_arn != "" ? var.sncloud_services_lb_policy_arn : (var.use_runtime_policy ? local.default_lb_arn : "")
   sn_serv_policy_arn     = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_iam_policy_arn : (var.use_runtime_policy ? local.default_service_arn : "")
-  create_lb_policy       = (local.lb_policy_arn != "" || var.enable_aws_load_balancer_controller == false) ? false : true
-  create_cert_man_policy = (local.sn_serv_policy_arn != "" || var.enable_cert_manager == false) ? false : true
-  create_ca_policy       = (local.sn_serv_policy_arn != "" || var.enable_cluster_autoscaler == false) ? false : true
-  create_csi_policy      = (local.sn_serv_policy_arn != "" || var.enable_csi == false) ? false : true
-  create_ext_dns_policy  = (local.sn_serv_policy_arn != "" || var.enable_external_dns == false) ? false : true
-  create_ext_sec_policy  = (local.sn_serv_policy_arn != "" || var.enable_external_secrets == false) ? false : true
+  create_lb_policy       = (var.sncloud_services_lb_policy_arn != "" || var.use_runtime_policy|| var.enable_aws_load_balancer_controller == false) ? false : true
+  create_cert_man_policy = (var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || var.enable_cert_manager == false) ? false : true
+  create_ca_policy       = (var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || var.enable_cluster_autoscaler == false) ? false : true
+  create_csi_policy      = (var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || var.enable_csi == false) ? false : true
+  create_ext_dns_policy  = (var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || var.enable_external_dns == false) ? false : true
+  create_ext_sec_policy  = (var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || var.enable_external_secrets == false) ? false : true
 
 
   func_pool_defaults = {
@@ -127,9 +127,9 @@ module "eks" {
 }
 
 resource "aws_autoscaling_group_tag" "asg_group_vendor_tags" {
-  for_each = module.eks.workers_asg_names
+  count = length(module.eks.workers_asg_names)
 
-  autoscaling_group_name = each.value
+  autoscaling_group_name = module.eks.workers_asg_names[count.index]
 
   tag {
     key   = "Vendor"

@@ -1,7 +1,10 @@
 data "aws_ebs_default_kms_key" "current" {}
+data "aws_kms_key" "default_ebs" {
+  key_id = data.aws_ebs_default_kms_key.current.key_arn
+}
 
 locals {
-  kms_key_arns = length(var.runtime_ebs_kms_key_arns) > 0 ? var.runtime_ebs_kms_key_arns : [data.aws_ebs_default_kms_key.current.key_arn]
+  kms_key_arns = length(var.runtime_ebs_kms_key_arns) > 0 ? var.runtime_ebs_kms_key_arns : [data.aws_kms_key.default_ebs.arn]
 }
 
 data "aws_iam_policy_document" "runtime_policy" {
@@ -49,7 +52,7 @@ data "aws_iam_policy_document" "runtime_policy" {
     }
   }
   statement {
-    sid    = "csi-k1"
+    sid    = "csik1"
     effect = "Allow"
     actions = [
       "kms:RevokeGrant",
@@ -64,7 +67,7 @@ data "aws_iam_policy_document" "runtime_policy" {
     }
   }
   statement {
-    sid    = "csi-k2"
+    sid    = "csik2"
     effect = "Allow"
     actions = [
       "kms:ReEncrypt*",
@@ -177,4 +180,19 @@ resource "aws_iam_policy" "alb_policy" {
       vpc_ids = local.arn_like_vpcs_str
   })
   tags = local.tag_set
+}
+
+resource "local_file" "runtime_policy" {
+  count    = var.write_policy_files ? 1 : 0
+  content  = data.aws_iam_policy_document.runtime_policy.json
+  filename = "runtime_policy.json"
+}
+
+resource "local_file" "alb_policy" {
+  count    = var.write_policy_files ? 1 : 0
+  content  = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
+    {
+      vpc_ids = local.arn_like_vpcs_str
+  })
+  filename = "alb_policy.json"
 }
