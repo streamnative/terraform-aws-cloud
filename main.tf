@@ -30,6 +30,19 @@ locals {
   oidc_issuer          = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
   private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_cidrs[i].cidr_block]
 
+  ## switches for roles
+  default_lb_arn         = "arn:aws:iam::${local.account_id}:role/StreamNative/StreamNativeCloudLBPolicy"
+  default_service_arn    = "arn:aws:iam::${local.account_id}:role/StreamNative/StreamNativeCloudRuntimePolicy"
+  lb_policy_arn          = var.sncloud_services_lb_policy_arn != "" ? var.sncloud_services_lb_policy_arn : (var.use_runtime_policy ? local.default_lb_arn : "")
+  sn_serv_policy_arn     = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_iam_policy_arn : (var.use_runtime_policy ? local.default_service_arn : "")
+  create_lb_policy       = (local.lb_policy_arn != "" || var.enable_aws_load_balancer_controller == false) ? false : true
+  create_cert_man_policy = (local.sn_serv_policy_arn != "" || var.enable_cert_manager == false) ? false : true
+  create_ca_policy       = (local.sn_serv_policy_arn != "" || var.enable_cluster_autoscaler == false) ? false : true
+  create_csi_policy      = (local.sn_serv_policy_arn != "" || var.enable_csi == false) ? false : true
+  create_ext_dns_policy  = (local.sn_serv_policy_arn != "" || var.enable_external_dns == false) ? false : true
+  create_ext_sec_policy  = (local.sn_serv_policy_arn != "" || var.enable_external_secrets == false) ? false : true
+
+
   func_pool_defaults = {
     create_launch_template = true
     desired_capacity       = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
@@ -110,6 +123,19 @@ module "eks" {
   tags = {
     format("k8s.io/cluster/%s", var.cluster_name) = "owned",
     "Vendor"                                      = "StreamNative"
+  }
+}
+
+resource "aws_autoscaling_group_tag" "asg_group_vendor_tags" {
+  for_each = module.eks.workers_asg_names
+
+  autoscaling_group_name = each.value
+
+  tag {
+    key   = "Vendor"
+    value = "StreamNative"
+
+    propagate_at_launch = true
   }
 }
 

@@ -34,9 +34,15 @@ data "aws_iam_policy_document" "streamnative_vendor_access" {
 }
 
 locals {
-  external_id = (var.external_id != "" ? [{test: "StringEquals", variable: "sts:ExternalId", values: [var.external_id]}] : [])
-  source_identity = (length(var.source_identities) > 0 ? [{test: var.source_identity_test, variable: "sts:SourceIdentity", values: var.source_identities}] : [])
-  assume_conditions = concat(local.external_id, local.source_identity)
+  account_id                = data.aws_caller_identity.current.account_id
+  external_id               = (var.external_id != "" ? [{ test : "StringEquals", variable : "sts:ExternalId", values : [var.external_id] }] : [])
+  source_identity           = (length(var.source_identities) > 0 ? [{ test : var.source_identity_test, variable : "sts:SourceIdentity", values : var.source_identities }] : [])
+  assume_conditions         = concat(local.external_id, local.source_identity)
+  bootstrap_policy_path     = var.use_runtime_policy ? "${path.module}/files/bootstrap_role_iam_policy_runtime.json.tpl" : "${path.module}/files/bootstrap_role_iam_policy.json.tpl"
+  perm_boundary_policy_path = var.use_runtime_policy ? "${path.module}/files/permission_boundary_iam_policy_runtime.json.tpl" : "${path.module}/files/permission_boundary_iam_policy.json.tpl"
+  arn_like_vpcs             = formatlist("\"arn:aws:ec2:%s:%s:vpc/%s\"", var.region, local.account_id, var.runtime_vpc_allowed_ids)
+  arn_like_vpcs_str         = format("[%s]", join(",", local.arn_like_vpcs))
+  tag_set                   = merge({ Vendor = "StreamNative", SNVersion = var.sn_policy_version }, var.tags)
 }
 
 data "aws_iam_policy_document" "streamnative_control_plane_access" {
@@ -90,12 +96,12 @@ resource "aws_iam_policy" "permission_boundary" {
   name        = "StreamNativeCloudPermissionBoundary"
   description = "This policy sets the permission boundary for StreamNative's vendor access. It defines the limits of what StreamNative can do within this AWS account."
   path        = "/StreamNative/"
-  policy = templatefile("${path.module}/files/permission_boundary_iam_policy.json.tpl",
+  policy = templatefile(local.perm_boundary_policy_path,
     {
-      account_id = data.aws_caller_identity.current.account_id
+      account_id = local.account_id
       region     = var.region
   })
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  tags = local.tag_set
 }
 
 ######
@@ -110,7 +116,7 @@ resource "aws_iam_role" "bootstrap_role" {
   assume_role_policy   = data.aws_iam_policy_document.streamnative_vendor_access.json
   path                 = "/StreamNative/"
   permissions_boundary = aws_iam_policy.permission_boundary.arn
-  tags                 = merge({ Vendor = "StreamNative" }, var.tags)
+  tags                 = local.tag_set
 }
 
 resource "aws_iam_policy" "bootstrap_policy" {
@@ -118,12 +124,13 @@ resource "aws_iam_policy" "bootstrap_policy" {
   name        = "StreamNativeCloudBootstrapPolicy"
   description = "This policy sets the minimum amount of permissions needed by the StreamNativeCloudBootstrapRole to bootstrap the StreamNative Cloud deployment."
   path        = "/StreamNative/"
-  policy = templatefile("${path.module}/files/bootstrap_role_iam_policy.json.tpl",
+  policy = templatefile(local.bootstrap_policy_path,
     {
-      account_id = data.aws_caller_identity.current.account_id
+      account_id = local.account_id
       region     = var.region
+      vpc_ids    = local.arn_like_vpcs_str
   })
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  tags = local.tag_set
 }
 
 resource "aws_iam_role_policy_attachment" "bootstrap_policy" {
@@ -146,7 +153,7 @@ resource "aws_iam_policy" "management_role" {
       account_id = data.aws_caller_identity.current.account_id
       region     = var.region
   })
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  tags = local.tag_set
 }
 
 resource "aws_iam_role" "management_role" {
@@ -155,10 +162,11 @@ resource "aws_iam_role" "management_role" {
   assume_role_policy   = data.aws_iam_policy_document.streamnative_control_plane_access.json
   path                 = "/StreamNative/"
   permissions_boundary = aws_iam_policy.permission_boundary.arn
-  tags                 = merge({ Vendor = "StreamNative" }, var.tags)
+  tags                 = local.tag_set
 }
 
 resource "aws_iam_role_policy_attachment" "management_role" {
   policy_arn = aws_iam_policy.management_role.arn
   role       = aws_iam_role.management_role.name
 }
+

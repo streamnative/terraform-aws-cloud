@@ -178,6 +178,7 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
+  count                = var.enable_csi ? 1 : 0
   name                 = format("%s-csi-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
@@ -195,12 +196,20 @@ resource "aws_iam_policy" "csi" {
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
 
+resource "aws_iam_role_policy_attachment" "csi_managed" {
+  count      = var.enable_csi ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.csi[0].name
+}
+
 resource "aws_iam_role_policy_attachment" "csi" {
-  policy_arn = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_policy_arn : aws_iam_policy.csi[0].arn
+  count      = var.enable_csi ? 1 : 0
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.csi[0].arn
   role       = aws_iam_role.csi[0].name
 }
 
 resource "helm_release" "csi" {
+  count           = var.enable_csi ? 1 : 0
   atomic          = true
   chart           = var.csi_helm_chart_name
   cleanup_on_fail = true
@@ -241,7 +250,7 @@ resource "kubernetes_storage_class" "sn_default" {
   metadata {
     name = "sn-default"
   }
-  storage_provisioner = "ebs.csi.aws.com"
+  storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
   parameters = {
     type      = "gp3"
     encrypted = "true"

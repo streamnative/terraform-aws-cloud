@@ -58,6 +58,7 @@ data "aws_iam_policy_document" "external_secrets_sts" {
 }
 
 resource "aws_iam_role" "external_secrets" {
+  count                = var.enable_external_secrets ? 1 : 0
   name                 = format("%s-extsec-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA external-secrets on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.external_secrets_sts.json
@@ -67,7 +68,7 @@ resource "aws_iam_role" "external_secrets" {
 }
 
 resource "aws_iam_policy" "external_secrets" {
-  count       = var.sncloud_services_iam_policy_arn == "" ? 1 : 0
+  count       = local.create_ext_sec_policy == "" ? 1 : 0
   name        = format("%s-ExternalSecretsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the kubernetes-external-secrets addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -76,11 +77,13 @@ resource "aws_iam_policy" "external_secrets" {
 }
 
 resource "aws_iam_role_policy_attachment" "external_secrets" {
-  policy_arn = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_policy_arn : aws_iam_policy.external_secrets[0].arn
+  count      = var.enable_external_secrets ? 1 : 0
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.external_secrets[0].arn
   role       = aws_iam_role.external_secrets[0].name
 }
 
 resource "helm_release" "external_secrets" {
+  count           = var.enable_external_secrets ? 1 : 0
   atomic          = true
   chart           = var.external_secrets_helm_chart_name
   cleanup_on_fail = true

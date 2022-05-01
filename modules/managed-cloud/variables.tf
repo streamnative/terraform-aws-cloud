@@ -39,7 +39,7 @@ variable "external_id" {
 variable "source_identities" {
   default     = []
   description = "Place an additional constraint on source identity, disabled by default and only to be used if specified by StreamNative"
-  type        = list
+  type        = list(any)
 }
 
 variable "source_identity_test" {
@@ -66,8 +66,56 @@ variable "streamnative_vendor_access_role_arn" {
   type        = string
 }
 
+variable "use_runtime_policy" {
+  description = "instead of relying on permission boundary use static runtime policies"
+  default     = false
+  type        = bool
+}
+
+variable "runtime_vpc_allowed_ids" {
+  description = "when using runtime policy, allows for further scoping down policy for allowed VPC"
+  default     = ["*"]
+  type        = list(any)
+}
+
+variable "runtime_hosted_zone_allowed_ids" {
+  description = "when using runtime policy, allows for further scoping down policy for allowed hosted zones"
+  default     = ["*"]
+  type        = list(any)
+}
+
+variable "runtime_ebs_kms_key_arns" {
+  description = "when using runtime policy, sets the list of allowed kms key arns, if not set, uses the default ebs kms key"
+  default     = []
+  type        = list(any)
+}
+
+variable "runtime_enable_secretsmanager" {
+  description = "when using runtime policy, allows for secretsmanager access"
+  default     = false
+  type        = bool
+}
+
+variable "runtime_s3_bucket_prefix" {
+  description = "when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload)"
+  default     = "snc-"
+  type        = string
+}
+
+variable "runtime_s3_cluster_prefix" {
+  description = "when using runtime policy, defines the eks clsuter prefix for streamnative clusters"
+  default     = "snc-"
+  type        = string
+}
+
 variable "tags" {
   default     = {}
   description = "Extra tags to apply to the resources created by this module."
   type        = map(string)
+}
+
+variable "sn_policy_version" {
+  default     = "2.0"
+  description = "The value of SNVersion tag"
+  type        = string
 }

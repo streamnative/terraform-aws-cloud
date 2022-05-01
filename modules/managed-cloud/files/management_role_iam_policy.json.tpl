@@ -39,7 +39,6 @@
 			"Effect": "Allow",
 			"Action": [
 				"iam:CreateRole",
-				"iam:TagPolicy",
 				"iam:TagRole"
 			],
 			"Resource": [

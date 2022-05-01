@@ -51,7 +51,7 @@
 			"Resource": "*",
 			"Condition": {
 			 "ArnLike": {
-						"ec2:Vpc": ${vpc_ids}
+						"ec2:Vpc": "arn:aws:ec2:${region}:${account_id}:vpc/${vpc_id}"
 				}
 			}
 		},
@@ -71,18 +71,13 @@
 			"Resource": "*"
 		},
 		{
-			"Sid": "ResBaseRest",
+			"Sid": "ResBasedRest",
 			"Effect": "Allow",
 			"Action": [
 				"eks:DeleteNodeGroup"
-				"iam:CreatePolicy",
-				"iam:CreatePolicyVersion",
-				"iam:DeletePolicy",
-				"iam:DeletePolicyVersion"
 			],
 			"Resource": [
-				"arn:aws:eks:${region}:${account_id}:nodegroup/*/snc-*-pool*/*",
-				"arn:aws:iam::${account_id}:policy/StreamNative/*"
+				"arn:aws:eks:${region}:${account_id}:nodegroup/*/snc-*-pool*/*"
 			]
 		},
 		{
@@ -174,6 +169,7 @@
 				"s3:Get*",
 				"s3:List*",
 				"s3:PutBucket*",
+				"s3:PutObject*",
 				"s3:PutLifecycle*",
 				"s3:PutAccelerateConfiguration",
 				"s3:PutAccessPointPolicy",

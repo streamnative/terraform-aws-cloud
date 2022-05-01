@@ -70,6 +70,7 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
+  count                = var.enable_cluster_autoscaler ? 1 : 0
   name                 = format("%s-ca-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cluster_autoscaler_sts.json
@@ -79,7 +80,7 @@ resource "aws_iam_role" "cluster_autoscaler" {
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
-  count       = var.sncloud_services_iam_policy_arn == "" ? 1 : 0
+  count       = local.create_ca_policy == "" ? 1 : 0
   name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -88,7 +89,8 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
-  policy_arn = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_policy_arn : aws_iam_policy.cluster_autoscaler[0].arn
+  count      = var.enable_cluster_autoscaler ? 1 : 0
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.cluster_autoscaler[0].arn
   role       = aws_iam_role.cluster_autoscaler[0].name
 }
 
@@ -111,6 +113,7 @@ locals {
 
 }
 resource "helm_release" "cluster_autoscaler" {
+  count           = var.enable_cluster_autoscaler ? 1 : 0
   atomic          = true
   chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true

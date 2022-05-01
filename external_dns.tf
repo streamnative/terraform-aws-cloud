@@ -62,6 +62,7 @@ data "aws_iam_policy_document" "external_dns_sts" {
 }
 
 resource "aws_iam_role" "external_dns" {
+  count                = var.enable_external_dns ? 1 : 0
   name                 = format("%s-extdns-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA external-dns on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
@@ -71,7 +72,7 @@ resource "aws_iam_role" "external_dns" {
 }
 
 resource "aws_iam_policy" "external_dns" {
-  count       = var.sncloud_services_iam_policy_arn == "" ? 1 : 0
+  count       = local.create_ext_dns_policy == "" ? 1 : 0
   name        = format("%s-ExternalDnsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -80,7 +81,8 @@ resource "aws_iam_policy" "external_dns" {
 }
 
 resource "aws_iam_role_policy_attachment" "external_dns" {
-  policy_arn = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_policy_arn : aws_iam_policy.external_dns[0].arn
+  count      = var.enable_external_dns ? 1 : 0
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.external_dns[0].arn
   role       = aws_iam_role.external_dns[0].name
 }
 
@@ -91,6 +93,7 @@ locals {
 }
 
 resource "helm_release" "external_dns" {
+  count           = var.enable_external_dns ? 1 : 0
   atomic          = true
   chart           = var.external_dns_helm_chart_name
   cleanup_on_fail = true

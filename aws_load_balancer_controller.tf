@@ -260,6 +260,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
 }
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
+  count                = var.enable_aws_load_balancer_controller ? 1 : 0
   name                 = format("%s-lbc-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
@@ -269,7 +270,7 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  count       = var.sncloud_services_iam_policy_arn == "" ? 1 : 0
+  count       = local.create_lb_policy == "" ? 1 : 0
   name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -278,11 +279,13 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
 }
 
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
-  policy_arn = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_policy_arn : aws_iam_policy.aws_load_balancer_controller[0].arn
+  count      = var.enable_aws_load_balancer_controller ? 1 : 0
+  policy_arn = local.lb_policy_arn != "" ? local.lb_policy_arn : aws_iam_policy.aws_load_balancer_controller[0].arn
   role       = aws_iam_role.aws_load_balancer_controller[0].name
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
+  count           = var.enable_aws_load_balancer_controller ? 1 : 0
   atomic          = true
   chart           = var.aws_load_balancer_controller_helm_chart_name
   cleanup_on_fail = true
@@ -293,9 +296,9 @@ resource "helm_release" "aws_load_balancer_controller" {
   version         = var.aws_load_balancer_controller_helm_chart_version
   values = [yamlencode({
     clusterName = module.eks.cluster_id
-    # defaultTags = merge(var.additional_tags, {
-    #   "Vendor" = "StreamNative"
-    # })
+    defaultTags = merge(var.additional_tags, {
+      "Vendor" = "StreamNative"
+    })
     serviceAccount = {
       create = true
       name   = "aws-load-balancer-controller"
@@ -311,6 +314,11 @@ resource "helm_release" "aws_load_balancer_controller" {
       name  = set.key
       value = set.value
     }
+  }
+
+  set {
+    name  = "defaultTags.Vendor"
+    value = "StreamNative"
   }
 
   depends_on = [
