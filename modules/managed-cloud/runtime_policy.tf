@@ -189,8 +189,8 @@ resource "local_file" "runtime_policy" {
 }
 
 resource "local_file" "alb_policy" {
-  count    = var.write_policy_files ? 1 : 0
-  content  = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
     {
       vpc_ids = local.arn_like_vpcs_str
   })

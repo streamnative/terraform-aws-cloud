@@ -105,8 +105,8 @@ resource "aws_iam_policy" "permission_boundary" {
 }
 
 resource "local_file" "permission_boundary_policy" {
-  count    = var.write_policy_files ? 1 : 0
-  content  = templatefile(local.perm_boundary_policy_path,
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile(local.perm_boundary_policy_path,
     {
       account_id = local.account_id
       region     = var.region
@@ -144,8 +144,8 @@ resource "aws_iam_policy" "bootstrap_policy" {
 }
 
 resource "local_file" "bootstrap_policy" {
-  count    = var.write_policy_files ? 1 : 0
-  content  = templatefile(local.bootstrap_policy_path,
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile(local.bootstrap_policy_path,
     {
       account_id = local.account_id
       region     = var.region
@@ -178,8 +178,8 @@ resource "aws_iam_policy" "management_role" {
 }
 
 resource "local_file" "management_policy" {
-  count    = var.write_policy_files ? 1 : 0
-  content  = templatefile("${path.module}/files/management_role_iam_policy.json.tpl",
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile("${path.module}/files/management_role_iam_policy.json.tpl",
     {
       account_id = data.aws_caller_identity.current.account_id
       region     = var.region
