@@ -90,7 +90,7 @@
         "eks:DeleteNodeGroup"
       ],
       "Resource": [
-        "arn:aws:eks:${region}:${account_id}:nodegroup/*/snc-*-pool*/*"
+        "arn:aws:eks:${region}:${account_id}:nodegroup/*/${nodepool_pattern}/*"
       ]
     },
     {
@@ -103,7 +103,7 @@
       "Resource": "*",
       "Condition": {
         "StringLike": {
-          "aws:RequestTag/cluster-name": "sn-*"
+          "aws:RequestTag/cluster-name": "${cluster_pattern}"
         }
       }
     },
@@ -213,8 +213,8 @@
         "s3:DeleteLifecycle*"
        ],
        "Resource": [
-          "arn:aws:s3:::sn-*",
-          "arn:aws:s3:::sn-*/*"
+          "arn:aws:s3:::${bucket_pattern}",
+          "arn:aws:s3:::${bucket_pattern}/*"
        ]
     },
     {

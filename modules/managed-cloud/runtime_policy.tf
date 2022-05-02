@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "runtime_policy" {
     resources = ["*"]
     condition {
       test     = "StringLike"
-      values   = ["sn-*"]
+      values   = [var.runtime_eks_cluster_pattern]
       variable = "autoscaling:ResourceTag/cluster-name"
     }
   }
@@ -85,7 +85,7 @@ data "aws_iam_policy_document" "runtime_policy" {
       "s3:ListBucket",
       "s3:ListMultipart*",
     ]
-    resources = ["arn:aws:s3:::sn-*"]
+    resources = ["arn:aws:s3:::${var.runtime_s3_bucket_pattern}"]
   }
   statement {
     sid    = "s3o"
@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "runtime_policy" {
     condition {
       test     = "StringLike"
       values   = ["owned"]
-      variable = "aws:RequestTag/kubernetes.io/cluster/sn-*"
+      variable = "aws:RequestTag/kubernetes.io/cluster/${var.runtime_eks_cluster_pattern}"
     }
     resources = ["*"]
   }
@@ -135,7 +135,7 @@ data "aws_iam_policy_document" "runtime_policy" {
     condition {
       test     = "StringLike"
       values   = ["owned"]
-      variable = "aws:ResourceTag/kubernetes.io/cluster/sn-*"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.runtime_eks_cluster_pattern}"
     }
     resources = ["*"]
   }

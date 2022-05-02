@@ -136,9 +136,12 @@ resource "aws_iam_policy" "bootstrap_policy" {
   path        = "/StreamNative/"
   policy = templatefile(local.bootstrap_policy_path,
     {
-      account_id = local.account_id
-      region     = var.region
-      vpc_ids    = local.arn_like_vpcs_str
+      account_id       = local.account_id
+      region           = var.region
+      vpc_ids          = local.arn_like_vpcs_str
+      bucket_pattern   = var.runtime_s3_bucket_pattern
+      nodepool_pattern = var.runtime_eks_nodepool_pattern
+      cluster_pattern  = var.runtime_eks_cluster_pattern
   })
   tags = local.tag_set
 }
@@ -147,9 +150,12 @@ resource "local_file" "bootstrap_policy" {
   count = var.write_policy_files ? 1 : 0
   content = templatefile(local.bootstrap_policy_path,
     {
-      account_id = local.account_id
-      region     = var.region
-      vpc_ids    = local.arn_like_vpcs_str
+      account_id       = local.account_id
+      region           = var.region
+      vpc_ids          = local.arn_like_vpcs_str
+      bucket_pattern   = var.runtime_s3_bucket_pattern
+      nodepool_pattern = var.runtime_eks_nodepool_pattern
+      cluster_pattern  = var.runtime_eks_cluster_pattern
   })
   filename = "bootstrap_policy.json"
 }

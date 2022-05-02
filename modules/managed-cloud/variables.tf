@@ -96,17 +96,25 @@ variable "runtime_enable_secretsmanager" {
   type        = bool
 }
 
-variable "runtime_s3_bucket_prefix" {
-  description = "when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload)"
-  default     = "snc-"
+variable "runtime_eks_cluster_pattern" {
+  description = "when using runtime policy, defines the eks clsuter prefix for streamnative clusters"
+  default     = "aws*snc"
   type        = string
 }
 
-variable "runtime_s3_cluster_prefix" {
-  description = "when using runtime policy, defines the eks clsuter prefix for streamnative clusters"
-  default     = "snc-"
+variable "runtime_eks_nodepool_pattern" {
+  description = "when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload)"
+  default     = "snc-*-pool*"
   type        = string
 }
+
+variable "runtime_s3_bucket_pattern" {
+  description = "when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload)"
+  default     = "snc-*"
+  type        = string
+}
+
+
 
 variable "sn_policy_version" {
   default     = "2.0"
