@@ -80,7 +80,7 @@ resource "aws_iam_role" "cluster_autoscaler" {
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
-  count       = local.create_ca_policy == "" ? 1 : 0
+  count       = local.create_ca_policy ? 1 : 0
   name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"

@@ -270,7 +270,7 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  count       = local.create_lb_policy == "" ? 1 : 0
+  count       = local.create_lb_policy ? 1 : 0
   name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"

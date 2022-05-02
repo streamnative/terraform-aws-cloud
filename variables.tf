@@ -252,6 +252,7 @@ variable "enable_external_secrets" {
 variable "enable_external_dns" {
   default     = true
   description = "Enables the External DNS addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
+  type        = bool
 }
 
 variable "enable_func_pool" {
