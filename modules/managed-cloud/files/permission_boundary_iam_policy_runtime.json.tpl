@@ -49,6 +49,8 @@
         "iam:CreateServiceLinkedRole",
         "iam:DeleteInstanceProfile",
         "iam:DeleteOpenIDConnectProvider",
+        "iam:DeletePolicy",
+        "iam:DeletePolicyVersion",
         "iam:DeleteRole",
         "iam:DeleteServiceLinkedRole",
         "iam:DetachRolePolicy",

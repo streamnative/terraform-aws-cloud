@@ -87,10 +87,13 @@
       "Sid": "ResBasedRest",
       "Effect": "Allow",
       "Action": [
-        "eks:DeleteNodeGroup"
+        "eks:DeleteNodeGroup",
+        "iam:DeletePolicy",
+        "iam:DeletePolicyVersion"
       ],
       "Resource": [
-        "arn:aws:eks:${region}:${account_id}:nodegroup/*/${nodepool_pattern}/*"
+        "arn:aws:eks:${region}:${account_id}:nodegroup/*/${nodepool_pattern}/*",
+        "arn:aws:iam::${account_id}:policy/StreamNative/*"
       ]
     },
     {
