@@ -58,7 +58,7 @@
       ],
       "Resource": "arn:aws:iam::${account_id}:role/StreamNative/*",
       "Condition": {
-        "ArnEqual": {
+        "ArnEquals": {
           "iam:PolicyARN": [
             "arn:aws:iam::${account_id}:policy/StreamNative/StreamNativeCloudManagementPolicy"
           ]

@@ -74,11 +74,10 @@
       "Effect": "Allow",
       "Action": [
         "kms:CreateAlias",
-        "kms:CreateKey",
         "kms:DeleteAlias",
         "kms:ScheduleKeyDeletion",
-        "kms:TagResource",
         "logs:CreateLogGroup",
+        "logs:PutRetentionPolicy",
         "route53:CreateHostedZone",
         "route53:ChangeTagsForResource"
       ],
@@ -122,7 +121,9 @@
         "ec2:Create*",
         "eks:Create*",
         "eks:RegisterCluster",
-        "eks:TagResource"
+        "eks:TagResource",
+        "kms:CreateKey",
+        "kms:TagResource"
       ],
       "Resource": "*",
       "Condition": {
