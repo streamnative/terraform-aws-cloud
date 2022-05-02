@@ -188,7 +188,7 @@ resource "aws_iam_role" "csi" {
 }
 
 resource "aws_iam_policy" "csi" {
-  count       = var.sncloud_services_iam_policy_arn == "" ? 1 : 0
+  count       = local.create_csi_policy ? 1 : 0
   name        = format("%s-CsiPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
