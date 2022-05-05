@@ -51,8 +51,8 @@
       ],
       "Resource": "*",
       "Condition": {
-        "ArnLike": {
-          "ec2:Vpc": ${vpc_ids}
+        "StringEquals": {
+          "aws:ResourceTag/Vendor": "StreamNative"
         }
       }
     },
@@ -283,7 +283,9 @@
       "Action": [
         "iam:PassRole"
       ],
-      "Resource": "*",
+      "Resource": [
+        "arn:aws:iam::${account_id}:role/StreamNative/*"
+      ],
       "Condition": {
         "StringEquals": {
           "iam:PassedToService": "eks.amazonaws.com"

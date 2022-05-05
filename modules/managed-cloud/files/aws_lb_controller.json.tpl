@@ -73,9 +73,9 @@
             ],
             "Resource": "*",
             "Condition": {
-                "ArnEquals": {
-                    "ec2:Vpc": ${vpc_ids}
-                }
+                "StringEquals": {
+                    "aws:ResourceTag/Vendor": "StreamNative"
+                 }
             }
         },
         {
@@ -125,7 +125,10 @@
             "Condition": {
                 "Null": {
                     "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
-                }
+                },
+                "StringEquals": {
+                    "aws:ResourceTag/Vendor": "StreamNative"
+                 }
             }
         },
         {
