@@ -247,13 +247,14 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 17.24.0 |
-| <a name="module_istio"></a> [istio](#module\_istio) | github.com/streamnative/terraform-helm-charts//modules/istio-operator | master |
+| <a name="module_istio"></a> [istio](#module\_istio) | ../terraform-helm-charts/modules/istio-operator | n/a |
 | <a name="module_vpc_tags"></a> [vpc\_tags](#module\_vpc\_tags) | ./modules/eks-vpc-tags | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [aws_eks_addon.vpc_cni](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
 | [aws_iam_policy.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -266,12 +267,14 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [aws_iam_role.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.vpc_cni](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cert_manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cluster_autoscaler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.csi](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.vpc_cni](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [helm_release.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.calico](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.cert_issuer](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
@@ -297,6 +300,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [aws_iam_policy_document.external_dns_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.external_secrets_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.vpc_cni_sts](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_kms_key.ebs_default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
 | [aws_subnet.private_cidrs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 
@@ -347,6 +351,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool. | `bool` | `false` | no |
 | <a name="input_enable_istio"></a> [enable\_istio](#input\_enable\_istio) | Enables Istio on the cluster. Set to "false" by default. | `bool` | `false` | no |
 | <a name="input_enable_node_group_private_networking"></a> [enable\_node\_group\_private\_networking](#input\_enable\_node\_group\_private\_networking) | Enables private networking for the EKS node groups (not the EKS cluster endpoint, which remains public), meaning Kubernetes API requests that originate within the cluster's VPC use a private VPC endpoint for EKS. Defaults to "true". | `bool` | `true` | no |
+| <a name="input_enable_vpc_cni_addon"></a> [enable\_vpc\_cni\_addon](#input\_enable\_vpc\_cni\_addon) | Enables the VPC CNI addon service on the cluster. Defaults to "true", and is recommended | `bool` | `true` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
 | <a name="input_external_dns_helm_chart_version"></a> [external\_dns\_helm\_chart\_version](#input\_external\_dns\_helm\_chart\_version) | Helm chart version for ExternalDNS. Defaults to "4.9.0". See https://hub.helm.sh/charts/bitnami/external-dns for updates. | `string` | `"5.5.2"` | no |
@@ -389,6 +394,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_public_subnet_ids"></a> [public\_subnet\_ids](#input\_public\_subnet\_ids) | The ids of existing public subnets. | `list(string)` | `[]` | no |
 | <a name="input_region"></a> [region](#input\_region) | The AWS region. | `string` | `null` | no |
 | <a name="input_service_domain"></a> [service\_domain](#input\_service\_domain) | The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail. | `string` | `null` | no |
+| <a name="input_vpc_cni_addon_version"></a> [vpc\_cni\_addon\_version](#input\_vpc\_cni\_addon\_version) | The version of the VPC CNI addon to use. Run `aws eks describe-addon-version` to get the latest version compatible with the current Kubernetes version. | `string` | `"v1.11.0-eksbuild.1"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The ID of the AWS VPC to use. | `string` | `""` | no |
 | <a name="input_wait_for_cluster_timeout"></a> [wait\_for\_cluster\_timeout](#input\_wait\_for\_cluster\_timeout) | Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module "terraform-aws-modules/eks/aws", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420. | `number` | `0` | no |
 

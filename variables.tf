@@ -279,6 +279,12 @@ variable "enable_node_group_private_networking" {
   type        = bool
 }
 
+variable "enable_vpc_cni_addon" {
+  default     = true
+  description = "Enables the VPC CNI addon service on the cluster. Defaults to \"true\", and is recommended"
+  type        = bool
+}
+
 variable "external_dns_helm_chart_name" {
   default     = "external-dns"
   description = "The name of the Helm chart in the repository for ExternalDNS."
@@ -532,6 +538,12 @@ variable "region" {
 variable "service_domain" {
   default     = null
   description = "The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail."
+  type        = string
+}
+
+variable "vpc_cni_addon_version" {
+  default     = "v1.11.0-eksbuild.1"
+  description = "The version of the VPC CNI addon to use. Run `aws eks describe-addon-version` to get the latest version compatible with the current Kubernetes version."
   type        = string
 }
 
