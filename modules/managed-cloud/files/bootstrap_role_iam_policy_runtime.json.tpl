@@ -5,6 +5,7 @@
       "Sid": "UnResAccessRO",
       "Effect": "Allow",
       "Action": [
+        "acm:ImportCertificate",
         "acm:ListCertificates",
         "acm:ListTagsForCertificate",
         "autoscaling:Describe*",

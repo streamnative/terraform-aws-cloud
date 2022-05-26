@@ -6,6 +6,7 @@
       "Effect": "Allow",
       "Action": [
         "acm:List*",
+        "acm:ImportCertificate",
         "cloudwatch:Describe*",
         "cloudwatch:List*",
         "cloudwatch:Get*",
