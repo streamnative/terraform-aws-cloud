@@ -47,8 +47,8 @@ data "aws_iam_policy_document" "csi" {
       "ec2:CreateTags"
     ]
     resources = [
-      "arn:*:ec2:*:*:volume/*",
-      "arn:*:ec2:*:*:snapshot/*"
+      "arn:${var.aws_partition}:ec2:*:*:volume/*",
+      "arn:${var.aws_partition}:ec2:*:*:snapshot/*"
     ]
     effect = "Allow"
     condition {
@@ -62,8 +62,8 @@ data "aws_iam_policy_document" "csi" {
       "ec2:DeleteTags"
     ]
     resources = [
-      "arn:*:ec2:*:*:volume/*",
-      "arn:*:ec2:*:*:snapshot/*"
+      "arn:${var.aws_partition}:ec2:*:*:volume/*",
+      "arn:${var.aws_partition}:ec2:*:*:snapshot/*"
     ]
     effect = "Allow"
   }

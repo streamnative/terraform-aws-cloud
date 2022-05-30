@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "external_dns" {
       "route53:ChangeResourceRecordSets"
     ]
     resources = [
-      "arn:*:route53:::hostedzone/${var.hosted_zone_id}"
+      "arn:${var.aws_partition}:route53:::hostedzone/${var.hosted_zone_id}"
     ]
     effect = "Allow"
   }
