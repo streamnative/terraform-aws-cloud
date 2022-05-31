@@ -307,15 +307,6 @@ resource "helm_release" "aws_load_balancer_controller" {
       }
     }
   })]
-
-  dynamic "set" {
-    for_each = var.aws_partition == "aws-cn" ? [var.aws_partition] : []
-
-    content {
-      name = "image.repository"
-      value = "961992271922.dkr.ecr.cn-northwest-1.amazonaws.com.cn/amazon/aws-load-balancer-controller"
-    }
-  }
   
   dynamic "set" {
     for_each = var.aws_load_balancer_controller_settings
