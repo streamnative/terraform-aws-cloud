@@ -32,6 +32,11 @@ output "runtime_policy_arn" {
   description = "The ARN of the Runtime Policy, if enabled"
 }
 
+output "aws_lbc_policy_arn" {
+  value       = join("", aws_iam_policy.alb_policy.*.arn)
+  description = "The ARN of the AWS Load Balancer Controller Policy, if enabled"
+}
+
 output "permission_boundary_policy_arn" {
   value       = aws_iam_policy.permission_boundary.arn
   description = "The ARN of the Permssion Boundary Policy"

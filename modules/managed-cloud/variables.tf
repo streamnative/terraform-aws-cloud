@@ -114,8 +114,6 @@ variable "runtime_s3_bucket_pattern" {
   type        = string
 }
 
-
-
 variable "sn_policy_version" {
   default     = "2.0"
   description = "The value of SNVersion tag"
