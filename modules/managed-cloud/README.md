@@ -20,7 +20,7 @@ The module requires only one input to function:
 
 And if you are using the Runtime policy:
 
-- `use_runtime_policy`: Enables the creation of the runtime policy for EKS addon services, allowing for tighte
+- `use_runtime_policy`: Enables the creation of the runtime policy for EKS addon services, allowing for a tighter set of restrictions for the Bootstrap role.
 
 Assuming you are authenticated and authorized to the correct AWS environment, create a `main.tf` file containing the following:
 
