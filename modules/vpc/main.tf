@@ -35,7 +35,7 @@ resource "aws_vpc" "vpc" {
 resource "aws_subnet" "public" {
   count                   = var.num_azs
   vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 8, var.public_subnet_start + count.index)
+  cidr_block              = cidrsubnet(var.vpc_cidr, var.public_subnet_newbits, var.public_subnet_start + count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = var.public_subnet_auto_ip
   tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags)
@@ -48,7 +48,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count             = var.num_azs
   vpc_id            = aws_vpc.vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, var.private_subnet_start + count.index)
+  cidr_block        = cidrsubnet(var.vpc_cidr, var.private_subnet_newbits, var.private_subnet_start + count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
   tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
 
