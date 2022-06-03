@@ -258,9 +258,9 @@ data "aws_iam_policy_document" "runtime_policy" {
     ]
     resources = ["*"]
     condition {
-      test     = "StringLike"
-      values   = [var.runtime_eks_cluster_pattern]
-      variable = "autoscaling:ResourceTag/cluster-name"
+      test     = "StringEquals"
+      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${var.runtime_eks_cluster_pattern}"
+      values   = ["owned"]
     }
   }
   statement {
@@ -408,5 +408,3 @@ resource "local_file" "alb_policy" {
   })
   filename = "alb_policy.json"
 }
-
-
