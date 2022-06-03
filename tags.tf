@@ -26,3 +26,11 @@ module "vpc_tags" {
   public_subnet_ids  = var.public_subnet_ids
   private_subnet_ids = var.private_subnet_ids
 }
+
+# This tags the primary security group which is managed by AWS EKS (and returned to the parent module.eks), not by this module. 
+# Without this tag, our permissions prevent us from working with the security group.
+resource "aws_ec2_tag" "cluster_security_group" {
+  resource_id = module.eks.cluster_primary_security_group_id
+  key         = "Vendor"
+  value       = "StreamNative"
+}
