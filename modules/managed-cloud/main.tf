@@ -55,7 +55,8 @@ data "aws_iam_policy_document" "streamnative_control_plane_access" {
       type = "AWS"
       identifiers = [
         var.streamnative_vendor_access_role_arn,
-        var.streamnative_control_plane_role_arn
+        var.streamnative_control_plane_role_arn,
+        var.streamnative_control_plane_user_arn
       ]
     }
     dynamic "condition" {
