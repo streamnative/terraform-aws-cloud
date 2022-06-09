@@ -26,3 +26,15 @@ module "vpc_tags" {
   public_subnet_ids  = var.public_subnet_ids
   private_subnet_ids = var.private_subnet_ids
 }
+
+# This tags the primary security group which is managed by AWS EKS (and returned to the parent module.eks), not by this module. 
+# Without this tag, our permissions prevent us from working with the security group.
+# 
+# IMPORTANT: If this tag is not present on the SG during a `terraform destroy`, the destroy will fail.
+# Terraform tries to remove this tag before destroying module.eks, which means we would no longer be able to manage it.
+# Because of this, it's recommended to remove this resource from the *.tfstate PRIOR to running a destroy
+resource "aws_ec2_tag" "cluster_security_group" {
+  resource_id = module.eks.cluster_primary_security_group_id
+  key         = "Vendor"
+  value       = "StreamNative"
+}

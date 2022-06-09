@@ -220,12 +220,6 @@ variable "enable_aws_load_balancer_controller" {
   type        = bool
 }
 
-variable "enable_aws_node_termination_handler" {
-  default     = true
-  description = "Whether to enable the AWS Node Termination Handler addon on the cluster. Defaults to \"true\", and in most situations is recommended for StreamNative Cloud."
-  type        = bool
-}
-
 variable "enable_calico" {
   default     = false
   description = "Enables the Calico networking service on the cluster. Defaults to \"false\"."
@@ -249,27 +243,27 @@ variable "enable_csi" {
   description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
   type        = bool
 }
-
 variable "enable_external_secrets" {
-  default     = true
-  description = "Enables kubernetes-external-secrets addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
+  default     = false
+  description = "Enables kubernetes-external-secrets addon service on the cluster. Defaults to \"false\""
   type        = bool
 }
 
 variable "enable_external_dns" {
   default     = true
   description = "Enables the External DNS addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
+  type        = bool
 }
 
 variable "enable_func_pool" {
-  default     = false
+  default     = true
   description = "Enable an additional dedicated function pool."
   type        = bool
 }
 
 variable "enable_istio" {
-  default     = false
-  description = "Enables Istio on the cluster. Set to \"false\" by default."
+  default     = true
+  description = "Enables Istio on the cluster. Set to \"true\" by default."
   type        = bool
 }
 
@@ -329,7 +323,7 @@ variable "external_secrets_settings" {
 
 variable "func_pool_desired_size" {
   type        = number
-  default     = 1
+  default     = 0
   description = "Desired number of worker nodes"
 }
 
@@ -352,7 +346,7 @@ variable "func_pool_instance_types" {
 }
 
 variable "func_pool_min_size" {
-  default     = 1
+  default     = 0
   description = "The minimum size of the AutoScaling Group."
   type        = number
 }
@@ -533,6 +527,24 @@ variable "service_domain" {
   default     = null
   description = "The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail."
   type        = string
+}
+
+variable "sncloud_services_iam_policy_arn" {
+  default     = ""
+  description = "The IAM policy ARN to be used for all StreamNative Cloud Services that need to interact with AWS services external to EKS. This policy is typically created by the \"modules/managed-cloud\" sub-module in this repository, as a seperate customer driven process for managing StreamNative's Vendor Access into AWS. If no policy ARN is provided, the module will generate the policies needed by each cluster service we install and expects that the caller identity has appropriate IAM permissions that allow \"iam:CreatePolicy\" action. Otherwise the module will fail to run properly. Depends upon use"
+  type        = string
+}
+
+variable "sncloud_services_lb_policy_arn" {
+  default     = ""
+  description = "A custom IAM policy ARN for LB load balancer controller. If not specified, and use_runt"
+  type        = string
+}
+
+variable "use_runtime_policy" {
+  default     = false
+  description = "Indicates to use the runtime policy and attach a predefined policies as opposed to create roles. Currently defaults to false"
+  type        = bool
 }
 
 variable "vpc_id" {

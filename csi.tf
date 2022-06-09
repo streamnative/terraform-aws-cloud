@@ -188,7 +188,7 @@ resource "aws_iam_role" "csi" {
 }
 
 resource "aws_iam_policy" "csi" {
-  count       = var.enable_csi ? 1 : 0
+  count       = local.create_csi_policy ? 1 : 0
   name        = format("%s-CsiPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -196,9 +196,15 @@ resource "aws_iam_policy" "csi" {
   tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
 }
 
+resource "aws_iam_role_policy_attachment" "csi_managed" {
+  count      = var.enable_csi ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.csi[0].name
+}
+
 resource "aws_iam_role_policy_attachment" "csi" {
   count      = var.enable_csi ? 1 : 0
-  policy_arn = aws_iam_policy.csi[0].arn
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.csi[0].arn
   role       = aws_iam_role.csi[0].name
 }
 
@@ -259,7 +265,7 @@ resource "kubernetes_storage_class" "sn_ssd" {
   metadata {
     name = "sn-ssd"
   }
-  storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
+  storage_provisioner = "ebs.csi.aws.com"
   parameters = {
     type      = "gp3"
     encrypted = "true"

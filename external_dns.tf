@@ -72,7 +72,7 @@ resource "aws_iam_role" "external_dns" {
 }
 
 resource "aws_iam_policy" "external_dns" {
-  count       = var.enable_external_dns ? 1 : 0
+  count       = local.create_ext_dns_policy ? 1 : 0
   name        = format("%s-ExternalDnsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -82,7 +82,7 @@ resource "aws_iam_policy" "external_dns" {
 
 resource "aws_iam_role_policy_attachment" "external_dns" {
   count      = var.enable_external_dns ? 1 : 0
-  policy_arn = aws_iam_policy.external_dns[0].arn
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.external_dns[0].arn
   role       = aws_iam_role.external_dns[0].name
 }
 

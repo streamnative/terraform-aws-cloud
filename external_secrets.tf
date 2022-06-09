@@ -68,7 +68,7 @@ resource "aws_iam_role" "external_secrets" {
 }
 
 resource "aws_iam_policy" "external_secrets" {
-  count       = var.enable_external_secrets ? 1 : 0
+  count       = local.create_ext_sec_policy == "" ? 1 : 0
   name        = format("%s-ExternalSecretsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the kubernetes-external-secrets addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -78,7 +78,7 @@ resource "aws_iam_policy" "external_secrets" {
 
 resource "aws_iam_role_policy_attachment" "external_secrets" {
   count      = var.enable_external_secrets ? 1 : 0
-  policy_arn = aws_iam_policy.external_secrets[0].arn
+  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.external_secrets[0].arn
   role       = aws_iam_role.external_secrets[0].name
 }
 
