@@ -30,6 +30,19 @@ locals {
   oidc_issuer          = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
   private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_cidrs[i].cidr_block]
 
+  ## switches for roles
+  default_lb_arn         = "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
+  default_service_arn    = "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
+  lb_policy_arn          = var.sncloud_services_lb_policy_arn != "" ? var.sncloud_services_lb_policy_arn : (var.use_runtime_policy ? local.default_lb_arn : "")
+  sn_serv_policy_arn     = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_iam_policy_arn : (var.use_runtime_policy ? local.default_service_arn : "")
+  create_lb_policy       = !(var.sncloud_services_lb_policy_arn != "" || var.use_runtime_policy || !var.enable_aws_load_balancer_controller)
+  create_cert_man_policy = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_cert_manager)
+  create_ca_policy       = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_cluster_autoscaler)
+  create_csi_policy      = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_csi)
+  create_ext_dns_policy  = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_external_dns)
+  create_ext_sec_policy  = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_external_secrets)
+
+
   func_pool_defaults = {
     ami_id               = var.func_pool_ami_id
     ami_is_eks_optimized = var.func_pool_ami_is_eks_optimized
@@ -80,11 +93,12 @@ module "eks" {
   cluster_endpoint_private_access_cidrs          = local.private_subnet_cidrs
   cluster_endpoint_public_access_cidrs           = var.allowed_public_cidrs
   cluster_enabled_log_types                      = var.cluster_enabled_log_types
+  cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : null
   cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
   cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
   enable_irsa                                    = true
-  iam_path                                       = var.iam_path
-  manage_cluster_iam_resources                   = true
+  iam_path                                       = "/StreamNative/"
+  manage_cluster_iam_resources                   = var.use_runtime_policy ? false : true
   manage_worker_iam_resources                    = true
   map_accounts                                   = var.map_additional_aws_accounts
   map_roles                                      = var.map_additional_iam_roles
@@ -113,6 +127,23 @@ module "eks" {
     format("k8s.io/cluster/%s", var.cluster_name) = "owned",
     "Vendor"                                      = "StreamNative"
   }
+
+  depends_on = [
+    aws_iam_role.cluster
+  ]
+}
+
+resource "aws_autoscaling_group_tag" "asg_group_vendor_tags" {
+  count = length(module.eks.workers_asg_names)
+
+  autoscaling_group_name = module.eks.workers_asg_names[count.index]
+
+  tag {
+    key   = "Vendor"
+    value = "StreamNative"
+
+    propagate_at_launch = true
+  }
 }
 
 resource "kubernetes_namespace" "sn_system" {
@@ -126,4 +157,45 @@ resource "kubernetes_namespace" "sn_system" {
   depends_on = [
     module.eks
   ]
+}
+
+data "aws_iam_policy_document" "cluster_assume_role_policy" {
+  statement {
+    actions = [
+      "sts:AssumeRole"
+    ]
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "cluster" {
+  count                = var.use_runtime_policy ? 1 : 0
+  name                 = format("%s-cluster-role", var.cluster_name)
+  description          = format("The IAM Role used by the %s EKS cluster", var.cluster_name)
+  assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy.json
+  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  path                 = "/StreamNative/"
+  permissions_boundary = var.permissions_boundary_arn
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSClusterPolicy" {
+  count      = var.use_runtime_policy ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.cluster[0].name
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSServicePolicy" {
+  count      = var.use_runtime_policy ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+  role       = aws_iam_role.cluster[0].name
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSVPCResourceControllerPolicy" {
+  count      = var.use_runtime_policy ? 1 : 0
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  role       = aws_iam_role.cluster[0].name
 }

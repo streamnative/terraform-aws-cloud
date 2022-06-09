@@ -19,14 +19,25 @@
 
 output "bootstrap_role_arn" {
   value       = join("", aws_iam_role.bootstrap_role.*.arn)
-  description = "the arn of the role"
+  description = "The ARN of the Bootstrap role, if enabled"
 }
 
 output "management_role_arn" {
-  value = aws_iam_role.management_role.arn
+  value       = aws_iam_role.management_role.arn
+  description = "The ARN of the Management Role"
+}
+
+output "runtime_policy_arn" {
+  value       = join("", aws_iam_policy.runtime_policy.*.arn)
+  description = "The ARN of the Runtime Policy, if enabled"
+}
+
+output "aws_lbc_policy_arn" {
+  value       = join("", aws_iam_policy.alb_policy.*.arn)
+  description = "The ARN of the AWS Load Balancer Controller Policy, if enabled"
 }
 
 output "permission_boundary_policy_arn" {
   value       = aws_iam_policy.permission_boundary.arn
-  description = "the name of the policy"
+  description = "The ARN of the Permssion Boundary Policy"
 }

@@ -34,9 +34,15 @@ data "aws_iam_policy_document" "streamnative_vendor_access" {
 }
 
 locals {
-  external_id = (var.external_id != "" ? [{test: "StringEquals", variable: "sts:ExternalId", values: [var.external_id]}] : [])
-  source_identity = (length(var.source_identities) > 0 ? [{test: var.source_identity_test, variable: "sts:SourceIdentity", values: var.source_identities}] : [])
-  assume_conditions = concat(local.external_id, local.source_identity)
+  account_id                = data.aws_caller_identity.current.account_id
+  external_id               = (var.external_id != "" ? [{ test : "StringEquals", variable : "sts:ExternalId", values : [var.external_id] }] : [])
+  source_identity           = (length(var.source_identities) > 0 ? [{ test : var.source_identity_test, variable : "sts:SourceIdentity", values : var.source_identities }] : [])
+  assume_conditions         = concat(local.external_id, local.source_identity)
+  bootstrap_policy_path     = var.use_runtime_policy ? "${path.module}/files/bootstrap_role_iam_policy_runtime.json.tpl" : "${path.module}/files/bootstrap_role_iam_policy.json.tpl"
+  perm_boundary_policy_path = var.use_runtime_policy ? "${path.module}/files/permission_boundary_iam_policy_runtime.json.tpl" : "${path.module}/files/permission_boundary_iam_policy.json.tpl"
+  arn_like_vpcs             = formatlist("\"arn:aws:ec2:%s:%s:vpc/%s\"", var.region, local.account_id, var.runtime_vpc_allowed_ids)
+  arn_like_vpcs_str         = format("[%s]", join(",", local.arn_like_vpcs))
+  tag_set                   = merge({ Vendor = "StreamNative", SNVersion = var.sn_policy_version }, var.tags)
 }
 
 data "aws_iam_policy_document" "streamnative_control_plane_access" {
@@ -90,12 +96,22 @@ resource "aws_iam_policy" "permission_boundary" {
   name        = "StreamNativeCloudPermissionBoundary"
   description = "This policy sets the permission boundary for StreamNative's vendor access. It defines the limits of what StreamNative can do within this AWS account."
   path        = "/StreamNative/"
-  policy = templatefile("${path.module}/files/permission_boundary_iam_policy.json.tpl",
+  policy = templatefile(local.perm_boundary_policy_path,
     {
-      account_id = data.aws_caller_identity.current.account_id
+      account_id = local.account_id
       region     = var.region
   })
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  tags = local.tag_set
+}
+
+resource "local_file" "permission_boundary_policy" {
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile(local.perm_boundary_policy_path,
+    {
+      account_id = local.account_id
+      region     = var.region
+  })
+  filename = "permission_boundary_policy.json"
 }
 
 ######
@@ -110,7 +126,7 @@ resource "aws_iam_role" "bootstrap_role" {
   assume_role_policy   = data.aws_iam_policy_document.streamnative_vendor_access.json
   path                 = "/StreamNative/"
   permissions_boundary = aws_iam_policy.permission_boundary.arn
-  tags                 = merge({ Vendor = "StreamNative" }, var.tags)
+  tags                 = local.tag_set
 }
 
 resource "aws_iam_policy" "bootstrap_policy" {
@@ -118,12 +134,30 @@ resource "aws_iam_policy" "bootstrap_policy" {
   name        = "StreamNativeCloudBootstrapPolicy"
   description = "This policy sets the minimum amount of permissions needed by the StreamNativeCloudBootstrapRole to bootstrap the StreamNative Cloud deployment."
   path        = "/StreamNative/"
-  policy = templatefile("${path.module}/files/bootstrap_role_iam_policy.json.tpl",
+  policy = templatefile(local.bootstrap_policy_path,
     {
-      account_id = data.aws_caller_identity.current.account_id
-      region     = var.region
+      account_id       = local.account_id
+      region           = var.region
+      vpc_ids          = local.arn_like_vpcs_str
+      bucket_pattern   = var.runtime_s3_bucket_pattern
+      nodepool_pattern = var.runtime_eks_nodepool_pattern
+      cluster_pattern  = var.runtime_eks_cluster_pattern
   })
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  tags = local.tag_set
+}
+
+resource "local_file" "bootstrap_policy" {
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile(local.bootstrap_policy_path,
+    {
+      account_id       = local.account_id
+      region           = var.region
+      vpc_ids          = local.arn_like_vpcs_str
+      bucket_pattern   = var.runtime_s3_bucket_pattern
+      nodepool_pattern = var.runtime_eks_nodepool_pattern
+      cluster_pattern  = var.runtime_eks_cluster_pattern
+  })
+  filename = "bootstrap_policy.json"
 }
 
 resource "aws_iam_role_policy_attachment" "bootstrap_policy" {
@@ -146,7 +180,17 @@ resource "aws_iam_policy" "management_role" {
       account_id = data.aws_caller_identity.current.account_id
       region     = var.region
   })
-  tags = merge({ Vendor = "StreamNative" }, var.tags)
+  tags = local.tag_set
+}
+
+resource "local_file" "management_policy" {
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile("${path.module}/files/management_role_iam_policy.json.tpl",
+    {
+      account_id = data.aws_caller_identity.current.account_id
+      region     = var.region
+  })
+  filename = "management_policy.json"
 }
 
 resource "aws_iam_role" "management_role" {
@@ -155,10 +199,212 @@ resource "aws_iam_role" "management_role" {
   assume_role_policy   = data.aws_iam_policy_document.streamnative_control_plane_access.json
   path                 = "/StreamNative/"
   permissions_boundary = aws_iam_policy.permission_boundary.arn
-  tags                 = merge({ Vendor = "StreamNative" }, var.tags)
+  tags                 = local.tag_set
 }
 
 resource "aws_iam_role_policy_attachment" "management_role" {
   policy_arn = aws_iam_policy.management_role.arn
   role       = aws_iam_role.management_role.name
+}
+
+######
+#-- Creates the IAM Policies used by EKS Cluster add-on services
+######
+data "aws_ebs_default_kms_key" "current" {}
+data "aws_kms_key" "default_ebs" {
+  key_id = data.aws_ebs_default_kms_key.current.key_arn
+}
+
+locals {
+  kms_key_arns = length(var.runtime_ebs_kms_key_arns) > 0 ? var.runtime_ebs_kms_key_arns : [data.aws_kms_key.default_ebs.arn]
+}
+
+data "aws_iam_policy_document" "runtime_policy" {
+  statement {
+    sid    = "ro"
+    effect = "Allow"
+    actions = [
+      "autoscaling:Describe*",
+      "ec2:DescribeSnapshots",
+      "ec2:DescribeTags",
+      "ec2:DescribeVolumes",
+      "ec2:DescribeVolumesModifications",
+      "route53:GetChange",
+      "route53:ListHostedZones*",
+      "route53:ListTagsForResource",
+      "route53:ListResourceRecordSets",
+      "route53:ListHostedZones",
+      "secretsmanager:ListSecrets"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "r53sc"
+    effect = "Allow"
+    actions = [
+      "route53:ChangeResourceRecordSets"
+    ]
+    resources = var.runtime_hosted_zone_allowed_ids
+  }
+
+  statement {
+    sid    = "asg"
+    effect = "Allow"
+    actions = [
+      "autoscaling:UpdateAutoScalingGroup",
+      "autoscaling:TerminateInstanceInAutoScalingGroup",
+      "autoscaling:SetDesiredCapacity"
+    ]
+    resources = ["*"]
+    condition {
+      test     = "StringLike"
+      variable = "autoscaling:ResourceTag/eks:cluster-name"
+      values   = [var.runtime_eks_cluster_pattern]
+    }
+  }
+  statement {
+    sid    = "csik1"
+    effect = "Allow"
+    actions = [
+      "kms:RevokeGrant",
+      "kms:ListGrants",
+      "kms:CreateGrant"
+    ]
+    resources = local.kms_key_arns
+    condition {
+      test     = "Bool"
+      values   = ["true"]
+      variable = "kms:GrantIsForAWSResource"
+    }
+  }
+  statement {
+    sid    = "csik2"
+    effect = "Allow"
+    actions = [
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:Encrypt",
+      "kms:DescribeKey",
+      "kms:Decrypt"
+    ]
+    resources = local.kms_key_arns
+  }
+  statement {
+    sid    = "s3b"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:ListMultipart*",
+    ]
+    resources = ["arn:aws:s3:::${var.runtime_s3_bucket_pattern}"]
+  }
+  statement {
+    sid    = "s3o"
+    effect = "Allow"
+    actions = [
+      "s3:*Object",
+      "s3:*Multipart*"
+    ]
+    resources = local.kms_key_arns
+  }
+  statement {
+    sid    = "vbc"
+    effect = "Allow"
+    actions = [
+      "ec2:CreateVolume",
+      "ec2:CreateSnapshot"
+    ]
+    condition {
+      test     = "StringLike"
+      values   = ["owned"]
+      variable = "aws:RequestTag/kubernetes.io/cluster/${var.runtime_eks_cluster_pattern}"
+    }
+    resources = ["*"]
+  }
+  statement {
+    sid    = "vbt"
+    effect = "Allow"
+    actions = [
+      "ec2:CreateTags"
+    ]
+    condition {
+      test     = "StringEquals"
+      values   = ["CreateVolume", "CreateSnapshot"]
+      variable = "ec2:CreateAction"
+    }
+    resources = [
+      "arn:aws:ec2:*:*:volume/*",
+      "arn:aws:ec2:*:*:snapshot/*"
+    ]
+  }
+  statement {
+    sid    = "vbd"
+    effect = "Allow"
+    actions = [
+      "ec2:DeleteSnapshot"
+    ]
+    condition {
+      test     = "StringLike"
+      values   = ["owned"]
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.runtime_eks_cluster_pattern}"
+    }
+    resources = ["*"]
+  }
+  dynamic "statement" {
+    for_each = var.runtime_enable_secretsmanager ? [1] : []
+
+    content {
+      sid    = "sm"
+      effect = "Allow"
+      actions = [
+        "secretsmanager:ListSecretVersionIds",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:DescribeSecret"
+      ]
+      condition {
+        test     = "StringEquals"
+        values   = ["StreamNative"]
+        variable = "aws:ResourceTag/Vendor"
+      }
+      resources = ["*"]
+    }
+  }
+}
+
+resource "aws_iam_policy" "runtime_policy" {
+  count       = var.use_runtime_policy ? 1 : 0
+  name        = "StreamNativeCloudRuntimePolicy"
+  description = "This policy defines almost all used by StreamNative cluster components"
+  path        = "/StreamNative/"
+  policy      = data.aws_iam_policy_document.runtime_policy.json
+  tags        = local.tag_set
+}
+
+resource "aws_iam_policy" "alb_policy" {
+  count       = var.use_runtime_policy ? 1 : 0
+  name        = "StreamNativeCloudLBPolicy"
+  description = "The AWS policy as defined by https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.1/docs/install/iam_policy.json"
+  path        = "/StreamNative/"
+  policy = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
+    {
+      vpc_ids = local.arn_like_vpcs_str
+  })
+  tags = local.tag_set
+}
+
+resource "local_file" "runtime_policy" {
+  count    = var.write_policy_files ? 1 : 0
+  content  = data.aws_iam_policy_document.runtime_policy.json
+  filename = "runtime_policy.json"
+}
+
+resource "local_file" "alb_policy" {
+  count = var.write_policy_files ? 1 : 0
+  content = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
+    {
+      vpc_ids = local.arn_like_vpcs_str
+  })
+  filename = "alb_policy.json"
 }

@@ -89,8 +89,6 @@
       "Effect": "Allow",
       "Action": [
         "eks:DeleteNodeGroup",
-        "iam:CreatePolicy",
-        "iam:CreatePolicyVersion",
         "iam:DeletePolicy",
         "iam:DeletePolicyVersion"
       ],
