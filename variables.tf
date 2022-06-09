@@ -562,3 +562,13 @@ variable "wait_for_cluster_timeout" {
   description = "Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module \"terraform-aws-modules/eks/aws\", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420."
   type        = number
 }
+
+variable "istio_network_loadbancer" {
+  type    = string
+  default = "internet_facing"
+
+  validation {
+    condition     = contains(["internet_facing", "internal_only"], var.istio_network_loadbancer)
+    error_message = "Allowed values for input_parameter are \"internet_facing\" or \"internal_only\"."
+  }
+}
