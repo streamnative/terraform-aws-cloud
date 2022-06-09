@@ -24,6 +24,12 @@ variable "create_bootstrap_role" {
 
 }
 
+variable "partition" {
+  default     = "aws"
+  description = "AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies."
+  type        = string
+}
+
 variable "region" {
   default     = "*"
   description = "The AWS region where your instance of StreamNative Cloud is deployed. Defaults to all regions \"*\""
