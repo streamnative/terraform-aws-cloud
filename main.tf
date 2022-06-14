@@ -129,7 +129,7 @@ module "eks" {
   }
 
   depends_on = [
-    aws_iam_role.cluster
+    aws_ec2_tag.cluster_security_group
   ]
 }
 
