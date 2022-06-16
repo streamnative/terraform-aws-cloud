@@ -41,7 +41,7 @@
       "Action": [
         "iam:AttachRolePolicy"
       ],
-      "Resource": "arn:aws:iam::${account_id}:role/StreamNative/*"
+      "Resource": "arn:${partition}:iam::${account_id}:role/StreamNative/*"
     },
     {
       "Sid": "SecGroupVPC",
@@ -93,8 +93,8 @@
         "iam:DeletePolicyVersion"
       ],
       "Resource": [
-        "arn:aws:eks:${region}:${account_id}:nodegroup/*/${nodepool_pattern}/*",
-        "arn:aws:iam::${account_id}:policy/StreamNative/*"
+        "arn:${partition}:eks:${region}:${account_id}:nodegroup/*/${nodepool_pattern}/*",
+        "arn:${partition}:iam::${account_id}:policy/StreamNative/*"
       ]
     },
     {
@@ -217,8 +217,8 @@
         "s3:DeleteLifecycle*"
        ],
        "Resource": [
-          "arn:aws:s3:::${bucket_pattern}",
-          "arn:aws:s3:::${bucket_pattern}/*"
+          "arn:${partition}:s3:::${bucket_pattern}",
+          "arn:${partition}:s3:::${bucket_pattern}/*"
        ]
     },
     {
@@ -233,9 +233,9 @@
         "iam:TagOpenIDConnectProvider"
       ],
       "Resource": [
-        "arn:aws:iam::${account_id}:role/StreamNative/*",
-        "arn:aws:iam::${account_id}:policy/StreamNative/*",
-        "arn:aws:iam::${account_id}:oidc-provider/*"
+        "arn:${partition}:iam::${account_id}:role/StreamNative/*",
+        "arn:${partition}:iam::${account_id}:policy/StreamNative/*",
+        "arn:${partition}:iam::${account_id}:oidc-provider/*"
       ],
       "Condition": {
         "StringEquals": {
@@ -262,9 +262,9 @@
         "iam:UpdateRoleDescription"
       ],
       "Resource": [
-        "arn:aws:iam::${account_id}:role/StreamNative/*",
-        "arn:aws:iam::${account_id}:policy/StreamNative/*",
-        "arn:aws:iam::${account_id}:oidc-provider/*"
+        "arn:${partition}:iam::${account_id}:role/StreamNative/*",
+        "arn:${partition}:iam::${account_id}:policy/StreamNative/*",
+        "arn:${partition}:iam::${account_id}:oidc-provider/*"
       ],
       "Condition": {
         "StringEquals": {
@@ -276,7 +276,7 @@
       "Sid": "AllowAWSServiceRoleCreation",
       "Effect": "Allow",
       "Action": "iam:CreateServiceLinkedRole",
-      "Resource": "arn:aws:iam::${account_id}:role/aws-service-role/*"
+      "Resource": "arn:${partition}:iam::${account_id}:role/aws-service-role/*"
     },
     {
       "Sid": "RestrictPassRoleToEKS",
@@ -285,7 +285,7 @@
         "iam:PassRole"
       ],
       "Resource": [
-        "arn:aws:iam::${account_id}:role/StreamNative/*"
+        "arn:${partition}:iam::${account_id}:role/StreamNative/*"
       ],
       "Condition": {
         "StringEquals": {
