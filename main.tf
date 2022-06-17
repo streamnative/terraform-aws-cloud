@@ -96,6 +96,7 @@ module "eks" {
   cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
   cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
   enable_irsa                                    = true
+  openid_connect_audiences                       = ["sts.amazonaws.com"]
   iam_path                                       = "/StreamNative/"
   manage_cluster_iam_resources                   = var.use_runtime_policy ? false : true
   manage_worker_iam_resources                    = true

@@ -30,9 +30,9 @@
         "iam:ListPolic*"
       ],
       "Resource": [
-        "arn:aws:iam::${account_id}:role/StreamNative/*",
-        "arn:aws:iam::${account_id}:policy/StreamNative/*",
-        "arn:aws:iam::aws:policy/*"
+        "arn:${partition}:iam::${account_id}:role/StreamNative/*",
+        "arn:${partition}:iam::${account_id}:policy/StreamNative/*",
+        "arn:${partition}:iam::aws:policy/*"
       ]
     },
     {
@@ -43,7 +43,7 @@
         "iam:TagRole"
       ],
       "Resource": [
-        "arn:aws:iam::${account_id}:role/StreamNative/*"
+        "arn:${partition}:iam::${account_id}:role/StreamNative/*"
       ],
       "Condition": {
         "StringEqualsIgnoreCase": {
@@ -57,11 +57,11 @@
       "Action": [
         "iam:AttachRolePolicy"
       ],
-      "Resource": "arn:aws:iam::${account_id}:role/StreamNative/*",
+      "Resource": "arn:${partition}:iam::${account_id}:role/StreamNative/*",
       "Condition": {
         "ArnEquals": {
           "iam:PolicyARN": [
-            "arn:aws:iam::${account_id}:policy/StreamNative/StreamNativeCloudManagementPolicy"
+            "arn:${partition}:iam::${account_id}:policy/StreamNative/StreamNativeCloudManagementPolicy"
           ]
         }
       }
@@ -79,8 +79,8 @@
         "iam:UpdateRoleDescription"
       ],
       "Resource": [
-        "arn:aws:iam::${account_id}:role/StreamNative/*",
-        "arn:aws:iam::${account_id}:policy/StreamNative/*"
+        "arn:${partition}:iam::${account_id}:role/StreamNative/*",
+        "arn:${partition}:iam::${account_id}:policy/StreamNative/*"
       ],
       "Condition": {
         "StringEqualsIgnoreCase": {
