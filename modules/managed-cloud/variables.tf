@@ -128,7 +128,7 @@ variable "sn_policy_version" {
 
 variable "streamnative_control_plane_user_arn" {
   default     = "arn:aws-cn:iam::146097325273:user/aws-cn-test"
-  description = "The ARN of the user that is userd by StreamNative for Control Plane operations with generic authentication method"
+  description = "The ARN of the user that is used by StreamNative for Control Plane operations with generic authentication method"
   type        = string
 }
 
