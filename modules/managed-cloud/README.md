@@ -89,6 +89,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_create_bootstrap_role"></a> [create\_bootstrap\_role](#input\_create\_bootstrap\_role) | Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud | `string` | `true` | no |
 | <a name="input_external_id"></a> [external\_id](#input\_external\_id) | The external ID, provided by StreamNative, which is used for all assume role calls. If not provided, no check for external\_id is added. (NOTE: a future version will force the passing of this parameter) | `string` | `""` | no |
+| <a name="input_partition"></a> [partition](#input\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies. | `string` | `"aws"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The AWS region where your instance of StreamNative Cloud is deployed. Defaults to all regions "*" | `string` | `"*"` | no |
 | <a name="input_runtime_ebs_kms_key_arns"></a> [runtime\_ebs\_kms\_key\_arns](#input\_runtime\_ebs\_kms\_key\_arns) | when using runtime policy, sets the list of allowed kms key arns, if not set, uses the default ebs kms key | `list(any)` | `[]` | no |
 | <a name="input_runtime_eks_cluster_pattern"></a> [runtime\_eks\_cluster\_pattern](#input\_runtime\_eks\_cluster\_pattern) | when using runtime policy, defines the eks clsuter prefix for streamnative clusters | `string` | `"aws*snc"` | no |
@@ -101,6 +102,7 @@ No modules.
 | <a name="input_source_identities"></a> [source\_identities](#input\_source\_identities) | Place an additional constraint on source identity, disabled by default and only to be used if specified by StreamNative | `list(any)` | `[]` | no |
 | <a name="input_source_identity_test"></a> [source\_identity\_test](#input\_source\_identity\_test) | The test to use for source identity | `string` | `"ForAnyValue:StringLike"` | no |
 | <a name="input_streamnative_control_plane_role_arn"></a> [streamnative\_control\_plane\_role\_arn](#input\_streamnative\_control\_plane\_role\_arn) | The ARN of the role that is used by StreamNative for Control Plane operations | `string` | `"arn:aws:iam::311022431024:role/cloud-manager"` | no |
+| <a name="input_streamnative_control_plane_user_arn"></a> [streamnative\_control\_plane\_user\_arn](#input\_streamnative\_control\_plane\_user\_arn) | The ARN of the user that is used by StreamNative for Control Plane operations with generic authentication method | `string` | `"arn:aws-cn:iam::146097325273:user/aws-cn-test"` | no |
 | <a name="input_streamnative_google_account_id"></a> [streamnative\_google\_account\_id](#input\_streamnative\_google\_account\_id) | The Google Cloud service account ID used by StreamNative for Control Plane operations | `string` | `"108050666045451143798"` | no |
 | <a name="input_streamnative_vendor_access_role_arn"></a> [streamnative\_vendor\_access\_role\_arn](#input\_streamnative\_vendor\_access\_role\_arn) | The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account | `string` | `"arn:aws:iam::311022431024:role/cloud-manager"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Extra tags to apply to the resources created by this module. | `map(string)` | `{}` | no |
@@ -111,6 +113,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_aws_lbc_policy_arn"></a> [aws\_lbc\_policy\_arn](#output\_aws\_lbc\_policy\_arn) | The ARN of the AWS Load Balancer Controller Policy, if enabled |
 | <a name="output_bootstrap_role_arn"></a> [bootstrap\_role\_arn](#output\_bootstrap\_role\_arn) | The ARN of the Bootstrap role, if enabled |
 | <a name="output_management_role_arn"></a> [management\_role\_arn](#output\_management\_role\_arn) | The ARN of the Management Role |
 | <a name="output_permission_boundary_policy_arn"></a> [permission\_boundary\_policy\_arn](#output\_permission\_boundary\_policy\_arn) | The ARN of the Permssion Boundary Policy |
