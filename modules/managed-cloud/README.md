@@ -40,6 +40,7 @@ When you are finished, the module will output the ARNs for the resources created
 ## CloudFormation (optional)
 If you do not use Terraform or prefer a more AWS native approach to deploying these resources, the [`cloudformation`](https://github.com/streamnative/terraform-aws-cloud/tree/master/modules/managed-cloud/cloudformation) directory contains a stack template file you can use. It creates the same resources mentioned above, just upload the stack and provide the necessary `VendorSupportRoleArn` parameter.
 
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -118,3 +119,4 @@ No modules.
 | <a name="output_management_role_arn"></a> [management\_role\_arn](#output\_management\_role\_arn) | The ARN of the Management Role |
 | <a name="output_permission_boundary_policy_arn"></a> [permission\_boundary\_policy\_arn](#output\_permission\_boundary\_policy\_arn) | The ARN of the Permssion Boundary Policy |
 | <a name="output_runtime_policy_arn"></a> [runtime\_policy\_arn](#output\_runtime\_policy\_arn) | The ARN of the Runtime Policy, if enabled |
+<!-- END_TF_DOCS -->
