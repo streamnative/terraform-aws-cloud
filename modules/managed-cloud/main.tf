@@ -44,7 +44,7 @@ locals {
   assume_conditions         = concat(local.external_id, local.source_identity)
   bootstrap_policy_path     = var.use_runtime_policy ? "${path.module}/files/bootstrap_role_iam_policy_runtime.json.tpl" : "${path.module}/files/bootstrap_role_iam_policy.json.tpl"
   perm_boundary_policy_path = var.use_runtime_policy ? "${path.module}/files/permission_boundary_iam_policy_runtime.json.tpl" : "${path.module}/files/permission_boundary_iam_policy.json.tpl"
-  arn_like_vpcs             = formatlist("\"arn:aws:ec2:%s:%s:vpc/%s\"", var.region, local.account_id, var.runtime_vpc_allowed_ids)
+  arn_like_vpcs             = formatlist("\"arn:%s:ec2:%s:%s:vpc/%s\"", var.partition, var.region, local.account_id, var.runtime_vpc_allowed_ids)
   arn_like_vpcs_str         = format("[%s]", join(",", local.arn_like_vpcs))
   tag_set                   = merge({ Vendor = "StreamNative", SNVersion = var.sn_policy_version }, var.tags)
 }
@@ -307,7 +307,7 @@ data "aws_iam_policy_document" "runtime_policy" {
       "s3:ListBucket",
       "s3:ListMultipart*",
     ]
-    resources = ["arn:aws:s3:::${var.runtime_s3_bucket_pattern}"]
+    resources = ["arn:${var.partition}:s3:::${var.runtime_s3_bucket_pattern}"]
   }
   statement {
     sid     = "s3o"
@@ -344,8 +344,8 @@ data "aws_iam_policy_document" "runtime_policy" {
       variable = "ec2:CreateAction"
     }
     resources = [
-      "arn:aws:ec2:*:*:volume/*",
-      "arn:aws:ec2:*:*:snapshot/*"
+      "arn:${var.partition}:ec2:*:*:volume/*",
+      "arn:${var.partition}:ec2:*:*:snapshot/*"
     ]
   }
   statement {
