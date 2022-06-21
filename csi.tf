@@ -198,7 +198,7 @@ resource "aws_iam_policy" "csi" {
 
 resource "aws_iam_role_policy_attachment" "csi_managed" {
   count      = var.enable_csi ? 1 : 0
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  policy_arn = "arn:${var.aws_partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   role       = aws_iam_role.csi[0].name
 }
 
