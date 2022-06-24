@@ -84,7 +84,6 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "17.24.0"
 
-  # cluster_iam_role_name        = aws_iam_role.cluster.name
   cluster_name                                   = var.cluster_name
   cluster_version                                = var.cluster_version
   cluster_create_endpoint_private_access_sg_rule = var.enable_node_group_private_networking
@@ -92,7 +91,7 @@ module "eks" {
   cluster_endpoint_private_access_cidrs          = local.private_subnet_cidrs
   cluster_endpoint_public_access_cidrs           = var.allowed_public_cidrs
   cluster_enabled_log_types                      = var.cluster_enabled_log_types
-  cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : null
+  cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : ""
   cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
   cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
   enable_irsa                                    = true
@@ -108,7 +107,6 @@ module "eks" {
   vpc_id                                         = var.vpc_id
   wait_for_cluster_timeout                       = var.wait_for_cluster_timeout // This was added in version 17.1.0, and if set above 0, causes TF to crash.
   write_kubeconfig                               = false
-  # workers_role_name            = aws_iam_role.nodes.name
 
   node_groups = local.node_groups
 
