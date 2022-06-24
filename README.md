@@ -240,9 +240,9 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.17.1 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >=3.61.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.2.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.11.0 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >=2.6.1 |
 
 ## Modules
 
@@ -289,6 +289,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | [helm_release.csi](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.external_dns](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.external_secrets](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
+| [helm_release.metrics_server](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [helm_release.node_termination_handler](https://registry.terraform.io/providers/hashicorp/helm/2.2.0/docs/resources/release) | resource |
 | [kubernetes_namespace.sn_system](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_storage_class.sn_default](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/storage_class) | resource |
@@ -355,6 +356,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_enable_external_secrets"></a> [enable\_external\_secrets](#input\_enable\_external\_secrets) | Enables kubernetes-external-secrets addon service on the cluster. Defaults to "false" | `bool` | `false` | no |
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool. | `bool` | `true` | no |
 | <a name="input_enable_istio"></a> [enable\_istio](#input\_enable\_istio) | Enables Istio on the cluster. Set to "true" by default. | `bool` | `true` | no |
+| <a name="input_enable_metrics_server"></a> [enable\_metrics\_server](#input\_enable\_metrics\_server) | Enables the Kubernetes Metrics Server addon service on the cluster. Defaults to "true". | `bool` | `true` | no |
 | <a name="input_enable_node_group_private_networking"></a> [enable\_node\_group\_private\_networking](#input\_enable\_node\_group\_private\_networking) | Enables private networking for the EKS node groups (not the EKS cluster endpoint, which remains public), meaning Kubernetes API requests that originate within the cluster's VPC use a private VPC endpoint for EKS. Defaults to "true". | `bool` | `true` | no |
 | <a name="input_external_dns_helm_chart_name"></a> [external\_dns\_helm\_chart\_name](#input\_external\_dns\_helm\_chart\_name) | The name of the Helm chart in the repository for ExternalDNS. | `string` | `"external-dns"` | no |
 | <a name="input_external_dns_helm_chart_repository"></a> [external\_dns\_helm\_chart\_repository](#input\_external\_dns\_helm\_chart\_repository) | The repository containing the ExternalDNS helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
@@ -384,6 +386,10 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_map_additional_aws_accounts"></a> [map\_additional\_aws\_accounts](#input\_map\_additional\_aws\_accounts) | Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap. | `list(string)` | `[]` | no |
 | <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_map_additional_iam_users"></a> [map\_additional\_iam\_users](#input\_map\_additional\_iam\_users) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
+| <a name="input_metrics_server_helm_chart_name"></a> [metrics\_server\_helm\_chart\_name](#input\_metrics\_server\_helm\_chart\_name) | The name of the helm release to install | `string` | `"metrics-server"` | no |
+| <a name="input_metrics_server_helm_chart_repository"></a> [metrics\_server\_helm\_chart\_repository](#input\_metrics\_server\_helm\_chart\_repository) | The repository containing the external-metrics helm chart. | `string` | `"https://kubernetes-sigs.github.io/metrics-server"` | no |
+| <a name="input_metrics_server_helm_chart_version"></a> [metrics\_server\_helm\_chart\_version](#input\_metrics\_server\_helm\_chart\_version) | Helm chart version for Metrics server | `string` | `"3.8.2"` | no |
+| <a name="input_metrics_server_settings"></a> [metrics\_server\_settings](#input\_metrics\_server\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options. | `map(any)` | `{}` | no |
 | <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | n/a | yes |
 | <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `50` | no |
 | <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |

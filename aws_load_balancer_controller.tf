@@ -307,7 +307,7 @@ resource "helm_release" "aws_load_balancer_controller" {
       }
     }
   })]
-  
+
   dynamic "set" {
     for_each = var.aws_load_balancer_controller_settings
     content {
