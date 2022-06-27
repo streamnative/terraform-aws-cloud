@@ -17,6 +17,12 @@
 # under the License.
 #
 
+variable "additional_iam_policiy_arns" {
+  default     = []
+  description = "Provide a list of additional IAM policy arns allowed for use with iam:AttachRolePolicy, defined in the StreamNativePermissionBoundary."
+  type        = list(string)
+}
+
 variable "create_bootstrap_role" {
   default     = true
   description = "Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud"

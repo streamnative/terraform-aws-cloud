@@ -22,6 +22,8 @@ And if you are using the Runtime policy:
 
 - `use_runtime_policy`: Enables the creation of the runtime policy for EKS addon services, allowing for a tighter set of restrictions for the Bootstrap role.
 
+You can also pass additional policies that StreamNative is allowed to work with by using the `additional_iam_policy_arns` input and providing a list of appropriate arns.
+
 Assuming you are authenticated and authorized to the correct AWS environment, create a `main.tf` file containing the following:
 
 ```hcl
@@ -30,6 +32,10 @@ module "sn_managed_cloud" {
   
   region             = <YOUR_REGION>
   use_runtime_policy = true
+
+  additional_iam_policy_arns = [
+    "arn:aws:iam::012345678901:policy/my_custom_policy_that_streamnative_needs_to_use"
+  ]
 }
 ```
 
@@ -88,6 +94,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_iam_policiy_arns"></a> [additional\_iam\_policiy\_arns](#input\_additional\_iam\_policiy\_arns) | Provide a list of additional IAM policy arns allowed for use with iam:AttachRolePolicy, defined in the StreamNativePermissionBoundary. | `list(string)` | `[]` | no |
 | <a name="input_create_bootstrap_role"></a> [create\_bootstrap\_role](#input\_create\_bootstrap\_role) | Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud | `string` | `true` | no |
 | <a name="input_external_id"></a> [external\_id](#input\_external\_id) | The external ID, provided by StreamNative, which is used for all assume role calls. If not provided, no check for external\_id is added. (NOTE: a future version will force the passing of this parameter) | `string` | `""` | no |
 | <a name="input_partition"></a> [partition](#input\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies. | `string` | `"aws"` | no |

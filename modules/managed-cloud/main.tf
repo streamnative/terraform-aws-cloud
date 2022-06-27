@@ -45,6 +45,20 @@ locals {
   arn_like_vpcs             = formatlist("\"arn:%s:ec2:%s:%s:vpc/%s\"", var.partition, var.region, local.account_id, var.runtime_vpc_allowed_ids)
   arn_like_vpcs_str         = format("[%s]", join(",", local.arn_like_vpcs))
   tag_set                   = merge({ Vendor = "StreamNative", SNVersion = var.sn_policy_version }, var.tags)
+
+  additional_iam_policiy_arns = distinct(compact(var.additional_iam_policiy_arns))
+  default_allowed_iam_policies = compact([
+    "arn:${var.partition}:iam::${local.account_id}:policy/StreamNative/*",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSServicePolicy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSVPCResourceController",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:${var.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  ])
+  allowed_iam_policies = join(", ", formatlist("\"%s\"", distinct(concat(local.additional_iam_policiy_arns, local.default_allowed_iam_policies))))
+
 }
 
 data "aws_iam_policy_document" "streamnative_control_plane_access" {
@@ -97,9 +111,10 @@ resource "aws_iam_policy" "permission_boundary" {
   path        = "/StreamNative/"
   policy = templatefile(local.perm_boundary_policy_path,
     {
-      account_id = local.account_id
-      partition  = var.partition
-      region     = var.region
+      account_id           = local.account_id
+      allowed_iam_policies = local.allowed_iam_policies
+      partition            = var.partition
+      region               = var.region
   })
   tags = local.tag_set
 }
@@ -108,8 +123,10 @@ resource "local_file" "permission_boundary_policy" {
   count = var.write_policy_files ? 1 : 0
   content = templatefile(local.perm_boundary_policy_path,
     {
-      account_id = local.account_id
-      region     = var.region
+      account_id           = local.account_id
+      allowed_iam_policies = local.allowed_iam_policies
+      partition            = var.partition
+      region               = var.region
   })
   filename = "permission_boundary_policy.json"
 }
