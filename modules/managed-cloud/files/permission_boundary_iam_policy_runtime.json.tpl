@@ -99,7 +99,7 @@
       "Resource": "arn:${partition}:iam::${account_id}:role/StreamNative/*",
       "Condition": {
         "ForAnyValue:ArnLike": {
-          "iam:PolicyARN": ${allowed_iam_policies}
+          "iam:PolicyARN": [ ${allowed_iam_policies} ]
         }
       }
     },
