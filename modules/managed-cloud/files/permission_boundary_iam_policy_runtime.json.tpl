@@ -99,16 +99,7 @@
       "Resource": "arn:${partition}:iam::${account_id}:role/StreamNative/*",
       "Condition": {
         "ForAnyValue:ArnLike": {
-          "iam:PolicyARN": [
-            "arn:${partition}:iam::${account_id}:policy/StreamNative/*",
-            "arn:${partition}:iam::aws:policy/AmazonEKSClusterPolicy",
-            "arn:${partition}:iam::aws:policy/AmazonEKSServicePolicy",
-            "arn:${partition}:iam::aws:policy/AmazonEKSVPCResourceController",
-            "arn:${partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-            "arn:${partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
-            "arn:${partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-            "arn:${partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-          ]
+          "iam:PolicyARN": ${allowed_iam_policies}
         }
       }
     },

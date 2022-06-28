@@ -22,6 +22,8 @@ And if you are using the Runtime policy:
 
 - `use_runtime_policy`: Enables the creation of the runtime policy for EKS addon services, allowing for a tighter set of restrictions for the Bootstrap role.
 
+You can also pass additional policies that StreamNative is allowed to work with by using the `additional_iam_policy_arns` input and providing a list of appropriate arns.
+
 Assuming you are authenticated and authorized to the correct AWS environment, create a `main.tf` file containing the following:
 
 ```hcl
@@ -30,6 +32,10 @@ module "sn_managed_cloud" {
   
   region             = <YOUR_REGION>
   use_runtime_policy = true
+
+  additional_iam_policy_arns = [
+    "arn:aws:iam::012345678901:policy/my_custom_policy_that_streamnative_needs_to_use"
+  ]
 }
 ```
 
@@ -88,6 +94,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_iam_policiy_arns"></a> [additional\_iam\_policiy\_arns](#input\_additional\_iam\_policiy\_arns) | Provide a list of additional IAM policy arns allowed for use with iam:AttachRolePolicy, defined in the StreamNativePermissionBoundary. | `list(string)` | `[]` | no |
 | <a name="input_create_bootstrap_role"></a> [create\_bootstrap\_role](#input\_create\_bootstrap\_role) | Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud | `string` | `true` | no |
 | <a name="input_external_id"></a> [external\_id](#input\_external\_id) | The external ID, provided by StreamNative, which is used for all assume role calls. If not provided, no check for external\_id is added. (NOTE: a future version will force the passing of this parameter) | `string` | `""` | no |
 | <a name="input_partition"></a> [partition](#input\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies. | `string` | `"aws"` | no |
@@ -102,10 +109,8 @@ No modules.
 | <a name="input_sn_policy_version"></a> [sn\_policy\_version](#input\_sn\_policy\_version) | The value of SNVersion tag | `string` | `"2.0"` | no |
 | <a name="input_source_identities"></a> [source\_identities](#input\_source\_identities) | Place an additional constraint on source identity, disabled by default and only to be used if specified by StreamNative | `list(any)` | `[]` | no |
 | <a name="input_source_identity_test"></a> [source\_identity\_test](#input\_source\_identity\_test) | The test to use for source identity | `string` | `"ForAnyValue:StringLike"` | no |
-| <a name="input_streamnative_control_plane_role_arn"></a> [streamnative\_control\_plane\_role\_arn](#input\_streamnative\_control\_plane\_role\_arn) | The ARN of the role that is used by StreamNative for Control Plane operations | `string` | `"arn:aws:iam::311022431024:role/cloud-manager"` | no |
-| <a name="input_streamnative_control_plane_user_arn"></a> [streamnative\_control\_plane\_user\_arn](#input\_streamnative\_control\_plane\_user\_arn) | The ARN of the user that is used by StreamNative for Control Plane operations with generic authentication method | `string` | `"arn:aws-cn:iam::146097325273:user/aws-cn-test"` | no |
 | <a name="input_streamnative_google_account_id"></a> [streamnative\_google\_account\_id](#input\_streamnative\_google\_account\_id) | The Google Cloud service account ID used by StreamNative for Control Plane operations | `string` | `"108050666045451143798"` | no |
-| <a name="input_streamnative_vendor_access_role_arn"></a> [streamnative\_vendor\_access\_role\_arn](#input\_streamnative\_vendor\_access\_role\_arn) | The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account | `string` | `"arn:aws:iam::311022431024:role/cloud-manager"` | no |
+| <a name="input_streamnative_vendor_access_role_arns"></a> [streamnative\_vendor\_access\_role\_arns](#input\_streamnative\_vendor\_access\_role\_arns) | A list ARNs provided by StreamNative that enable us to work with the Vendor Access Roles created by this module (StreamNativeCloudBootstrapRole, StreamNativeCloudManagementRole). This is how StreamNative is granted access into your AWS account, and should typically be the default value. | `list(string)` | <pre>[<br>  "arn:aws:iam::311022431024:role/cloud-manager"<br>]</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Extra tags to apply to the resources created by this module. | `map(string)` | `{}` | no |
 | <a name="input_use_runtime_policy"></a> [use\_runtime\_policy](#input\_use\_runtime\_policy) | instead of relying on permission boundary use static runtime policies | `bool` | `false` | no |
 | <a name="input_write_policy_files"></a> [write\_policy\_files](#input\_write\_policy\_files) | Write the policy files locally to disk for debugging and validation | `bool` | `false` | no |
