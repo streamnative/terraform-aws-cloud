@@ -90,7 +90,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
   statement {
     actions   = ["ec2:CreateTags"]
     effect    = "Allow"
-    resources = ["arn:aws:ec2:*:*:security-group/*"]
+    resources = ["arn:${var.aws_partition}:ec2:*:*:security-group/*"]
     condition {
       test     = "StringEquals"
       variable = "ec2:CreateAction"
@@ -109,7 +109,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
       "ec2:DeleteTags"
     ]
     effect    = "Allow"
-    resources = ["arn:aws:ec2:*:*:security-group/*"]
+    resources = ["arn:${var.aws_partition}:ec2:*:*:security-group/*"]
     condition {
       test     = "Null"
       variable = "aws:RequestTag/elbv2.k8s.aws/cluster"
@@ -169,9 +169,9 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
-      "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-      "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:targetgroup/*/*",
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:loadbalancer/app/*/*"
     ]
     condition {
       test     = "Null"
@@ -192,10 +192,10 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
-      "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
-      "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
-      "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener/net/*/*/*",
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener/app/*/*/*",
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
     ]
   }
 
@@ -225,7 +225,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
       "elasticloadbalancing:DeregisterTargets"
     ]
     effect    = "Allow"
-    resources = ["arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"]
+    resources = ["arn:${var.aws_partition}:elasticloadbalancing:*:*:targetgroup/*/*"]
   }
 
   statement {

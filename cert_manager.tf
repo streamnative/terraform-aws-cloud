@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "cert_manager" {
       "route53:GetChange"
     ]
     resources = [
-      "arn:aws:route53:::change/*"
+      "arn:${var.aws_partition}:route53:::change/*"
     ]
     effect = "Allow"
   }
@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "cert_manager" {
       "route53:ListResourceRecordSets"
     ]
     resources = [
-      "arn:aws:route53:::hostedzone/${var.hosted_zone_id}"
+      "arn:${var.aws_partition}:route53:::hostedzone/${var.hosted_zone_id}"
     ]
     effect = "Allow"
   }

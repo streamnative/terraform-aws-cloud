@@ -243,6 +243,7 @@ variable "enable_csi" {
   description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
   type        = bool
 }
+
 variable "enable_external_secrets" {
   default     = false
   description = "Enables kubernetes-external-secrets addon service on the cluster. Defaults to \"false\""
@@ -270,6 +271,12 @@ variable "enable_func_pool_monitoring" {
 variable "enable_istio" {
   default     = true
   description = "Enables Istio on the cluster. Set to \"true\" by default."
+  type        = bool
+}
+
+variable "enable_metrics_server" {
+  default     = true
+  description = "Enables the Kubernetes Metrics Server addon service on the cluster. Defaults to \"true\"."
   type        = bool
 }
 
@@ -482,6 +489,30 @@ variable "map_additional_iam_users" {
     username = string
     groups   = list(string)
   }))
+}
+
+variable "metrics_server_helm_chart_name" {
+  default     = "metrics-server"
+  description = "The name of the helm release to install"
+  type        = string
+}
+
+variable "metrics_server_helm_chart_repository" {
+  default     = "https://kubernetes-sigs.github.io/metrics-server"
+  description = "The repository containing the external-metrics helm chart."
+  type        = string
+}
+
+variable "metrics_server_helm_chart_version" {
+  default     = "3.8.2"
+  description = "Helm chart version for Metrics server"
+  type        = string
+}
+
+variable "metrics_server_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options."
+  type        = map(any)
 }
 
 variable "node_termination_handler_helm_chart_name" {

@@ -90,7 +90,7 @@
             "Action": [
                 "ec2:CreateTags"
             ],
-            "Resource": "arn:aws:ec2:*:*:security-group/*",
+            "Resource": "arn:${partition}:ec2:*:*:security-group/*",
             "Condition": {
                 "StringEquals": {
                     "ec2:CreateAction": "CreateSecurityGroup"
@@ -106,7 +106,7 @@
                 "ec2:CreateTags",
                 "ec2:DeleteTags"
             ],
-            "Resource": "arn:aws:ec2:*:*:security-group/*",
+            "Resource": "arn:${partition}:ec2:*:*:security-group/*",
             "Condition": {
                 "Null": {
                     "aws:RequestTag/elbv2.k8s.aws/cluster": "true",
@@ -161,9 +161,9 @@
                 "elasticloadbalancing:RemoveTags"
             ],
             "Resource": [
-                "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
-                "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-                "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+                "arn:${partition}:elasticloadbalancing:*:*:targetgroup/*/*",
+                "arn:${partition}:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+                "arn:${partition}:elasticloadbalancing:*:*:loadbalancer/app/*/*"
             ],
             "Condition": {
                 "Null": {
@@ -179,10 +179,10 @@
                 "elasticloadbalancing:RemoveTags"
             ],
             "Resource": [
-                "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
-                "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
-                "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
-                "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+                "arn:${partition}:elasticloadbalancing:*:*:listener/net/*/*/*",
+                "arn:${partition}:elasticloadbalancing:*:*:listener/app/*/*/*",
+                "arn:${partition}:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+                "arn:${partition}:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
             ]
         },
         {
@@ -210,7 +210,7 @@
                 "elasticloadbalancing:RegisterTargets",
                 "elasticloadbalancing:DeregisterTargets"
             ],
-            "Resource": "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+            "Resource": "arn:${partition}:elasticloadbalancing:*:*:targetgroup/*/*"
         },
         {
             "Effect": "Allow",

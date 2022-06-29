@@ -22,6 +22,8 @@ And if you are using the Runtime policy:
 
 - `use_runtime_policy`: Enables the creation of the runtime policy for EKS addon services, allowing for a tighter set of restrictions for the Bootstrap role.
 
+You can also pass additional policies that StreamNative is allowed to work with by using the `additional_iam_policy_arns` input and providing a list of appropriate arns.
+
 Assuming you are authenticated and authorized to the correct AWS environment, create a `main.tf` file containing the following:
 
 ```hcl
@@ -30,6 +32,10 @@ module "sn_managed_cloud" {
   
   region             = <YOUR_REGION>
   use_runtime_policy = true
+
+  additional_iam_policy_arns = [
+    "arn:aws:iam::012345678901:policy/my_custom_policy_that_streamnative_needs_to_use"
+  ]
 }
 ```
 
@@ -40,6 +46,7 @@ When you are finished, the module will output the ARNs for the resources created
 ## CloudFormation (optional)
 If you do not use Terraform or prefer a more AWS native approach to deploying these resources, the [`cloudformation`](https://github.com/streamnative/terraform-aws-cloud/tree/master/modules/managed-cloud/cloudformation) directory contains a stack template file you can use. It creates the same resources mentioned above, just upload the stack and provide the necessary `VendorSupportRoleArn` parameter.
 
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -87,8 +94,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_iam_policiy_arns"></a> [additional\_iam\_policiy\_arns](#input\_additional\_iam\_policiy\_arns) | Provide a list of additional IAM policy arns allowed for use with iam:AttachRolePolicy, defined in the StreamNativePermissionBoundary. | `list(string)` | `[]` | no |
 | <a name="input_create_bootstrap_role"></a> [create\_bootstrap\_role](#input\_create\_bootstrap\_role) | Whether or not to create the bootstrap role, which is used by StreamNative for the initial deployment of the StreamNative Cloud | `string` | `true` | no |
 | <a name="input_external_id"></a> [external\_id](#input\_external\_id) | The external ID, provided by StreamNative, which is used for all assume role calls. If not provided, no check for external\_id is added. (NOTE: a future version will force the passing of this parameter) | `string` | `""` | no |
+| <a name="input_partition"></a> [partition](#input\_partition) | AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies. | `string` | `"aws"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The AWS region where your instance of StreamNative Cloud is deployed. Defaults to all regions "*" | `string` | `"*"` | no |
 | <a name="input_runtime_ebs_kms_key_arns"></a> [runtime\_ebs\_kms\_key\_arns](#input\_runtime\_ebs\_kms\_key\_arns) | when using runtime policy, sets the list of allowed kms key arns, if not set, uses the default ebs kms key | `list(any)` | `[]` | no |
 | <a name="input_runtime_eks_cluster_pattern"></a> [runtime\_eks\_cluster\_pattern](#input\_runtime\_eks\_cluster\_pattern) | when using runtime policy, defines the eks clsuter prefix for streamnative clusters | `string` | `"aws*snc"` | no |
@@ -100,9 +109,8 @@ No modules.
 | <a name="input_sn_policy_version"></a> [sn\_policy\_version](#input\_sn\_policy\_version) | The value of SNVersion tag | `string` | `"2.0"` | no |
 | <a name="input_source_identities"></a> [source\_identities](#input\_source\_identities) | Place an additional constraint on source identity, disabled by default and only to be used if specified by StreamNative | `list(any)` | `[]` | no |
 | <a name="input_source_identity_test"></a> [source\_identity\_test](#input\_source\_identity\_test) | The test to use for source identity | `string` | `"ForAnyValue:StringLike"` | no |
-| <a name="input_streamnative_control_plane_role_arn"></a> [streamnative\_control\_plane\_role\_arn](#input\_streamnative\_control\_plane\_role\_arn) | The ARN of the role that is used by StreamNative for Control Plane operations | `string` | `"arn:aws:iam::311022431024:role/cloud-manager"` | no |
 | <a name="input_streamnative_google_account_id"></a> [streamnative\_google\_account\_id](#input\_streamnative\_google\_account\_id) | The Google Cloud service account ID used by StreamNative for Control Plane operations | `string` | `"108050666045451143798"` | no |
-| <a name="input_streamnative_vendor_access_role_arn"></a> [streamnative\_vendor\_access\_role\_arn](#input\_streamnative\_vendor\_access\_role\_arn) | The arn for the IAM principle (role) provided by StreamNative. This role is used exclusively by StreamNative (with strict permissions) for vendor access into your AWS account | `string` | `"arn:aws:iam::311022431024:role/cloud-manager"` | no |
+| <a name="input_streamnative_vendor_access_role_arns"></a> [streamnative\_vendor\_access\_role\_arns](#input\_streamnative\_vendor\_access\_role\_arns) | A list ARNs provided by StreamNative that enable us to work with the Vendor Access Roles created by this module (StreamNativeCloudBootstrapRole, StreamNativeCloudManagementRole). This is how StreamNative is granted access into your AWS account, and should typically be the default value. | `list(string)` | <pre>[<br>  "arn:aws:iam::311022431024:role/cloud-manager"<br>]</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Extra tags to apply to the resources created by this module. | `map(string)` | `{}` | no |
 | <a name="input_use_runtime_policy"></a> [use\_runtime\_policy](#input\_use\_runtime\_policy) | instead of relying on permission boundary use static runtime policies | `bool` | `false` | no |
 | <a name="input_write_policy_files"></a> [write\_policy\_files](#input\_write\_policy\_files) | Write the policy files locally to disk for debugging and validation | `bool` | `false` | no |
@@ -111,7 +119,9 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_aws_lbc_policy_arn"></a> [aws\_lbc\_policy\_arn](#output\_aws\_lbc\_policy\_arn) | The ARN of the AWS Load Balancer Controller Policy, if enabled |
 | <a name="output_bootstrap_role_arn"></a> [bootstrap\_role\_arn](#output\_bootstrap\_role\_arn) | The ARN of the Bootstrap role, if enabled |
 | <a name="output_management_role_arn"></a> [management\_role\_arn](#output\_management\_role\_arn) | The ARN of the Management Role |
 | <a name="output_permission_boundary_policy_arn"></a> [permission\_boundary\_policy\_arn](#output\_permission\_boundary\_policy\_arn) | The ARN of the Permssion Boundary Policy |
 | <a name="output_runtime_policy_arn"></a> [runtime\_policy\_arn](#output\_runtime\_policy\_arn) | The ARN of the Runtime Policy, if enabled |
+<!-- END_TF_DOCS -->

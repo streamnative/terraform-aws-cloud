@@ -21,12 +21,12 @@ locals {
   lb_annotations = {
     internet_facing = {
       "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internet-facing"
-      "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-type"   = "nlb"
     },
     internal_only = {
-      "service.beta.kubernetes.io/aws-load-balancer-internal": "true"
+      "service.beta.kubernetes.io/aws-load-balancer-internal" : "true"
       "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internal"
-      "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-type"   = "nlb"
     }
   }
 }
@@ -55,9 +55,9 @@ module "istio" {
   istio_settings = var.istio_settings
 
   istio_ingress_gateway_service_annotations = lookup(local.lb_annotations, var.istio_network_loadbancer, local.lb_annotations.internet_facing)
-  kiali_gateway_hosts      = ["kiali.${var.service_domain}"]
-  kiali_gateway_tls_secret = "istio-ingressgateway-tls"
-  kiali_operator_settings  = var.kiali_operator_settings
+  kiali_gateway_hosts                       = ["kiali.${var.service_domain}"]
+  kiali_gateway_tls_secret                  = "istio-ingressgateway-tls"
+  kiali_operator_settings                   = var.kiali_operator_settings
 
   depends_on = [
     helm_release.cert_issuer

@@ -31,8 +31,8 @@ locals {
   private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_cidrs[i].cidr_block]
 
   ## switches for roles
-  default_lb_arn         = "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
-  default_service_arn    = "arn:aws:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
+  default_lb_arn         = "arn:${var.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
+  default_service_arn    = "arn:${var.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
   lb_policy_arn          = var.sncloud_services_lb_policy_arn != "" ? var.sncloud_services_lb_policy_arn : (var.use_runtime_policy ? local.default_lb_arn : "")
   sn_serv_policy_arn     = var.sncloud_services_iam_policy_arn != "" ? var.sncloud_services_iam_policy_arn : (var.use_runtime_policy ? local.default_service_arn : "")
   create_lb_policy       = !(var.sncloud_services_lb_policy_arn != "" || var.use_runtime_policy || !var.enable_aws_load_balancer_controller)
@@ -93,10 +93,11 @@ module "eks" {
   cluster_endpoint_private_access_cidrs          = local.private_subnet_cidrs
   cluster_endpoint_public_access_cidrs           = var.allowed_public_cidrs
   cluster_enabled_log_types                      = var.cluster_enabled_log_types
-  cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : null
+  cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : ""
   cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
   cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
   enable_irsa                                    = true
+  openid_connect_audiences                       = ["sts.amazonaws.com"]
   iam_path                                       = "/StreamNative/"
   manage_cluster_iam_resources                   = var.use_runtime_policy ? false : true
   manage_worker_iam_resources                    = true
@@ -184,18 +185,18 @@ resource "aws_iam_role" "cluster" {
 
 resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSClusterPolicy" {
   count      = var.use_runtime_policy ? 1 : 0
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  policy_arn = "arn:${var.aws_partition}:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.cluster[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSServicePolicy" {
   count      = var.use_runtime_policy ? 1 : 0
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+  policy_arn = "arn:${var.aws_partition}:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.cluster[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSVPCResourceControllerPolicy" {
   count      = var.use_runtime_policy ? 1 : 0
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  policy_arn = "arn:${var.aws_partition}:iam::aws:policy/AmazonEKSVPCResourceController"
   role       = aws_iam_role.cluster[0].name
 }

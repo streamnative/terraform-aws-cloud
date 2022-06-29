@@ -25,24 +25,40 @@ data "aws_iam_policy_document" "streamnative_vendor_access" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "AWS"
-      identifiers = [
-        var.streamnative_vendor_access_role_arn
-      ]
+      type        = "AWS"
+      identifiers = var.streamnative_vendor_access_role_arns
     }
   }
 }
 
 locals {
-  account_id                = data.aws_caller_identity.current.account_id
-  external_id               = (var.external_id != "" ? [{ test : "StringEquals", variable : "sts:ExternalId", values : [var.external_id] }] : [])
-  source_identity           = (length(var.source_identities) > 0 ? [{ test : var.source_identity_test, variable : "sts:SourceIdentity", values : var.source_identities }] : [])
+  account_id = data.aws_caller_identity.current.account_id
+  external_id = (var.external_id != "" ? [
+    { test : "StringEquals", variable : "sts:ExternalId", values : [var.external_id] }
+  ] : [])
+  source_identity = (length(var.source_identities) > 0 ? [
+    { test : var.source_identity_test, variable : "sts:SourceIdentity", values : var.source_identities }
+  ] : [])
   assume_conditions         = concat(local.external_id, local.source_identity)
   bootstrap_policy_path     = var.use_runtime_policy ? "${path.module}/files/bootstrap_role_iam_policy_runtime.json.tpl" : "${path.module}/files/bootstrap_role_iam_policy.json.tpl"
   perm_boundary_policy_path = var.use_runtime_policy ? "${path.module}/files/permission_boundary_iam_policy_runtime.json.tpl" : "${path.module}/files/permission_boundary_iam_policy.json.tpl"
-  arn_like_vpcs             = formatlist("\"arn:aws:ec2:%s:%s:vpc/%s\"", var.region, local.account_id, var.runtime_vpc_allowed_ids)
+  arn_like_vpcs             = formatlist("\"arn:%s:ec2:%s:%s:vpc/%s\"", var.partition, var.region, local.account_id, var.runtime_vpc_allowed_ids)
   arn_like_vpcs_str         = format("[%s]", join(",", local.arn_like_vpcs))
   tag_set                   = merge({ Vendor = "StreamNative", SNVersion = var.sn_policy_version }, var.tags)
+
+  additional_iam_policiy_arns = distinct(compact(var.additional_iam_policiy_arns))
+  default_allowed_iam_policies = compact([
+    "arn:${var.partition}:iam::${local.account_id}:policy/StreamNative/*",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSServicePolicy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSVPCResourceController",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
+    "arn:${var.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:${var.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  ])
+  allowed_iam_policies = join(", ", formatlist("\"%s\"", distinct(concat(local.additional_iam_policiy_arns, local.default_allowed_iam_policies))))
+
 }
 
 data "aws_iam_policy_document" "streamnative_control_plane_access" {
@@ -52,11 +68,8 @@ data "aws_iam_policy_document" "streamnative_control_plane_access" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "AWS"
-      identifiers = [
-        var.streamnative_vendor_access_role_arn,
-        var.streamnative_control_plane_role_arn
-      ]
+      type        = "AWS"
+      identifiers = var.streamnative_vendor_access_role_arns
     }
     dynamic "condition" {
       for_each = local.assume_conditions
@@ -98,8 +111,10 @@ resource "aws_iam_policy" "permission_boundary" {
   path        = "/StreamNative/"
   policy = templatefile(local.perm_boundary_policy_path,
     {
-      account_id = local.account_id
-      region     = var.region
+      account_id           = local.account_id
+      allowed_iam_policies = local.allowed_iam_policies
+      partition            = var.partition
+      region               = var.region
   })
   tags = local.tag_set
 }
@@ -108,8 +123,10 @@ resource "local_file" "permission_boundary_policy" {
   count = var.write_policy_files ? 1 : 0
   content = templatefile(local.perm_boundary_policy_path,
     {
-      account_id = local.account_id
-      region     = var.region
+      account_id           = local.account_id
+      allowed_iam_policies = local.allowed_iam_policies
+      partition            = var.partition
+      region               = var.region
   })
   filename = "permission_boundary_policy.json"
 }
@@ -142,6 +159,7 @@ resource "aws_iam_policy" "bootstrap_policy" {
       bucket_pattern   = var.runtime_s3_bucket_pattern
       nodepool_pattern = var.runtime_eks_nodepool_pattern
       cluster_pattern  = var.runtime_eks_cluster_pattern
+      partition        = var.partition
   })
   tags = local.tag_set
 }
@@ -178,6 +196,7 @@ resource "aws_iam_policy" "management_role" {
   policy = templatefile("${path.module}/files/management_role_iam_policy.json.tpl",
     {
       account_id = data.aws_caller_identity.current.account_id
+      partition  = var.partition
       region     = var.region
   })
   tags = local.tag_set
@@ -189,6 +208,7 @@ resource "local_file" "management_policy" {
     {
       account_id = data.aws_caller_identity.current.account_id
       region     = var.region
+      partition  = var.partition
   })
   filename = "management_policy.json"
 }
@@ -216,7 +236,9 @@ data "aws_kms_key" "default_ebs" {
 }
 
 locals {
-  kms_key_arns = length(var.runtime_ebs_kms_key_arns) > 0 ? var.runtime_ebs_kms_key_arns : [data.aws_kms_key.default_ebs.arn]
+  kms_key_arns = length(var.runtime_ebs_kms_key_arns) > 0 ? var.runtime_ebs_kms_key_arns : [
+    data.aws_kms_key.default_ebs.arn
+  ]
 }
 
 data "aws_iam_policy_document" "runtime_policy" {
@@ -297,7 +319,7 @@ data "aws_iam_policy_document" "runtime_policy" {
       "s3:ListBucket",
       "s3:ListMultipart*",
     ]
-    resources = ["arn:aws:s3:::${var.runtime_s3_bucket_pattern}"]
+    resources = ["arn:${var.partition}:s3:::${var.runtime_s3_bucket_pattern}"]
   }
   statement {
     sid    = "s3o"
@@ -334,8 +356,8 @@ data "aws_iam_policy_document" "runtime_policy" {
       variable = "ec2:CreateAction"
     }
     resources = [
-      "arn:aws:ec2:*:*:volume/*",
-      "arn:aws:ec2:*:*:snapshot/*"
+      "arn:${var.partition}:ec2:*:*:volume/*",
+      "arn:${var.partition}:ec2:*:*:snapshot/*"
     ]
   }
   statement {
@@ -389,7 +411,8 @@ resource "aws_iam_policy" "alb_policy" {
   path        = "/StreamNative/"
   policy = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
     {
-      vpc_ids = local.arn_like_vpcs_str
+      vpc_ids   = local.arn_like_vpcs_str
+      partition = var.partition
   })
   tags = local.tag_set
 }
@@ -404,7 +427,8 @@ resource "local_file" "alb_policy" {
   count = var.write_policy_files ? 1 : 0
   content = templatefile("${path.module}/files/aws_lb_controller.json.tpl",
     {
-      vpc_ids = local.arn_like_vpcs_str
+      vpc_ids   = local.arn_like_vpcs_str
+      partition = var.partition
   })
   filename = "alb_policy.json"
 }
