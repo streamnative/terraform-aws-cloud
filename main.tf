@@ -44,16 +44,17 @@ locals {
 
 
   func_pool_defaults = {
-    create_launch_template = true
-    desired_capacity       = coalesce(var.func_pool_desired_size, var.node_pool_desired_size)
-    disk_size              = var.func_pool_disk_size
-    disk_encrypted         = true
-    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
-    disk_type              = var.func_pool_disk_type
-    instance_types         = coalesce(var.func_pool_instance_types, var.node_pool_instance_types)
-    k8s_labels             = { NodeGroup = "functions" }
-    min_capacity           = coalesce(var.func_pool_min_size, var.node_pool_min_size)
-    max_capacity           = coalesce(var.func_pool_max_size, var.node_pool_max_size)
+    ami_id               = var.func_pool_ami_id
+    ami_is_eks_optimized = var.func_pool_ami_is_eks_optimized
+    enable_monintoring   = var.enable_func_pool_monitoring
+    desired_capacity     = var.func_pool_desired_size
+    disk_size            = var.func_pool_disk_size
+    disk_type            = var.func_pool_disk_type
+    instance_types       = var.func_pool_instance_types
+    k8s_labels           = merge(var.func_pool_labels, { NodeGroup = "functions" })
+    min_capacity         = var.func_pool_min_size
+    max_capacity         = var.func_pool_max_size
+    pre_userdata         = var.func_pool_pre_userdata
     taints = [{
       key    = "reserveGroup"
       value  = "functions"
@@ -62,17 +63,18 @@ locals {
   }
 
   node_pool_defaults = {
-    create_launch_template = true
-    desired_capacity       = var.node_pool_desired_size
-    disk_size              = var.node_pool_disk_size
-    disk_encrypted         = true
-    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
-    disk_type              = var.node_pool_disk_type
-    instance_types         = var.node_pool_instance_types
-    k8s_labels             = {}
-    min_capacity           = var.node_pool_min_size
-    max_capacity           = var.node_pool_max_size
-    taints                 = []
+    ami_id               = var.node_pool_ami_id
+    ami_is_eks_optimized = var.node_pool_ami_is_eks_optimized
+    enable_monintoring   = var.enable_node_pool_monitoring
+    desired_capacity     = var.node_pool_desired_size
+    disk_size            = var.node_pool_disk_size
+    disk_type            = var.node_pool_disk_type
+    instance_types       = var.node_pool_instance_types
+    k8s_labels           = var.node_pool_labels
+    min_capacity         = var.node_pool_min_size
+    max_capacity         = var.node_pool_max_size
+    pre_userdata         = var.node_pool_pre_userdata
+    taints               = []
   }
 
   snc_node_config = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-node-pool${i}" }) }
@@ -117,7 +119,9 @@ module "eks" {
       "Vendor"                                                 = "StreamNative"
       },
     )
-    # iam_role_arn = aws_iam_role.nodes.arn
+    create_launch_template = true
+    disk_encrypted         = true
+    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
   }
 
   tags = {
