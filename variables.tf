@@ -162,8 +162,8 @@ variable "cluster_log_kms_key_id" {
 }
 
 variable "cluster_log_retention_in_days" {
-  default     = 90
-  description = "Number of days to retain log events. Default retention - 90 days."
+  default     = 365
+  description = "Number of days to retain log events. Defaults to 365 days."
   type        = number
 }
 
@@ -262,6 +262,12 @@ variable "enable_func_pool" {
   type        = bool
 }
 
+variable "enable_func_pool_monitoring" {
+  default     = true
+  description = "Enable CloudWatch monitoring for the dedicated function pool(s)."
+  type        = bool
+}
+
 variable "enable_istio" {
   default     = true
   description = "Enables Istio on the cluster. Set to \"true\" by default."
@@ -280,6 +286,12 @@ variable "enable_node_group_private_networking" {
   type        = bool
 }
 
+variable "enable_node_pool_monitoring" {
+  default     = true
+  description = "Enable CloudWatch monitoring for the default pool(s)."
+  type        = bool
+}
+
 variable "external_dns_helm_chart_name" {
   default     = "external-dns"
   description = "The name of the Helm chart in the repository for ExternalDNS."
@@ -287,7 +299,7 @@ variable "external_dns_helm_chart_name" {
 }
 
 variable "external_dns_helm_chart_repository" {
-  default     = "https://charts.bitnami.com/bitnami"
+  default     = "https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami"
   description = "The repository containing the ExternalDNS helm chart."
   type        = string
 }
@@ -328,10 +340,22 @@ variable "external_secrets_settings" {
   type        = map(any)
 }
 
+variable "func_pool_ami_id" {
+  default     = ""
+  description = "The AMI ID to use for the func pool nodes. Defaults to the latest EKS Optimized AMI provided by AWS"
+  type        = string
+}
+
+variable "func_pool_ami_is_eks_optimized" {
+  default     = true
+  description = "If the custom AMI is an EKS optimized image, ignored if ami_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre_userdata"
+  type        = bool
+}
+
 variable "func_pool_desired_size" {
-  type        = number
   default     = 0
   description = "Desired number of worker nodes"
+  type        = number
 }
 
 variable "func_pool_disk_size" {
@@ -352,6 +376,12 @@ variable "func_pool_instance_types" {
   type        = list(string)
 }
 
+variable "func_pool_labels" {
+  default     = {}
+  description = "Labels to apply to the function pool node group. Defaults to {}."
+  type        = map(string)
+}
+
 variable "func_pool_min_size" {
   default     = 0
   description = "The minimum size of the AutoScaling Group."
@@ -370,6 +400,12 @@ variable "func_pool_namespace" {
   type        = string
 }
 
+variable "func_pool_pre_userdata" {
+  default     = ""
+  description = "The pre-userdata script to run on the function worker nodes."
+  type        = string
+}
+
 variable "func_pool_sa_name" {
   default     = "default"
   description = "The service account name the functions use."
@@ -378,6 +414,12 @@ variable "func_pool_sa_name" {
 
 variable "hosted_zone_id" {
   description = "The ID of the Route53 hosted zone used by the cluster's External DNS configuration."
+  type        = string
+}
+
+variable "iam_path" {
+  default     = "/StreamNative/"
+  description = "An IAM Path to be used for all IAM resources created by this module. Changing this from the default will cause issues with StreamNative's Vendor access, if applicable."
   type        = string
 }
 
@@ -497,7 +539,20 @@ variable "node_termination_handler_chart_version" {
   type        = string
 }
 
+variable "node_pool_ami_id" {
+  default     = ""
+  description = "The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS"
+  type        = string
+}
+
+variable "node_pool_ami_is_eks_optimized" {
+  default     = true
+  description = "If the custom AMI is an EKS optimized image, ignored if ami_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre_userdata"
+  type        = bool
+}
+
 variable "node_pool_desired_size" {
+  default     = 1
   description = "Desired number of worker nodes in the node pool."
   type        = number
 }
@@ -520,7 +575,14 @@ variable "node_pool_instance_types" {
   type        = list(string)
 }
 
+variable "node_pool_labels" {
+  default     = {}
+  description = "A map of kubernetes labels to add to the node pool."
+  type        = map(string)
+}
+
 variable "node_pool_min_size" {
+  default     = 1
   description = "The minimum size of the node pool AutoScaling group."
   type        = number
 }
@@ -528,6 +590,12 @@ variable "node_pool_min_size" {
 variable "node_pool_max_size" {
   description = "The maximum size of the node pool Autoscaling group."
   type        = number
+}
+
+variable "node_pool_pre_userdata" {
+  default     = ""
+  description = "The user data to apply to the worker nodes in the node pool. This is applied before the bootstrap.sh script."
+  type        = string
 }
 
 variable "permissions_boundary_arn" {
