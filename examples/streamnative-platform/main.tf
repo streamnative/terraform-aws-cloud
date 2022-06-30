@@ -21,10 +21,10 @@
 ### This section contains configurable inputs to satisfy your cluster specifications
 #######
 locals {
-  availability_zones = 3              # Number of AZs to use. EKS requires a minimum of 2.
-  desired_num_nodes  = 3              # The desired node count for the node groups. This module creates a node group for each availability zone.
-  environment        = "dev"          # This is used for naming of resources created by this module.
-  hosted_zone_id     = "*"            # Specify the hosted zone ID where you want DNS records to be created and managed. This scopes access to the External DNS service.
+  availability_zones = 3     # Number of AZs to use. EKS requires a minimum of 2.
+  desired_num_nodes  = 3     # The desired node count for the node groups. This module creates a node group for each availability zone.
+  environment        = "dev" # This is used for naming of resources created by this module.
+  hosted_zone_id     = "*"   # Specify the hosted zone ID where you want DNS records to be created and managed. This scopes access to the External DNS service.
   instance_type      = ["c6i.xlarge"]
   max_num_nodes      = 12             # The maximum number of nodes to create across all node groups. This module creates a node group for each availability zone.
   pulsar_namespace   = "pulsar"       # The module doesn't create a namespace for Pulsar, but it uses it for scoping access to the Tiered Storage Bucket
@@ -174,7 +174,7 @@ module "sn_tiered_storage_vault_resources" {
 locals {
   cluster_name = format("sn-%s-%s-%s", random_pet.cluster_name.id, local.environment, local.region)
   cluster_role_mapping = [
-      {
+    {
       rolearn  = module.sn_cluster.worker_iam_role_arn # The module creates IAM resources with the path "/StreamNative/". However the parent module is configured to remove the path from the worker nodes in the role mapping, which causes an erroneous node group health error in the EKS console.
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]

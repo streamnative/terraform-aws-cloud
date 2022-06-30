@@ -106,11 +106,10 @@ module "sn_cluster" {
 
   add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
   cluster_name             = local.cluster_name
-  cluster_version          = "1.19"
+  cluster_version          = "1.20"
   hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
   kubeconfig_output_path   = pathexpand("~/.kube/${local.cluster_name}-config")
-  func_pool_instance_types = ["t3.medium"]
-  node_pool_instance_types = ["m5.large"]
+  node_pool_instance_types = ["c6i.xlarge"]
   node_pool_desired_size   = 3
   node_pool_min_size       = 1
   node_pool_max_size       = 3
