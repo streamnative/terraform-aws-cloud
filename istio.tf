@@ -34,7 +34,7 @@ locals {
 module "istio" {
   count = var.enable_istio ? 1 : 0
 
-  source = "github.com/streamnative/terraform-helm-charts//modules/istio-operator?ref=master"
+  source = "github.com/streamnative/terraform-helm-charts//modules/istio-operator?ref=v0.8.4"
 
   enable_istio_operator = true
   enable_kiali_operator = true
