@@ -299,7 +299,7 @@ variable "external_dns_helm_chart_name" {
 }
 
 variable "external_dns_helm_chart_repository" {
-  default     = "https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami"
+  default     = "https://charts.bitnami.com/bitnami"
   description = "The repository containing the ExternalDNS helm chart."
   type        = string
 }

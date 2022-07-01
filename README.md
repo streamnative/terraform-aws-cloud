@@ -77,7 +77,7 @@ module "sn_cluster" {
   cluster_name             = "sn-cluster-${var.region}"
   cluster_version          = "1.20"
   hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
-  node_pool_instance_types = ["c6i.large"]
+  node_pool_instance_types = ["c6i.xlarge"]
   node_pool_desired_size   = 2
   node_pool_min_size       = 1
   node_pool_max_size       = 6
@@ -90,7 +90,7 @@ module "sn_cluster" {
 }
 ```
 
-In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.20`, with two node groups (one per subnet[^1]), each group being set with a desired capacity of two and a maximum scaling of six, meaning four `c6i.large` worker nodes in total will initially be created, but depending on cluster usage it can autoscale up to twelve.
+In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.20`, with two node groups (one per subnet[^1]), each group being set with a desired capacity of two and a maximum scaling of six, meaning four `c6i.xlarge` worker nodes in total will initially be created, but depending on cluster usage it can autoscale up to twelve.
 
 _Note: If you are creating more than one EKS cluster in an AWS account, it is necessary to set the input `create_iam_policies_for_cluster_addon_services = false`. Otherwise Terraform will error stating that resources already exist with the desired name. This is a temporary workaround and will be improved in later versions of the module._
 
@@ -353,9 +353,9 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_enable_cluster_autoscaler"></a> [enable\_cluster\_autoscaler](#input\_enable\_cluster\_autoscaler) | Enables the Cluster Autoscaler addon service on the cluster. Defaults to "true", and in most situations is recommened for StreamNative Cloud. | `bool` | `true` | no |
 | <a name="input_enable_csi"></a> [enable\_csi](#input\_enable\_csi) | Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS. | `bool` | `true` | no |
 | <a name="input_enable_external_dns"></a> [enable\_external\_dns](#input\_enable\_external\_dns) | Enables the External DNS addon service on the cluster. Defaults to "true", and in most situations is required by StreamNative Cloud. | `bool` | `true` | no |
-| <a name="input_enable_func_pool_monitoring"></a> [enable\_func\_pool\_monitoring](#input\_enable\_func\_pool\_monitoring) | Enable CloudWatch monitoring for the dedicated function pool(s). | `bool` | `true` | no |
 | <a name="input_enable_external_secrets"></a> [enable\_external\_secrets](#input\_enable\_external\_secrets) | Enables kubernetes-external-secrets addon service on the cluster. Defaults to "false" | `bool` | `false` | no |
 | <a name="input_enable_func_pool"></a> [enable\_func\_pool](#input\_enable\_func\_pool) | Enable an additional dedicated function pool. | `bool` | `true` | no |
+| <a name="input_enable_func_pool_monitoring"></a> [enable\_func\_pool\_monitoring](#input\_enable\_func\_pool\_monitoring) | Enable CloudWatch monitoring for the dedicated function pool(s). | `bool` | `true` | no |
 | <a name="input_enable_istio"></a> [enable\_istio](#input\_enable\_istio) | Enables Istio on the cluster. Set to "true" by default. | `bool` | `true` | no |
 | <a name="input_enable_metrics_server"></a> [enable\_metrics\_server](#input\_enable\_metrics\_server) | Enables the Kubernetes Metrics Server addon service on the cluster. Defaults to "true". | `bool` | `true` | no |
 | <a name="input_enable_node_group_private_networking"></a> [enable\_node\_group\_private\_networking](#input\_enable\_node\_group\_private\_networking) | Enables private networking for the EKS node groups (not the EKS cluster endpoint, which remains public), meaning Kubernetes API requests that originate within the cluster's VPC use a private VPC endpoint for EKS. Defaults to "true". | `bool` | `true` | no |
@@ -393,22 +393,21 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_map_additional_aws_accounts"></a> [map\_additional\_aws\_accounts](#input\_map\_additional\_aws\_accounts) | Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap. | `list(string)` | `[]` | no |
 | <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_map_additional_iam_users"></a> [map\_additional\_iam\_users](#input\_map\_additional\_iam\_users) | Additional IAM roles to add to `config-map-aws-auth` ConfigMap. | <pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
-| <a name="input_node_pool_ami_id"></a> [node\_pool\_ami\_id](#input\_node\_pool\_ami\_id) | The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS | `string` | `""` | no |
-| <a name="input_node_pool_ami_is_eks_optimized"></a> [node\_pool\_ami\_is\_eks\_optimized](#input\_node\_pool\_ami\_is\_eks\_optimized) | If the custom AMI is an EKS optimized image, ignored if ami\_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre\_userdata | `bool` | `true` | no |
-| <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | `1` | no |
 | <a name="input_metrics_server_helm_chart_name"></a> [metrics\_server\_helm\_chart\_name](#input\_metrics\_server\_helm\_chart\_name) | The name of the helm release to install | `string` | `"metrics-server"` | no |
 | <a name="input_metrics_server_helm_chart_repository"></a> [metrics\_server\_helm\_chart\_repository](#input\_metrics\_server\_helm\_chart\_repository) | The repository containing the external-metrics helm chart. | `string` | `"https://kubernetes-sigs.github.io/metrics-server"` | no |
 | <a name="input_metrics_server_helm_chart_version"></a> [metrics\_server\_helm\_chart\_version](#input\_metrics\_server\_helm\_chart\_version) | Helm chart version for Metrics server | `string` | `"3.8.2"` | no |
 | <a name="input_metrics_server_settings"></a> [metrics\_server\_settings](#input\_metrics\_server\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options. | `map(any)` | `{}` | no |
+| <a name="input_node_pool_ami_id"></a> [node\_pool\_ami\_id](#input\_node\_pool\_ami\_id) | The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS | `string` | `""` | no |
+| <a name="input_node_pool_ami_is_eks_optimized"></a> [node\_pool\_ami\_is\_eks\_optimized](#input\_node\_pool\_ami\_is\_eks\_optimized) | If the custom AMI is an EKS optimized image, ignored if ami\_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre\_userdata | `bool` | `true` | no |
+| <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | `1` | no |
 | <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `50` | no |
 | <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |
 | <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["c6i.large"]. | `list(string)` | <pre>[<br>  "c6i.large"<br>]</pre> | no |
 | <a name="input_node_pool_labels"></a> [node\_pool\_labels](#input\_node\_pool\_labels) | A map of kubernetes labels to add to the node pool. | `map(string)` | `{}` | no |
 | <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group. | `number` | n/a | yes |
-| <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | n/a | yes |
-| <a name="input_node_termination_handler_chart_version"></a> [node\_termination\_handler\_chart\_version](#input\_node\_termination\_handler\_chart\_version) | The version of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"0.18.5"` | no |
+| <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | `1` | no |
 | <a name="input_node_pool_pre_userdata"></a> [node\_pool\_pre\_userdata](#input\_node\_pool\_pre\_userdata) | The user data to apply to the worker nodes in the node pool. This is applied before the bootstrap.sh script. | `string` | `""` | no |
-| <a name="input_node_termination_handler_chart_version"></a> [node\_termination\_handler\_chart\_version](#input\_node\_termination\_handler\_chart\_version) | The version of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"0.16.0"` | no |
+| <a name="input_node_termination_handler_chart_version"></a> [node\_termination\_handler\_chart\_version](#input\_node\_termination\_handler\_chart\_version) | The version of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"0.18.5"` | no |
 | <a name="input_node_termination_handler_helm_chart_name"></a> [node\_termination\_handler\_helm\_chart\_name](#input\_node\_termination\_handler\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Node Termination Handler. | `string` | `"aws-node-termination-handler"` | no |
 | <a name="input_node_termination_handler_helm_chart_repository"></a> [node\_termination\_handler\_helm\_chart\_repository](#input\_node\_termination\_handler\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Node Termination Handler. | `string` | `"https://aws.github.io/eks-charts"` | no |
 | <a name="input_node_termination_handler_settings"></a> [node\_termination\_handler\_settings](#input\_node\_termination\_handler\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Node Termination Handler. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
@@ -427,14 +426,16 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cert_manager_role_arn"></a> [cert\_manager\_role\_arn](#output\_cert\_manager\_role\_arn) | The IAM Role ARN used by the Certificate Manager configuration |
-| <a name="output_cluster_autoscaler_role_arn"></a> [cluster\_autoscaler\_role\_arn](#output\_cluster\_autoscaler\_role\_arn) | The IAM Role ARN used by the Cluster Autoscaler configuration |
+| <a name="output_cloudwatch_log_group_arn"></a> [cloudwatch\_log\_group\_arn](#output\_cloudwatch\_log\_group\_arn) | Arn of cloudwatch log group created |
 | <a name="output_eks_cluster_arn"></a> [eks\_cluster\_arn](#output\_eks\_cluster\_arn) | The ARN for the EKS cluster created by this module |
 | <a name="output_eks_cluster_id"></a> [eks\_cluster\_id](#output\_eks\_cluster\_id) | The id/name of the EKS cluster created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_arn"></a> [eks\_cluster\_identity\_oidc\_issuer\_arn](#output\_eks\_cluster\_identity\_oidc\_issuer\_arn) | The ARN for the OIDC issuer created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_string"></a> [eks\_cluster\_identity\_oidc\_issuer\_string](#output\_eks\_cluster\_identity\_oidc\_issuer\_string) | A formatted string containing the prefix for the OIDC issuer created by this module. Same as "cluster\_oidc\_issuer\_url", but with "https://" stripped from the name. This output is typically used in other StreamNative modules that request the "oidc\_issuer" input. |
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
-| <a name="output_external_dns_role_arn"></a> [external\_dns\_role\_arn](#output\_external\_dns\_role\_arn) | The IAM Role ARN used by the ExternalDNS configuration |
-| <a name="output_sn_system_namespace"></a> [sn\_system\_namespace](#output\_sn\_system\_namespace) | The namespace used for StreamNative system resources, i.e. operators et all |
+| <a name="output_eks_cluster_primary_security_group_id"></a> [eks\_cluster\_primary\_security\_group\_id](#output\_eks\_cluster\_primary\_security\_group\_id) | The id of the primary security group created by the EKS service itself, not by this module. This is labeled "Cluster Security Group" in the EKS console. |
+| <a name="output_eks_cluster_secondary_security_group_id"></a> [eks\_cluster\_secondary\_security\_group\_id](#output\_eks\_cluster\_secondary\_security\_group\_id) | The id of the secondary security group created by this module. This is labled "Additional Security Groups" in the EKS console. |
+| <a name="output_node_groups"></a> [node\_groups](#output\_node\_groups) | Outputs from EKS node groups. Map of maps, keyed by var.node\_groups keys |
+| <a name="output_worker_https_ingress_security_group_rule"></a> [worker\_https\_ingress\_security\_group\_rule](#output\_worker\_https\_ingress\_security\_group\_rule) | Security group rule responsible for allowing pods to communicate with the EKS cluster API. |
 | <a name="output_worker_iam_role_arn"></a> [worker\_iam\_role\_arn](#output\_worker\_iam\_role\_arn) | The IAM Role ARN used by the Worker configuration |
+| <a name="output_worker_security_group_id"></a> [worker\_security\_group\_id](#output\_worker\_security\_group\_id) | Security group ID attached to the EKS node groups |
 <!-- END_TF_DOCS -->

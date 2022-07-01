@@ -16,15 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-output "cert_manager_role_arn" {
-  value       = join("", aws_iam_role.cert_manager.*.arn)
-  description = "The IAM Role ARN used by the Certificate Manager configuration"
-}
-
-output "cluster_autoscaler_role_arn" {
-  value       = join("", aws_iam_role.cluster_autoscaler.*.arn)
-  description = "The IAM Role ARN used by the Cluster Autoscaler configuration"
+output "cloudwatch_log_group_arn" {
+  value       = module.eks.cloudwatch_log_group_arn
+  description = "Arn of cloudwatch log group created"
 }
 
 output "eks_cluster_arn" {
@@ -52,17 +46,32 @@ output "eks_cluster_identity_oidc_issuer_string" {
   description = "A formatted string containing the prefix for the OIDC issuer created by this module. Same as \"cluster_oidc_issuer_url\", but with \"https://\" stripped from the name. This output is typically used in other StreamNative modules that request the \"oidc_issuer\" input."
 }
 
-output "external_dns_role_arn" {
-  value       = join("", aws_iam_role.external_dns.*.arn)
-  description = "The IAM Role ARN used by the ExternalDNS configuration"
+output "eks_cluster_primary_security_group_id" {
+  value       = module.eks.cluster_primary_security_group_id
+  description = "The id of the primary security group created by the EKS service itself, not by this module. This is labeled \"Cluster Security Group\" in the EKS console."
 }
 
-output "sn_system_namespace" {
-  value       = join("", kubernetes_namespace.sn_system.*.id)
-  description = "The namespace used for StreamNative system resources, i.e. operators et all"
+output "eks_cluster_secondary_security_group_id" {
+  value       = module.eks.cluster_security_group_id
+  description = "The id of the secondary security group created by this module. This is labled \"Additional Security Groups\" in the EKS console."
+}
+
+output "node_groups" {
+  value       = module.eks.node_groups
+  description = "Outputs from EKS node groups. Map of maps, keyed by var.node_groups keys"
 }
 
 output "worker_iam_role_arn" {
   value       = module.eks.worker_iam_role_arn
   description = "The IAM Role ARN used by the Worker configuration"
+}
+
+output "worker_security_group_id" {
+  value       = module.eks.worker_security_group_id
+  description = "Security group ID attached to the EKS node groups"
+}
+
+output "worker_https_ingress_security_group_rule" {
+  value       = module.eks.security_group_rule_cluster_https_worker_ingress
+  description = "Security group rule responsible for allowing pods to communicate with the EKS cluster API."
 }
