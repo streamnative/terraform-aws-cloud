@@ -17,7 +17,7 @@
 # under the License.
 #
 
-variable "additional_iam_policiy_arns" {
+variable "additional_iam_policy_arns" {
   default     = []
   description = "Provide a list of additional IAM policy arns allowed for use with iam:AttachRolePolicy, defined in the StreamNativePermissionBoundary."
   type        = list(string)
