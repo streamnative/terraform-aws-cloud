@@ -46,7 +46,7 @@ locals {
   arn_like_vpcs_str         = format("[%s]", join(",", local.arn_like_vpcs))
   tag_set                   = merge({ Vendor = "StreamNative", SNVersion = var.sn_policy_version }, var.tags)
 
-  additional_iam_policiy_arns = distinct(compact(var.additional_iam_policiy_arns))
+  additional_iam_policy_arns = distinct(compact(var.additional_iam_policy_arns))
   default_allowed_iam_policies = compact([
     "arn:${var.partition}:iam::${local.account_id}:policy/StreamNative/*",
     "arn:${var.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
@@ -57,7 +57,7 @@ locals {
     "arn:${var.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
     "arn:${var.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   ])
-  allowed_iam_policies = join(", ", formatlist("\"%s\"", distinct(concat(local.additional_iam_policiy_arns, local.default_allowed_iam_policies))))
+  allowed_iam_policies = join(", ", formatlist("\"%s\"", distinct(concat(local.additional_iam_policy_arns, local.default_allowed_iam_policies))))
 
 }
 
