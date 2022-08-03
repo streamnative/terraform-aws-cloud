@@ -575,6 +575,12 @@ variable "node_pool_instance_types" {
   type        = list(string)
 }
 
+variable "extra_node_pool_instance_types" {
+  default     = []
+  description = "Set of instance types of an extra node pool. Same properties as default node pool except name and instance types."
+  type        = list(string)
+}
+
 variable "node_pool_labels" {
   default     = {}
   description = "A map of kubernetes labels to add to the node pool."
