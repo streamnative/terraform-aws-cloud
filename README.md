@@ -74,13 +74,14 @@ variable "region" {
 module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
-  cluster_name             = "sn-cluster-${var.region}"
-  cluster_version          = "1.20"
-  hosted_zone_id           = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
-  node_pool_instance_types = ["c6i.xlarge"]
-  node_pool_desired_size   = 2
-  node_pool_min_size       = 1
-  node_pool_max_size       = 6
+  cluster_name                   = "sn-cluster-${var.region}"
+  cluster_version                = "1.20"
+  hosted_zone_id                 = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+  node_pool_instance_types       = ["c6i.xlarge"]
+  extra_node_pool_instance_types = ["c6i.2xlarge"] # Defaults to empty list. Means don't create extra node pool
+  node_pool_desired_size         = 2
+  node_pool_min_size             = 1
+  node_pool_max_size             = 6
 
   ## Note: EKS requires two subnets, each in their own availability zone
   public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a"]
@@ -403,6 +404,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `50` | no |
 | <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |
 | <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["c6i.large"]. | `list(string)` | <pre>[<br>  "c6i.large"<br>]</pre> | no |
+| <a name="input_extra_node_pool_instance_types"></a> [extra\_node\_pool\_instance\_types](#input\_extra\_node\_pool\_instance\_types) | Set of instance types of an extra node pool. Same properties as default node pool except name and instance types. Defaults to []. | `list(string)` | <pre>[]</pre> | no |
 | <a name="input_node_pool_labels"></a> [node\_pool\_labels](#input\_node\_pool\_labels) | A map of kubernetes labels to add to the node pool. | `map(string)` | `{}` | no |
 | <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group. | `number` | n/a | yes |
 | <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | `1` | no |

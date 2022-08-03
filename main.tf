@@ -77,9 +77,10 @@ locals {
     taints               = []
   }
 
-  snc_node_config = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-node-pool${i}" }) }
-  snc_func_config = { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-func-pool${i}" }) }
-  node_groups     = (var.enable_func_pool ? merge(local.snc_node_config, local.snc_func_config) : local.snc_node_config)
+  snc_node_config       = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-node-pool${i}" }) }
+  snc_extra_node_config = (length(var.extra_node_pool_instance_types) == 0 ? {} : { for i, v in var.private_subnet_ids : "snc-extra-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-extra-node-pool${i}", instance_types = var.extra_node_pool_instance_types }) })
+  snc_func_config       = { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-func-pool${i}" }) }
+  node_groups           = (var.enable_func_pool ? merge(local.snc_node_config, local.snc_func_config, local.snc_extra_node_config) : merge(local.snc_node_config, local.snc_extra_node_config))
 }
 
 module "eks" {
