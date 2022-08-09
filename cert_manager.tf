@@ -139,7 +139,7 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "helm_release" "cert_issuer" {
-  count           = var.enable_cert_manager ? 1 : 0
+  count           = (var.enable_cert_manager && !var.skip_cert_manager_chart) ? 1 : 0
   atomic          = true
   chart           = "${path.module}/charts/cert-issuer"
   cleanup_on_fail = true

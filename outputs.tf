@@ -61,6 +61,11 @@ output "node_groups" {
   description = "Outputs from EKS node groups. Map of maps, keyed by var.node_groups keys"
 }
 
+output "cluster_version" {
+  value       = module.eks.cluster_version
+  description = "The Kubernetes server version for the EKS cluster."
+}
+
 output "worker_iam_role_arn" {
   value       = module.eks.worker_iam_role_arn
   description = "The IAM Role ARN used by the Worker configuration"

@@ -113,7 +113,7 @@ locals {
 
 }
 resource "helm_release" "cluster_autoscaler" {
-  count           = var.enable_cluster_autoscaler ? 1 : 0
+  count           = (var.enable_cluster_autoscaler && !var.skip_cluster_autoscaler_chart) ? 1 : 0
   atomic          = true
   chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true

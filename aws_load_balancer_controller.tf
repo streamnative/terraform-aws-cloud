@@ -285,7 +285,7 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
-  count           = var.enable_aws_load_balancer_controller ? 1 : 0
+  count           = (var.enable_aws_load_balancer_controller && !var.skip_aws_load_balancer_controller_chart) ? 1 : 0
   atomic          = true
   chart           = var.aws_load_balancer_controller_helm_chart_name
   cleanup_on_fail = true

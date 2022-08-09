@@ -83,7 +83,7 @@ resource "aws_iam_role_policy_attachment" "external_secrets" {
 }
 
 resource "helm_release" "external_secrets" {
-  count           = var.enable_external_secrets ? 1 : 0
+  count           = (var.enable_external_secrets && !var.skip_external_secrets_chart) ? 1 : 0
   atomic          = true
   chart           = var.external_secrets_helm_chart_name
   cleanup_on_fail = true

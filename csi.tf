@@ -209,7 +209,7 @@ resource "aws_iam_role_policy_attachment" "csi" {
 }
 
 resource "helm_release" "csi" {
-  count           = var.enable_csi ? 1 : 0
+  count           = (var.enable_csi && !var.skip_csi_chart) ? 1 : 0
   atomic          = true
   chart           = var.csi_helm_chart_name
   cleanup_on_fail = true

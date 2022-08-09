@@ -18,7 +18,7 @@
 #
 
 resource "helm_release" "calico" {
-  count           = var.enable_calico ? 1 : 0
+  count           = (var.enable_calico && !var.skip_calico_chart) ? 1 : 0
   atomic          = true
   chart           = var.calico_helm_chart_name
   cleanup_on_fail = true

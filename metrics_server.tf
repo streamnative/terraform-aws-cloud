@@ -18,7 +18,7 @@
 #
 
 resource "helm_release" "metrics_server" {
-  count           = var.enable_metrics_server ? 1 : 0
+  count           = (var.enable_metrics_server && !var.skip_metrics_server_chart) ? 1 : 0
   atomic          = true
   chart           = var.metrics_server_helm_chart_name
   cleanup_on_fail = true

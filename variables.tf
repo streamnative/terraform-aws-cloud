@@ -220,9 +220,21 @@ variable "enable_aws_load_balancer_controller" {
   type        = bool
 }
 
+variable "skip_aws_load_balancer_controller_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
+  type        = bool
+}
+
 variable "enable_calico" {
   default     = false
   description = "Enables the Calico networking service on the cluster. Defaults to \"false\"."
+  type        = bool
+}
+
+variable "skip_calico_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
   type        = bool
 }
 
@@ -232,9 +244,21 @@ variable "enable_cert_manager" {
   type        = bool
 }
 
+variable "skip_cert_manager_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
+  type        = bool
+}
+
 variable "enable_cluster_autoscaler" {
   default     = true
   description = "Enables the Cluster Autoscaler addon service on the cluster. Defaults to \"true\", and in most situations is recommened for StreamNative Cloud."
+  type        = bool
+}
+
+variable "skip_cluster_autoscaler_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
   type        = bool
 }
 
@@ -244,15 +268,33 @@ variable "enable_csi" {
   type        = bool
 }
 
+variable "skip_csi_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
+  type        = bool
+}
+
 variable "enable_external_secrets" {
   default     = false
   description = "Enables kubernetes-external-secrets addon service on the cluster. Defaults to \"false\""
   type        = bool
 }
 
+variable "skip_external_secrets_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
+  type        = bool
+}
+
 variable "enable_external_dns" {
   default     = true
   description = "Enables the External DNS addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
+  type        = bool
+}
+
+variable "skip_external_dns_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
   type        = bool
 }
 
@@ -277,6 +319,12 @@ variable "enable_istio" {
 variable "enable_metrics_server" {
   default     = true
   description = "Enables the Kubernetes Metrics Server addon service on the cluster. Defaults to \"true\"."
+  type        = bool
+}
+
+variable "skip_metrics_server_chart" {
+  default     = false
+  description = "Whether to skip installing the chart (but still install any SA and roles, etc)"
   type        = bool
 }
 
