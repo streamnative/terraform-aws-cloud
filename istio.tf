@@ -22,11 +22,13 @@ locals {
     internet_facing = {
       "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internet-facing"
       "service.beta.kubernetes.io/aws-load-balancer-type"   = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "Vendor=StreamNative"
     },
     internal_only = {
       "service.beta.kubernetes.io/aws-load-balancer-internal" : "true"
       "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internal"
       "service.beta.kubernetes.io/aws-load-balancer-type"   = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "Vendor=StreamNative"
     }
   }
 }
@@ -60,6 +62,7 @@ module "istio" {
   kiali_operator_settings                   = var.kiali_operator_settings
 
   depends_on = [
-    helm_release.cert_issuer
+    helm_release.cert_issuer,
+    helm_release.aws_load_balancer_controller
   ]
 }
