@@ -103,9 +103,9 @@ No modules.
 | <a name="input_runtime_eks_cluster_pattern"></a> [runtime\_eks\_cluster\_pattern](#input\_runtime\_eks\_cluster\_pattern) | when using runtime policy, defines the eks clsuter prefix for streamnative clusters | `string` | `"aws*snc"` | no |
 | <a name="input_runtime_eks_nodepool_pattern"></a> [runtime\_eks\_nodepool\_pattern](#input\_runtime\_eks\_nodepool\_pattern) | when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload) | `string` | `"snc-*-pool*"` | no |
 | <a name="input_runtime_enable_secretsmanager"></a> [runtime\_enable\_secretsmanager](#input\_runtime\_enable\_secretsmanager) | when using runtime policy, allows for secretsmanager access | `bool` | `false` | no |
-| <a name="input_runtime_hosted_zone_allowed_ids"></a> [runtime\_hosted\_zone\_allowed\_ids](#input\_runtime\_hosted\_zone\_allowed\_ids) | when using runtime policy, allows for further scoping down policy for allowed hosted zones | `list(any)` | <pre>[<br>  "*"<br>]</pre> | no |
-| <a name="input_runtime_s3_bucket_pattern"></a> [runtime\_s3\_bucket\_pattern](#input\_runtime\_s3\_bucket\_pattern) | when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload) | `string` | `"snc-*"` | no |
+| <a name="input_runtime_hosted_zone_allowed_ids"></a> [runtime\_hosted\_zone\_allowed\_ids](#input\_runtime\_hosted\_zone\_allowed\_ids) | when using runtime policy, allows for further scoping down policy for allowed hosted zones. The IDs provided are constructed into ARNs | `list(any)` | <pre>[<br>  "*"<br>]</pre> | no |
 | <a name="input_runtime_vpc_allowed_ids"></a> [runtime\_vpc\_allowed\_ids](#input\_runtime\_vpc\_allowed\_ids) | when using runtime policy, allows for further scoping down policy for allowed VPC | `list(any)` | <pre>[<br>  "*"<br>]</pre> | no |
+| <a name="input_s3_bucket_pattern"></a> [s3\_bucket\_pattern](#input\_s3\_bucket\_pattern) | Defines the bucket prefix for streamnative managed buckets (backup and offload). Typically defaults to "snc-*", but should match the bucket created using the tiered-storage-resources module | `string` | `"snc-*"` | no |
 | <a name="input_sn_policy_version"></a> [sn\_policy\_version](#input\_sn\_policy\_version) | The value of SNVersion tag | `string` | `"2.0"` | no |
 | <a name="input_source_identities"></a> [source\_identities](#input\_source\_identities) | Place an additional constraint on source identity, disabled by default and only to be used if specified by StreamNative | `list(any)` | `[]` | no |
 | <a name="input_source_identity_test"></a> [source\_identity\_test](#input\_source\_identity\_test) | The test to use for source identity | `string` | `"ForAnyValue:StringLike"` | no |
@@ -124,4 +124,5 @@ No modules.
 | <a name="output_management_role_arn"></a> [management\_role\_arn](#output\_management\_role\_arn) | The ARN of the Management Role |
 | <a name="output_permission_boundary_policy_arn"></a> [permission\_boundary\_policy\_arn](#output\_permission\_boundary\_policy\_arn) | The ARN of the Permssion Boundary Policy |
 | <a name="output_runtime_policy_arn"></a> [runtime\_policy\_arn](#output\_runtime\_policy\_arn) | The ARN of the Runtime Policy, if enabled |
+
 <!-- END_TF_DOCS -->

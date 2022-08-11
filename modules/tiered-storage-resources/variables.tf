@@ -23,20 +23,14 @@ variable "aws_partition" {
   type        = string
 }
 
-variable "cluster_name" {
-  description = "The name of your EKS cluster and associated resources"
+variable "bucket_name_override" {
+  default     = ""
+  description = "Manually specify the bucket name. This allows for backwards compatability with older versions of this module, but should be coordinated with the \"var.s3_bucket_pattern\" input in the \"terraform-aws-cloud//modules/managed-cloud\" module"
   type        = string
 }
 
-variable "create_iam_policy_for_tiered_storage" {
-  default     = true
-  description = "Whether to create the IAM policy used by Pulsar's tiered storage offloading. For enhanced security, we allow for these IAM policies to be created seperately from this module. Defaults to \"true\". If set to \"false\", you must provide the ARN for the IAM policy needed for tiered storage offloading to function."
-  type        = bool
-}
-
-variable "iam_policy_arn" {
-  default     = null
-  description = "The arn for the IAM policy used for Pulsar's tiered storage offloading. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policy_for_tiered_storage\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudTieredStoragedPolicy\"."
+variable "cluster_name" {
+  description = "The name of your EKS cluster and associated resources"
   type        = string
 }
 
@@ -58,13 +52,13 @@ variable "permissions_boundary_arn" {
 }
 
 variable "pulsar_namespace" {
-  description = "The kubernetes namespace where Pulsar has been deployed. This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account access to use the IAM role"
+  description = "The kubernetes namespace where Pulsar has been deployed, used to scope IRSA permissions. This is typically the Organization ID found in the StreamNative Console."
   type        = string
 }
 
 variable "service_account_name" {
-  default     = "pulsar"
-  description = "The name of the kubernetes service account to by tiered storage offloading. Defaults to \"pulsar\". This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account access to use the IAM role"
+  default     = "pulsar-broker"
+  description = "The name of the kubernetes service account to by tiered storage offloading. Defaults to \"pulsar-broker\". This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account access to use the IAM role"
   type        = string
 }
 
@@ -72,4 +66,10 @@ variable "tags" {
   default     = {}
   description = "Tags to be added to the bucket and corresponding resources"
   type        = map(string)
+}
+
+variable "use_runtime_policy" {
+  default     = false
+  description = "Determines if this module should create or attach the needed IAM policy for the IAM role. This should be coordinated with the \"var.use_runtime_policy\" input in the \"terraform-aws-cloud//modules/managed-cloud\" module"
+  type        = bool
 }
