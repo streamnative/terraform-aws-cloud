@@ -13,6 +13,7 @@
         "ec2:Get*",
         "eks:Describe*",
         "eks:List*",
+        "elasticloadbalancing:Describe*",
         "iam:GetInstanceProfile",
         "iam:GetOpenIDConnectProvider",
         "iam:GetPolicy",
@@ -29,6 +30,7 @@
         "route53:GetChange",
         "route53:GetHostedZone",
         "route53:ListHostedZones",
+        "route53:ListResourceRecordSets",
         "route53:ListTagsForResource",
         "s3:ListAllMyBuckets",
         "s3:ListBucket"
@@ -85,6 +87,14 @@
       "Resource": "*"
     },
     {
+      "Sid": "RstrctR53Zone",
+      "Effect": "Allow",
+      "Action": [
+        "route53:ChangeResourceRecordSets"
+      ],
+      "Resource": ${r53_zone_arns}
+    },
+    {
       "Sid": "ResBasedRest",
       "Effect": "Allow",
       "Action": [
@@ -126,6 +136,7 @@
         "eks:Create*",
         "eks:RegisterCluster",
         "eks:TagResource",
+        "elasticloadbalancing:Add*",
         "kms:CreateKey",
         "kms:TagResource"
       ],
@@ -182,11 +193,13 @@
         "eks:DeregisterCluster",
         "eks:DisassociateIdentityProviderConfig",
         "eks:U*",
+        "elasticloadbalancing:De*",
         "elasticloadbalancing:*Listener",
         "elasticloadbalancing:*LoadBalancer*",
         "elasticloadbalancing:*Rule",
         "elasticloadbalancing:*TargetGroup",
         "elasticloadbalancing:Set*",
+        "elasticloadbalancing:Re*",
         "logs:DeleteLogGroup",
         "logs:PutRetentionPolicy"
       ],
@@ -212,9 +225,9 @@
         "s3:PutAccessPointPolicy",
         "s3:PutAccountPublicAccessBlock",
         "s3:PutAnalyticsConfiguration",
+        "s3:PutEncryptionConfiguration",
         "s3:DeleteBucket*",
-        "s3:DeleteObject*",
-        "s3:DeleteLifecycle*"
+        "s3:DeleteObject*"
        ],
        "Resource": [
           "arn:${partition}:s3:::${bucket_pattern}",

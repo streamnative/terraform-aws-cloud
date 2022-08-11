@@ -86,7 +86,7 @@ variable "runtime_vpc_allowed_ids" {
 }
 
 variable "runtime_hosted_zone_allowed_ids" {
-  description = "when using runtime policy, allows for further scoping down policy for allowed hosted zones"
+  description = "when using runtime policy, allows for further scoping down policy for allowed hosted zones. The IDs provided are constructed into ARNs"
   default     = ["*"]
   type        = list(any)
 }
@@ -115,8 +115,8 @@ variable "runtime_eks_nodepool_pattern" {
   type        = string
 }
 
-variable "runtime_s3_bucket_pattern" {
-  description = "when using runtime policy, defines the bucket prefix for streamnative managed buckets (backup and offload)"
+variable "s3_bucket_pattern" {
+  description = "Defines the bucket prefix for streamnative managed buckets (backup and offload). Typically defaults to \"snc-*\", but should match the bucket created using the tiered-storage-resources module"
   default     = "snc-*"
   type        = string
 }
@@ -127,14 +127,11 @@ variable "sn_policy_version" {
   type        = string
 }
 
-
-
 variable "tags" {
   default     = {}
   description = "Extra tags to apply to the resources created by this module."
   type        = map(string)
 }
-
 
 variable "write_policy_files" {
   default     = false

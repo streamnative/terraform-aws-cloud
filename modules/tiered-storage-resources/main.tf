@@ -22,7 +22,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "tiered_storage" {
-  bucket = format("%s-storage-offload-%s", var.cluster_name, data.aws_region.current.name)
+  bucket = var.bucket_name_override == "" ? format("snc-%s-offload-%s", var.cluster_name, data.aws_region.current.name) : var.bucket_name_override
   tags   = merge({ "Vendor" = "StreamNative", "Attributes" = "offload", "Name" = "offload" }, var.tags)
 
   lifecycle {
@@ -98,7 +98,7 @@ resource "aws_iam_role" "tiered_storage" {
 }
 
 resource "aws_iam_policy" "tiered_storage" {
-  count       = var.create_iam_policy_for_tiered_storage ? 1 : 0
+  count       = var.use_runtime_policy ? 0 : 1
   name        = format("%s-TieredStoragePolicy", var.cluster_name)
   description = "Policy that defines the permissions for Pulsar's tiered storage offloading to S3, running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -113,7 +113,6 @@ resource "aws_iam_policy" "tiered_storage" {
 }
 
 resource "aws_iam_role_policy_attachment" "tiered_storage" {
-  count      = var.create_iam_policy_for_tiered_storage ? 1 : 0
-  policy_arn = var.create_iam_policy_for_tiered_storage ? aws_iam_policy.tiered_storage[0].arn : var.iam_policy_arn
+  policy_arn = var.use_runtime_policy ? "StreamNativeCloudRuntimePolicy" : aws_iam_policy.tiered_storage[0].arn
   role       = aws_iam_role.tiered_storage.name
 }

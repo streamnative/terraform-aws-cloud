@@ -58,7 +58,8 @@ locals {
     "arn:${var.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   ])
   allowed_iam_policies = join(", ", formatlist("\"%s\"", distinct(concat(local.additional_iam_policy_arns, local.default_allowed_iam_policies))))
-
+  build_r53_arns       = [for i, v in var.runtime_hosted_zone_allowed_ids : format("\"arn:%s:route53:::hostedzone/%s\"", var.partition, v)]
+  r53_zone_arns        = format("[%s]", join(",", local.build_r53_arns))
 }
 
 data "aws_iam_policy_document" "streamnative_control_plane_access" {
@@ -156,10 +157,11 @@ resource "aws_iam_policy" "bootstrap_policy" {
       account_id       = local.account_id
       region           = var.region
       vpc_ids          = local.arn_like_vpcs_str
-      bucket_pattern   = var.runtime_s3_bucket_pattern
+      bucket_pattern   = var.s3_bucket_pattern
       nodepool_pattern = var.runtime_eks_nodepool_pattern
       cluster_pattern  = var.runtime_eks_cluster_pattern
       partition        = var.partition
+      r53_zone_arns    = local.r53_zone_arns
   })
   tags = local.tag_set
 }
@@ -171,9 +173,11 @@ resource "local_file" "bootstrap_policy" {
       account_id       = local.account_id
       region           = var.region
       vpc_ids          = local.arn_like_vpcs_str
-      bucket_pattern   = var.runtime_s3_bucket_pattern
+      bucket_pattern   = var.s3_bucket_pattern
       nodepool_pattern = var.runtime_eks_nodepool_pattern
       cluster_pattern  = var.runtime_eks_cluster_pattern
+      partition        = var.partition
+      r53_zone_arns    = local.r53_zone_arns
   })
   filename = "bootstrap_policy.json"
 }
@@ -319,14 +323,16 @@ data "aws_iam_policy_document" "runtime_policy" {
       "s3:ListBucket",
       "s3:ListMultipart*",
     ]
-    resources = ["arn:${var.partition}:s3:::${var.runtime_s3_bucket_pattern}"]
+    resources = ["arn:${var.partition}:s3:::${var.s3_bucket_pattern}"]
   }
   statement {
     sid    = "s3o"
     effect = "Allow"
     actions = [
       "s3:*Object",
-      "s3:*Multipart*"
+      "s3:*Multipart*",
+      "s3:Put*",
+      "s3:List*",
     ]
     resources = local.kms_key_arns
   }
