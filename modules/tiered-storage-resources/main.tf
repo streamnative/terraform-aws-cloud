@@ -21,6 +21,10 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
+locals {
+  account_id = data.aws_caller_identity.current.account_id 
+}
+
 resource "aws_s3_bucket" "tiered_storage" {
   bucket = var.bucket_name_override == "" ? format("snc-%s-offload-%s", var.cluster_name, data.aws_region.current.name) : var.bucket_name_override
   tags   = merge({ "Vendor" = "StreamNative", "Attributes" = "offload", "Name" = "offload" }, var.tags)
@@ -72,7 +76,7 @@ data "aws_iam_policy_document" "tiered_storage_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, data.aws_caller_identity.current.account_id, var.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, var.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
@@ -113,6 +117,6 @@ resource "aws_iam_policy" "tiered_storage" {
 }
 
 resource "aws_iam_role_policy_attachment" "tiered_storage" {
-  policy_arn = var.use_runtime_policy ? "StreamNativeCloudRuntimePolicy" : aws_iam_policy.tiered_storage[0].arn
+  policy_arn = var.use_runtime_policy ? "arn:${var.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy" : aws_iam_policy.tiered_storage[0].arn
   role       = aws_iam_role.tiered_storage.name
 }
