@@ -19,16 +19,20 @@
 
 data "aws_caller_identity" "current" {}
 
-data "aws_subnet" "private_cidrs" {
+data "aws_subnet" "private_subnets" {
   count = length(var.private_subnet_ids)
   id    = var.private_subnet_ids[count.index]
+}
+
+resource "random_id" "ng_suffix" {
+  byte_length = 1
 }
 
 locals {
   account_id           = data.aws_caller_identity.current.account_id
   cluster_subnet_ids   = concat(var.private_subnet_ids, var.public_subnet_ids)
   oidc_issuer          = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
-  private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_cidrs[i].cidr_block]
+  private_subnet_cidrs = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_subnets[i].cidr_block]
 
   ## switches for roles
   default_lb_arn         = "arn:${var.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
@@ -42,111 +46,129 @@ locals {
   create_ext_dns_policy  = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_external_dns)
   create_ext_sec_policy  = !(var.sncloud_services_iam_policy_arn != "" || var.use_runtime_policy || !var.enable_external_secrets)
 
-
-  func_pool_defaults = {
-    ami_id               = var.func_pool_ami_id
-    ami_is_eks_optimized = var.func_pool_ami_is_eks_optimized
-    enable_monintoring   = var.enable_func_pool_monitoring
-    desired_capacity     = var.func_pool_desired_size
-    disk_size            = var.func_pool_disk_size
-    disk_type            = var.func_pool_disk_type
-    instance_types       = var.func_pool_instance_types
-    k8s_labels           = merge(var.func_pool_labels, { NodeGroup = "functions" })
-    min_capacity         = var.func_pool_min_size
-    max_capacity         = var.func_pool_max_size
-    pre_userdata         = var.func_pool_pre_userdata
-    taints = [{
-      key    = "reserveGroup"
-      value  = "functions"
-      effect = "NO_SCHEDULE"
-    }]
+  ## Node Group Configuration
+  node_group_defaults = {
+    ami_id = var.node_pool_ami_id
+    block_device_mappings = {
+      xvdb = {
+        device_name = var.node_pool_block_device_name 
+        ebs = {
+          volume_size           = var.node_pool_disk_size
+          volume_type           = "gp3"
+          iops                  = 3000
+          encrypted             = true
+          kms_key_id            = local.kms_key
+          delete_on_termination = true
+        }
+      }
+    }
+    create_launch_template  = true
+    enable_monitoring       = var.enable_node_pool_monitoring
+    desired_size            = var.node_pool_desired_size
+    labels                  = var.node_pool_labels
+    min_size                = var.node_pool_min_size
+    max_size                = var.node_pool_max_size
+    pre_bootstrap_user_data = var.node_pool_pre_userdata
+    taints                  = var.node_pool_taints
+    tags = merge(var.node_pool_tags, {
+      "k8s.io/cluster-autoscaler/enabled"                      = "true",
+      format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
+      "Vendor"                                                 = "StreamNative"
+    })
   }
 
-  node_pool_defaults = {
-    ami_id               = var.node_pool_ami_id
-    ami_is_eks_optimized = var.node_pool_ami_is_eks_optimized
-    enable_monintoring   = var.enable_node_pool_monitoring
-    desired_capacity     = var.node_pool_desired_size
-    disk_size            = var.node_pool_disk_size
-    disk_type            = var.node_pool_disk_type
-    instance_types       = var.node_pool_instance_types
-    k8s_labels           = var.node_pool_labels
-    min_capacity         = var.node_pool_min_size
-    max_capacity         = var.node_pool_max_size
-    pre_userdata         = var.node_pool_pre_userdata
-    taints               = []
+  ## Create the node groups, one for each instance type AND each availability zone/subnet
+  node_groups = {
+    for node_group in flatten([
+      for instance_type in var.node_pool_instance_types : [
+        for i, j in data.aws_subnet.private_subnet : {
+          subnet_id     = data.aws_subnet.subnet[i].id
+          instance_type = instance_type,
+          name          = "snc-node-pool-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnet[i].availability_zone}-${random_id.ng_suffix.hex}"
+        }
+      ]
+    ]) : "${node_group.name}" => node_group
   }
 
-  snc_node_config       = { for i, v in var.private_subnet_ids : "snc-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-node-pool${i}" }) }
-  snc_extra_node_config = (length(var.extra_node_pool_instance_types) == 0 ? {} : { for i, v in var.private_subnet_ids : "snc-extra-node-pool${i}" => merge(local.node_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-extra-node-pool${i}", instance_types = var.extra_node_pool_instance_types }) })
-  snc_func_config       = { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-func-pool${i}" }) }
-  node_groups           = (var.enable_func_pool ? merge(local.snc_node_config, local.snc_func_config, local.snc_extra_node_config) : merge(local.snc_node_config, local.snc_extra_node_config))
 }
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "17.24.0"
+  version = "18.29.0"
 
-  cluster_name                                   = var.cluster_name
-  cluster_version                                = var.cluster_version
-  cluster_create_endpoint_private_access_sg_rule = var.enable_node_group_private_networking
-  cluster_endpoint_private_access                = var.enable_node_group_private_networking
-  cluster_endpoint_private_access_cidrs          = local.private_subnet_cidrs
-  cluster_endpoint_public_access_cidrs           = var.allowed_public_cidrs
-  cluster_enabled_log_types                      = var.cluster_enabled_log_types
-  cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : ""
-  cluster_log_kms_key_id                         = var.cluster_log_kms_key_id
-  cluster_log_retention_in_days                  = var.cluster_log_retention_in_days
-  enable_irsa                                    = true
-  openid_connect_audiences                       = ["sts.amazonaws.com"]
-  iam_path                                       = "/StreamNative/"
-  manage_cluster_iam_resources                   = var.use_runtime_policy ? false : true
-  manage_worker_iam_resources                    = true
-  map_accounts                                   = var.map_additional_aws_accounts
-  map_roles                                      = var.map_additional_iam_roles
-  map_users                                      = var.map_additional_iam_users
-  permissions_boundary                           = var.permissions_boundary_arn
-  subnets                                        = local.cluster_subnet_ids
-  vpc_id                                         = var.vpc_id
-  wait_for_cluster_timeout                       = var.wait_for_cluster_timeout // This was added in version 17.1.0, and if set above 0, causes TF to crash.
-  write_kubeconfig                               = false
+  # cluster_endpoint_private_access_cidrs          = local.private_subnet_cidrs
+  # cluster_iam_role_name                          = var.use_runtime_policy ? aws_iam_role.cluster[0].name : ""
+  # map_accounts                                   = var.map_additional_aws_accounts
+  # map_roles                                      = var.map_additional_iam_roles
+  # map_users                                      = var.map_additional_iam_users
+  # cluster_create_endpoint_private_access_sg_rule = var.enable_node_group_private_networking
+  # manage_worker_iam_resources                    = true
 
-  node_groups = local.node_groups
+  ### Added these to avoid issues with the module refactor from 17.X to 18.X. Future versions of the terraform-aws-eks module may not require these to be specified.
+  prefix_separator                   = ""
+  iam_role_name                      = var.cluster_name
+  cluster_security_group_name        = var.cluster_name
+  cluster_security_group_description = "EKS cluster security group."
+  ###
+  cluster_name                               = var.cluster_name
+  cluster_version                            = var.cluster_version
+  create_cluster_primary_security_group_tags = true
+  cluster_endpoint_private_access            = var.enable_node_group_private_networking
+  cluster_endpoint_public_access_cidrs       = var.allowed_public_cidrs
+  cluster_enabled_log_types                  = var.cluster_enabled_log_types
+  cloudwatch_log_group_kms_key_id            = var.cluster_log_kms_key_id
+  cloudwatch_log_group_retention_in_days     = var.cluster_log_retention_in_days
+  eks_managed_node_groups                    = local.node_groups
+  eks_managed_node_group_defaults            = local.node_group_defaults
+  enable_irsa                                = true
+  openid_connect_audiences                   = ["sts.amazonaws.com"]
+  iam_role_path                              = "/StreamNative/"
+  iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
+  create_iam_role                            = var.use_runtime_policy ? false : true
+  iam_role_permissions_boundary              = var.permissions_boundary_arn
+  control_plane_subnet_ids                   = local.cluster_subnet_ids
+  vpc_id                                     = var.vpc_id
 
-  node_groups_defaults = {
-    additional_tags = merge({
-      "k8s.io/cluster-autoscaler/enabled"                      = "true",
-      format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
-      "Vendor"                                                 = "StreamNative"
-      },
-    )
-    create_launch_template = true
-    disk_encrypted         = true
-    disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
-  }
+
+
+
+  node_security_group_tags = merge(var.additional_tags, {
+    format("k8s.io/cluster/%s", var.cluster_name) = "owned",
+    "Vendor"                                      = "StreamNative",
+    "kubernetes.io/cluster/${var.cluster_name}"   = null
+  })
 
   tags = {
     format("k8s.io/cluster/%s", var.cluster_name) = "owned",
     "Vendor"                                      = "StreamNative"
   }
 
+  cluster_tags = merge(var.additional_tags, {
+    format("k8s.io/cluster/%s", var.cluster_name) = "owned",
+    "Vendor"                                      = "StreamNative"
+  })
+  cluster_security_group_tags = merge(var.additional_tags, {
+    format("k8s.io/cluster/%s", var.cluster_name) = "owned",
+    "Vendor"                                      = "StreamNative"
+  })
+
   depends_on = [
     aws_iam_role.cluster
   ]
 }
 
-resource "aws_autoscaling_group_tag" "asg_group_vendor_tags" {
-  count = length(module.eks.workers_asg_names)
+# resource "aws_autoscaling_group_tag" "asg_group_vendor_tags" {
+#   count = length(module.eks.workers_asg_names)
 
-  autoscaling_group_name = module.eks.workers_asg_names[count.index]
+#   autoscaling_group_name = module.eks.workers_asg_names[count.index]
 
-  tag {
-    key   = "Vendor"
-    value = "StreamNative"
+#   tag {
+#     key   = "Vendor"
+#     value = "StreamNative"
 
-    propagate_at_launch = true
-  }
-}
+#     propagate_at_launch = true
+#   }
+# }
 
 resource "kubernetes_namespace" "sn_system" {
   metadata {

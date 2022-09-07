@@ -372,7 +372,7 @@ variable "func_pool_disk_type" {
 
 variable "func_pool_instance_types" {
   default     = ["c6i.large"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.large\"]. Terraform will only perform drift detection if a configuration value is provided."
+  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"c6i.large\"]. Terraform will only perform drift detection if a configuration value is provided."
   type        = list(string)
 }
 
@@ -394,22 +394,16 @@ variable "func_pool_max_size" {
   type        = number
 }
 
-variable "func_pool_namespace" {
-  default     = "pulsar-funcs"
-  description = "The namespace where functions run."
-  type        = string
-}
-
 variable "func_pool_pre_userdata" {
   default     = ""
   description = "The pre-userdata script to run on the function worker nodes."
   type        = string
 }
 
-variable "func_pool_sa_name" {
-  default     = "default"
-  description = "The service account name the functions use."
-  type        = string
+variable "func_pool_taints" {
+  default     = []
+  description = "Taints to apply to the function pool node group."
+  type        = list(map)
 }
 
 variable "hosted_zone_id" {
@@ -551,8 +545,14 @@ variable "node_pool_ami_is_eks_optimized" {
   type        = bool
 }
 
+variable "node_pool_block_device_name" {
+  default     = "/dev/nvme0n1"
+  description = "The name of the block device to use for the EKS cluster nodes."
+  type        = string
+}
+
 variable "node_pool_desired_size" {
-  default     = 1
+  default     = 0
   description = "Desired number of worker nodes in the node pool."
   type        = number
 }
@@ -570,8 +570,8 @@ variable "node_pool_disk_type" {
 }
 
 variable "node_pool_instance_types" {
-  default     = ["c6i.large"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"c6i.large\"]."
+  default     = ["c6i.xlarge", "c6i.2xlarge", "c6i.4xlarge", "c6i.8xlarge"]
+  description = "Set of instance types associated with the EKS Node Groups. Defaults to [\"c6i.xlarge\", \"c6i.2xlarge\", \"c6i.4xlarge\", \"c6i.8xlarge\"]."
   type        = list(string)
 }
 
@@ -588,7 +588,7 @@ variable "node_pool_labels" {
 }
 
 variable "node_pool_min_size" {
-  default     = 1
+  default     = 0
   description = "The minimum size of the node pool AutoScaling group."
   type        = number
 }
@@ -602,6 +602,12 @@ variable "node_pool_pre_userdata" {
   default     = ""
   description = "The user data to apply to the worker nodes in the node pool. This is applied before the bootstrap.sh script."
   type        = string
+}
+
+variable "node_pool_taints" {
+  default     = []
+  description = "A list of taints in map format to apply to the node pool."
+  type        = list(map)
 }
 
 variable "permissions_boundary_arn" {
