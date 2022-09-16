@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "external_dns" {
       "route53:ChangeResourceRecordSets"
     ]
     resources = [
-      "arn:${var.aws_partition}:route53:::hostedzone/${var.hosted_zone_id}"
+      "arn:${local.aws_partition}:route53:::hostedzone/${var.hosted_zone_id}"
     ]
     effect = "Allow"
   }
@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "external_dns_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
@@ -62,38 +62,30 @@ data "aws_iam_policy_document" "external_dns_sts" {
 }
 
 resource "aws_iam_role" "external_dns" {
-  count                = var.enable_external_dns ? 1 : 0
   name                 = format("%s-extdns-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA external-dns on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags                 = local.tags
 }
 
 resource "aws_iam_policy" "external_dns" {
-  count       = local.create_ext_dns_policy ? 1 : 0
+  count       = var.create_iam_policies ? 1 : 0
   name        = format("%s-ExternalDnsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.external_dns.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "external_dns" {
-  count      = var.enable_external_dns ? 1 : 0
-  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.external_dns[0].arn
-  role       = aws_iam_role.external_dns[0].name
-}
-
-locals {
-  default_sources = ["service", "ingress"]
-  istio_sources   = ["istio-gateway", "istio-virtualservice"]
-  sources         = var.enable_istio ? concat(local.istio_sources, local.default_sources) : local.default_sources
+  policy_arn = var.create_iam_policies ? aws_iam_policy.external_dns[0].arn : local.default_service_policy_arn
+  role       = aws_iam_role.external_dns.name
 }
 
 resource "helm_release" "external_dns" {
-  count           = var.enable_external_dns ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.external_dns_helm_chart_name
   cleanup_on_fail = true
@@ -114,14 +106,15 @@ resource "helm_release" "external_dns" {
     rbac = {
       create = true
     }
+    replicaCount = 2
     serviceAccount = {
       create = true
       name   = "external-dns"
       annotations = {
-        "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns[0].arn
+        "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns.arn
       }
     }
-    sources    = local.sources
+    sources    = ["service", "ingress", "istio-gateway", "istio-virtualservice"]
     txtOwnerId = module.eks.cluster_id
   })]
 

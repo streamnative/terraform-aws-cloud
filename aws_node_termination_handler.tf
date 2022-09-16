@@ -18,6 +18,7 @@
 #
 
 resource "helm_release" "node_termination_handler" {
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.node_termination_handler_helm_chart_name
   cleanup_on_fail = true

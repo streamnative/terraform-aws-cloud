@@ -18,7 +18,7 @@
 #
 
 resource "helm_release" "metrics_server" {
-  count           = var.enable_metrics_server ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.metrics_server_helm_chart_name
   cleanup_on_fail = true
@@ -27,6 +27,10 @@ resource "helm_release" "metrics_server" {
   repository      = var.metrics_server_helm_chart_repository
   timeout         = 300
   version         = var.metrics_server_helm_chart_version
+  values = [yamlencode({
+    replicas = 2
+    }
+  )]
 
   dynamic "set" {
     for_each = var.metrics_server_settings

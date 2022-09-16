@@ -90,7 +90,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
   statement {
     actions   = ["ec2:CreateTags"]
     effect    = "Allow"
-    resources = ["arn:${var.aws_partition}:ec2:*:*:security-group/*"]
+    resources = ["arn:${local.aws_partition}:ec2:*:*:security-group/*"]
     condition {
       test     = "StringEquals"
       variable = "ec2:CreateAction"
@@ -109,7 +109,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
       "ec2:DeleteTags"
     ]
     effect    = "Allow"
-    resources = ["arn:${var.aws_partition}:ec2:*:*:security-group/*"]
+    resources = ["arn:${local.aws_partition}:ec2:*:*:security-group/*"]
     condition {
       test     = "Null"
       variable = "aws:RequestTag/elbv2.k8s.aws/cluster"
@@ -169,9 +169,9 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
     ]
     effect = "Allow"
     resources = [
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:targetgroup/*/*",
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:targetgroup/*/*",
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:loadbalancer/app/*/*"
     ]
     condition {
       test     = "Null"
@@ -192,10 +192,10 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
     ]
     effect = "Allow"
     resources = [
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener/net/*/*/*",
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener/app/*/*/*",
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
-      "arn:${var.aws_partition}:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:listener/net/*/*/*",
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:listener/app/*/*/*",
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+      "arn:${local.aws_partition}:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
     ]
   }
 
@@ -225,7 +225,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
       "elasticloadbalancing:DeregisterTargets"
     ]
     effect    = "Allow"
-    resources = ["arn:${var.aws_partition}:elasticloadbalancing:*:*:targetgroup/*/*"]
+    resources = ["arn:${local.aws_partition}:elasticloadbalancing:*:*:targetgroup/*/*"]
   }
 
   statement {
@@ -249,7 +249,7 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
@@ -260,32 +260,30 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
 }
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
-  count                = var.enable_aws_load_balancer_controller ? 1 : 0
   name                 = format("%s-lbc-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags                 = local.tags
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  count       = local.create_lb_policy ? 1 : 0
+  count       = var.create_iam_policies ? 1 : 0
   name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.aws_load_balancer_controller.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
-  count      = var.enable_aws_load_balancer_controller ? 1 : 0
-  policy_arn = local.lb_policy_arn != "" ? local.lb_policy_arn : aws_iam_policy.aws_load_balancer_controller[0].arn
-  role       = aws_iam_role.aws_load_balancer_controller[0].name
+  policy_arn = var.create_iam_policies ? aws_iam_policy.aws_load_balancer_controller[0].arn : local.default_lb_policy_arn
+  role       = aws_iam_role.aws_load_balancer_controller.name
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
-  count           = var.enable_aws_load_balancer_controller ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.aws_load_balancer_controller_helm_chart_name
   cleanup_on_fail = true
@@ -299,11 +297,12 @@ resource "helm_release" "aws_load_balancer_controller" {
     defaultTags = merge(var.additional_tags, {
       "Vendor" = "StreamNative"
     })
+    replicaCount = 2
     serviceAccount = {
       create = true
       name   = "aws-load-balancer-controller"
       annotations = {
-        "eks.amazonaws.com/role-arn" = aws_iam_role.aws_load_balancer_controller[0].arn
+        "eks.amazonaws.com/role-arn" = aws_iam_role.aws_load_balancer_controller.arn
       }
     }
   })]
@@ -314,11 +313,6 @@ resource "helm_release" "aws_load_balancer_controller" {
       name  = set.key
       value = set.value
     }
-  }
-
-  set {
-    name  = "defaultTags.Vendor"
-    value = "StreamNative"
   }
 
   depends_on = [

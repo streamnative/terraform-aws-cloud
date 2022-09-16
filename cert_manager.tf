@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "cert_manager" {
       "route53:GetChange"
     ]
     resources = [
-      "arn:${var.aws_partition}:route53:::change/*"
+      "arn:${local.aws_partition}:route53:::change/*"
     ]
     effect = "Allow"
   }
@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "cert_manager" {
       "route53:ListResourceRecordSets"
     ]
     resources = [
-      "arn:${var.aws_partition}:route53:::hostedzone/${var.hosted_zone_id}"
+      "arn:${local.aws_partition}:route53:::hostedzone/${var.hosted_zone_id}"
     ]
     effect = "Allow"
   }
@@ -61,7 +61,7 @@ data "aws_iam_policy_document" "cert_manager_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
@@ -72,32 +72,30 @@ data "aws_iam_policy_document" "cert_manager_sts" {
 }
 
 resource "aws_iam_role" "cert_manager" {
-  count                = var.enable_cert_manager ? 1 : 0
   name                 = format("%s-cm-role", module.eks.cluster_id)
   description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags                 = local.tags
 }
 
 resource "aws_iam_policy" "cert_manager" {
-  count       = local.create_cert_man_policy ? 1 : 0
+  count       = var.create_iam_policies ? 1 : 0
   name        = format("%s-CertManagerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.cert_manager.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "cert_manager" {
-  count      = var.enable_cert_manager ? 1 : 0
-  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.cert_manager[0].arn
-  role       = aws_iam_role.cert_manager[0].name
+  policy_arn = var.create_iam_policies ? aws_iam_policy.cert_manager[0].arn : local.default_service_policy_arn
+  role       = aws_iam_role.cert_manager.name
 }
 
 resource "helm_release" "cert_manager" {
-  count           = var.enable_cert_manager ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.cert_manager_helm_chart_name
   cleanup_on_fail = true
@@ -114,7 +112,7 @@ resource "helm_release" "cert_manager" {
       ]
       serviceAccount = {
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager.arn
         }
       }
       podSecurityContext = {
@@ -122,7 +120,6 @@ resource "helm_release" "cert_manager" {
       }
     }
     kubeVersion = var.cluster_version
-
   })]
 
   dynamic "set" {
@@ -139,23 +136,19 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "helm_release" "cert_issuer" {
-  count           = var.enable_cert_manager ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = "${path.module}/charts/cert-issuer"
   cleanup_on_fail = true
   name            = "cert-issuer"
   namespace       = kubernetes_namespace.sn_system.metadata[0].name
   timeout         = 300
-
-  set {
-    name  = "supportEmail"
-    value = var.cert_issuer_support_email
-  }
-
-  set {
-    name  = "dns01.region"
-    value = var.region
-  }
+  values = [yamlencode({
+    supportEmail = var.cert_issuer_support_email
+    dns01 = {
+      region = var.region
+    }
+  })]
 
   depends_on = [
     helm_release.cert_manager
