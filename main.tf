@@ -45,6 +45,7 @@ locals {
       "kubernetes.io/cluster/${var.cluster_name}" = "owned",
       "k8s.io/cluster/${var.cluster_name}"        = "owned",
       "Vendor"                                    = "StreamNative"
+      "cluster-name"                              = var.cluster_name
     },
     var.additional_tags,
   )
@@ -79,6 +80,7 @@ locals {
     tags = merge(var.node_pool_tags, local.tags, {
       "k8s.io/cluster-autoscaler/enabled"                      = "true",
       format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
+      "cluster-name"                                           = var.cluster_name
     })
   }
 
