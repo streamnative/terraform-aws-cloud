@@ -76,7 +76,7 @@ locals {
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
     taints                  = var.node_pool_taints
-    tags = merge(var.node_pool_tags, {
+    tags = merge(var.node_pool_tags, local.tags, {
       "k8s.io/cluster-autoscaler/enabled"                      = "true",
       format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
     })
@@ -88,13 +88,13 @@ locals {
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
           subnet_ids     = [data.aws_subnet.private_subnets[i].id]
-          instance_types = [instance_type],
+          instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
+          desired_size   = split(".", instance_type)[1] == "xlarge" ? 1 : 0 
         }
       ]
     ]) : "${node_group.name}" => node_group
   }
-
 
   ### IAM role bindings
   sncloud_control_plane_access = [
