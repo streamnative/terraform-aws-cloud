@@ -510,7 +510,8 @@ variable "region" {
 }
 
 variable "service_domain" {
-  description = "The domain name being used by the environment, needed specifically for Istio's authorization policies."
+  default     = ""
+  description = "When Istio is enabled, the FQDN needed specifically for Istio's authorization policies."
   type        = string
 }
 
