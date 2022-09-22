@@ -275,6 +275,7 @@ variable "external_dns_settings" {
 }
 
 variable "hosted_zone_id" {
+  default     = "*"
   description = "The ID of the Route53 hosted zone used by the cluster's External DNS configuration."
   type        = string
 }
