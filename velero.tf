@@ -22,10 +22,13 @@ data "aws_kms_key" "s3_default" {
 }
 
 resource "aws_s3_bucket" "velero" {
-  acl    = "private"
   bucket = format("%s-cluster-backup", var.cluster_name)
+  tags   = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
+}
 
-  tags = merge({"Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
+resource "aws_s3_bucket_acl" "velero" {
+  bucket = aws_s3_bucket.velero.id
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
@@ -33,7 +36,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = data.aws_kms_key.s3_default.arn 
+      kms_master_key_id = data.aws_kms_key.s3_default.arn
       sse_algorithm     = "aws:kms"
     }
   }
