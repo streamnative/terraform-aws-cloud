@@ -17,19 +17,26 @@
 # under the License.
 #
 
+data "aws_kms_key" "s3_default" {
+  key_id = "alias/aws/s3"
+}
+
 resource "aws_s3_bucket" "velero" {
   acl    = "private"
   bucket = format("%s-cluster-backup", var.cluster_name)
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "aws:kms"
-      }
+  tags = merge({"Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
+  bucket = aws_s3_bucket.velero.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = data.aws_kms_key.s3_default.arn 
+      sse_algorithm     = "aws:kms"
     }
   }
-
-  tags = merge({"Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
 }
 
 data "aws_iam_policy_document" "velero" {
@@ -70,7 +77,7 @@ data "aws_iam_policy_document" "velero_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, data.aws_caller_identity.current.account_id, var.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, data.aws_caller_identity.current.account_id, var.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
