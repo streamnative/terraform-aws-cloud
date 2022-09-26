@@ -77,12 +77,12 @@ data "aws_iam_policy_document" "velero_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, data.aws_caller_identity.current.account_id, var.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
       values   = [format("system:serviceaccount:%s:%s", var.velero_namespace, "velero")]
-      variable = format("%s:sub", var.oidc_issuer)
+      variable = format("%s:sub", local.oidc_issuer)
     }
   }
 }
