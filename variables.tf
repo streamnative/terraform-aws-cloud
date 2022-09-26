@@ -533,6 +533,60 @@ variable "use_runtime_policy" {
   type        = bool
 }
 
+variable "velero_backup_schedule" {
+  default     = "0 5 * * *"
+  description = "The scheduled time for Velero to perform backups. Written in cron expression, defaults to \"0 5 * * *\" or \"at 5:00am every day\""
+  type        = string
+}
+
+variable "velero_excluded_namespaces" {
+  default     = ["kube-system", "default", "operators", "olm"]
+  description = "A comma-separated list of namespaces to exclude from Velero backups. Defaults are set to [\"default\", \"kube-system\", \"operators\", \"olm\"]."
+  type        = list(string)
+}
+
+variable "velero_helm_chart_name" {
+  default     = "velero"
+  description = "The name of the Helm chart to use for Velero"
+  type        = string
+}
+
+variable "velero_helm_chart_repository" {
+  default     = "https://vmware-tanzu.github.io/helm-charts"
+  description = "The repository containing the Helm chart to use for velero"
+  type        = string
+}
+
+variable "velero_helm_chart_version" {
+  default     = "2.31.8"
+  description = "The version of the Helm chart to use for Velero. The current version can be found in github: https://github.com/vmware-tanzu/helm-charts/tree/main/charts/velero"
+  type        = string
+}
+
+variable "velero_namespace" {
+  default     = "sn-system"
+  description = "The kubernetes namespace where Velero should be deployed. This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account access to use the IAM role. Defaults to \"sn-system\""
+  type        = string
+}
+
+variable "velero_plugin_version" {
+  default     = "v1.9.2"
+  description = "Which version of the velero-plugin-for-aws to use."
+  type        = string
+}
+
+variable "velero_policy_arn" {
+  default     = null
+  description = "The arn for the IAM policy used by the Velero backup addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policy_for_velero\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudVeleroBackupPolicy\"."
+  type        = string
+}
+
+variable "velero_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values for Velero. See https://github.com/vmware-tanzu/helm-charts/tree/main/charts/velero for available options"
+  type        = map(string)
+}
+
 variable "vpc_id" {
   default     = ""
   description = "The ID of the AWS VPC to use."
