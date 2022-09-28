@@ -71,7 +71,7 @@ locals {
     desired_size            = var.node_pool_desired_size
     ebs_optimized           = var.node_pool_ebs_optimized
     enable_monitoring       = var.enable_node_pool_monitoring
-    iam_role_arn            = aws_iam_role.ng.arn
+    iam_role_arn            = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "") # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
     labels                  = var.node_pool_labels
     min_size                = var.node_pool_min_size
     max_size                = var.node_pool_max_size
@@ -107,11 +107,10 @@ locals {
     }
   ]
 
-  # Remove the IAM Path from the role
-  # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
+  # Add the worker node role back in with the path so the EKS console reports healthy node status
   worker_node_role = [
     {
-      rolearn  = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "")
+      rolearn  = aws_iam_role.ng.arn 
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
     }
