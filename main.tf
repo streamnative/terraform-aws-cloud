@@ -37,7 +37,7 @@ locals {
   default_lb_policy_arn      = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
   default_service_policy_arn = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
   kms_key                    = var.disk_encryption_kms_key_id == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_id
-  oidc_issuer                = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+  oidc_issuer                = trimprefix(try(module.eks.cluster_oidc_issuer_url, ""), "https://")
   private_subnet_cidrs       = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_subnets[i].cidr_block]
 
   tags = merge(
@@ -92,7 +92,7 @@ locals {
           subnet_ids     = [data.aws_subnet.private_subnets[i].id]
           instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          desired_size   = split(".", instance_type)[1] == "xlarge" ? 1 : 0 
+          desired_size   = split(".", instance_type)[1] == "xlarge" ? 1 : 0
         }
       ]
     ]) : "${node_group.name}" => node_group
@@ -114,12 +114,20 @@ locals {
       rolearn  = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "")
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
+    },
+    {
+      rolearn  = aws_iam_role.ng.arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups   = ["system:bootstrappers", "system:nodes"]
     }
   ]
 
   # Switches for different role binding scenarios
   role_bindings = var.enable_sncloud_control_plane_access && var.iam_path != "" ? concat(local.sncloud_control_plane_access, local.worker_node_role, var.map_additional_iam_roles) : var.enable_sncloud_control_plane_access && var.iam_path == "" ? concat(local.sncloud_control_plane_access, var.map_additional_iam_roles) : var.enable_sncloud_control_plane_access == false && var.iam_path != "" ? concat(var.map_additional_iam_roles, local.worker_node_role) : var.map_additional_iam_roles
 
+  aws_auth_configmap_data = {
+    mapRoles = yamlencode(local.role_bindings)
+  }
 }
 
 module "eks" {
@@ -154,10 +162,24 @@ module "eks" {
   iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
   iam_role_path                              = var.iam_path
   iam_role_permissions_boundary              = var.permissions_boundary_arn
-  manage_aws_auth_configmap                  = true
+  manage_aws_auth_configmap                  = false
+  create_aws_auth_configmap                  = false
   openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
+}
+
+resource "kubernetes_config_map" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = local.aws_auth_configmap_data
+
+  depends_on = [
+    module.eks.cluster_arn,
+  ]
 }
 
 ### Additional Tags
