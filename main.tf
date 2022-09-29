@@ -30,13 +30,18 @@ data "aws_kms_key" "ebs_default" {
   key_id = "alias/aws/ebs"
 }
 
+data "aws_kms_key" "s3_default" {
+  key_id = "alias/aws/s3"
+}
+
 locals {
+  s3_kms_key                 = var.s3_encryption_kms_key_arn == "" ? data.aws_kms_key.s3_default.arn : var.s3_encryption_kms_key_arn
   aws_partition              = data.aws_partition.current.partition
   account_id                 = data.aws_caller_identity.current.account_id
   cluster_subnet_ids         = concat(var.private_subnet_ids, var.public_subnet_ids)
   default_lb_policy_arn      = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
   default_service_policy_arn = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
-  kms_key                    = var.disk_encryption_kms_key_id == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_id
+  ebs_kms_key                = var.disk_encryption_kms_key_arn == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_arn
   oidc_issuer                = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
   private_subnet_cidrs       = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_subnets[i].cidr_block]
 
@@ -51,6 +56,14 @@ locals {
   )
 
   ## Node Group Configuration
+  compute_units = {
+    "large"   = "Small"
+    "xlarge"  = "Medium"
+    "2xlarge" = "Medium"
+    "4xlarge" = "Large"
+    "8xlarge" = "Large"
+  }
+
   node_group_defaults = {
     ami_id = var.node_pool_ami_id
     block_device_mappings = {
@@ -61,7 +74,7 @@ locals {
           volume_type           = "gp3"
           iops                  = var.node_pool_disk_iops
           encrypted             = true
-          kms_key_id            = local.kms_key
+          kms_key_id            = local.ebs_kms_key
           delete_on_termination = true
         }
       }
@@ -72,7 +85,6 @@ locals {
     ebs_optimized           = var.node_pool_ebs_optimized
     enable_monitoring       = var.enable_node_pool_monitoring
     iam_role_arn            = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "") # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
-    labels                  = var.node_pool_labels
     min_size                = var.node_pool_min_size
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
@@ -92,7 +104,8 @@ locals {
           subnet_ids     = [data.aws_subnet.private_subnets[i].id]
           instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          desired_size   = split(".", instance_type)[1] == "xlarge" ? 1 : 0 
+          desired_size   = split(".", instance_type)[1] == "xlarge" ? 1 : 0
+          labels         = merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") })
         }
       ]
     ]) : "${node_group.name}" => node_group
@@ -110,7 +123,7 @@ locals {
   # Add the worker node role back in with the path so the EKS console reports healthy node status
   worker_node_role = [
     {
-      rolearn  = aws_iam_role.ng.arn 
+      rolearn  = aws_iam_role.ng.arn
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
     }
@@ -134,9 +147,7 @@ module "eks" {
   cluster_security_group_description = "EKS cluster security group."
   ###############################################################################################
 
-  # aws_auth_accounts                          = var.map_additional_aws_accounts
-  aws_auth_roles = local.role_bindings
-  # aws_auth_users                             = var.map_additional_iam_users
+  aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
   create_cluster_primary_security_group_tags = false
@@ -198,7 +209,7 @@ resource "kubernetes_storage_class" "sn_default" {
   parameters = {
     type      = "gp3"
     encrypted = "true"
-    kmsKeyId  = local.kms_key
+    kmsKeyId  = local.ebs_kms_key
   }
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
@@ -213,7 +224,7 @@ resource "kubernetes_storage_class" "sn_ssd" {
   parameters = {
     type      = "gp3"
     encrypted = "true"
-    kmsKeyId  = local.kms_key
+    kmsKeyId  = local.ebs_kms_key
   }
   reclaim_policy         = "Delete"
   allow_volume_expansion = true

@@ -125,7 +125,7 @@ data "aws_iam_policy_document" "csi" {
       "kms:ListGrants",
       "kms:RevokeGrant",
     ]
-    resources = [local.kms_key]
+    resources = [local.ebs_kms_key]
     effect    = "Allow"
     condition {
       test     = "Bool"
@@ -141,7 +141,7 @@ data "aws_iam_policy_document" "csi" {
       "kms:GenerateDataKey*",
       "kms:DescribeKey"
     ]
-    resources = [local.kms_key]
+    resources = [local.ebs_kms_key]
     effect    = "Allow"
   }
 }

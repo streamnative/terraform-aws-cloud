@@ -17,6 +17,12 @@
 # under the License.
 #
 
+variable "s3_encryption_kms_key_arn" {
+  default     = ""
+  description = "KMS key ARN to use for S3 encryption. If not set, the default AWS S3 key will be used."
+  type        = string
+}
+
 variable "additional_tags" {
   default     = {}
   description = "Additional tags to be added to the resources created by this module."
@@ -149,18 +155,6 @@ variable "cluster_enabled_log_types" {
   type        = list(string)
 }
 
-variable "cluster_log_kms_key_id" {
-  default     = ""
-  description = "If a KMS Key ARN is set, this key will be used to encrypt the corresponding log group. Please be sure that the KMS Key has an appropriate key policy (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html)."
-  type        = string
-}
-
-variable "cluster_log_retention_in_days" {
-  default     = 365
-  description = "Number of days to retain log events. Defaults to 365 days."
-  type        = number
-}
-
 variable "cluster_name" {
   default     = ""
   description = "The name of your EKS cluster and associated resources. Must be 16 characters or less."
@@ -220,9 +214,9 @@ variable "disable_public_pulsar_endpoint" {
   type        = bool
 }
 
-variable "disk_encryption_kms_key_id" {
+variable "disk_encryption_kms_key_arn" {
   default     = ""
-  description = "The KMS Key ARN to use for disk encryption."
+  description = "The KMS Key ARN to use for EBS disk encryption. If not set, the default EBS encryption key will be used."
   type        = string
 }
 
@@ -433,7 +427,7 @@ variable "node_pool_desired_size" {
 }
 
 variable "node_pool_disk_size" {
-  default     = 50
+  default     = 100
   description = "Disk size in GiB for worker nodes in the node pool. Defaults to 50."
   type        = number
 }
@@ -445,8 +439,8 @@ variable "node_pool_disk_type" {
 }
 
 variable "node_pool_instance_types" {
-  default     = ["c6i.xlarge", "c6i.2xlarge", "c6i.4xlarge", "c6i.8xlarge"]
-  description = "Set of instance types associated with the EKS Node Groups. Defaults to [\"c6i.xlarge\", \"c6i.2xlarge\", \"c6i.4xlarge\", \"c6i.8xlarge\"]."
+  default     = ["m6i.large", "m6i.xlarge", "m6i.2xlarge", "m6i.4xlarge", "m6i.8xlarge"]
+  description = "Set of instance types associated with the EKS Node Groups. Defaults to [\"m6i.large\", \"m6i.xlarge\", \"m6i.2xlarge\", \"m6i.4xlarge\", \"m6i.8xlarge\"], which will create empty node groups of each instance type to account for any workload configurable from StreamNative Cloud."
   type        = list(string)
 }
 

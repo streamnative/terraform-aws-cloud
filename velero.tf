@@ -17,13 +17,15 @@
 # under the License.
 #
 
-data "aws_kms_key" "s3_default" {
-  key_id = "alias/aws/s3"
-}
-
 resource "aws_s3_bucket" "velero" {
   bucket = format("%s-cluster-backup", var.cluster_name)
   tags   = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
+
+  lifecycle {
+    ignore_changes = [
+      bucket,
+    ]
+  }
 }
 
 resource "aws_s3_bucket_acl" "velero" {
@@ -36,7 +38,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = data.aws_kms_key.s3_default.arn
+      kms_master_key_id = local.s3_kms_key
       sse_algorithm     = "aws:kms"
     }
   }

@@ -17,13 +17,28 @@
 # under the License.
 #
 
-terraform {
-  required_version = ">=1.0.0"
+resource "aws_s3_bucket" "tiered_storage" {
+  bucket = format("%s-offload", var.cluster_name)
+  tags   = merge({ "Attributes" = "offload" }, local.tags)
 
-  required_providers {
-    aws = {
-      version = ">= 3.61.0"
-      source  = "hashicorp/aws"
+  lifecycle {
+    ignore_changes = [
+      bucket,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_acl" "tiered_storage" {
+  bucket = aws_s3_bucket.tiered_storage.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "tiered_storage" {
+  bucket = aws_s3_bucket.tiered_storage.bucket
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = local.s3_kms_key
+      sse_algorithm     = "aws:kms"
     }
   }
 }
