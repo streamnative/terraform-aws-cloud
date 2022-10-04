@@ -84,6 +84,13 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
   role       = aws_iam_role.external_dns.name
 }
 
+
+locals {
+  default_sources = ["service", "ingress"]
+  istio_sources   = ["istio-gateway", "istio-virtualservice"]
+  sources         = var.enable_istio || var.enable_bootstrap ? concat(local.istio_sources, local.default_sources) : local.default_sources
+}
+
 resource "helm_release" "external_dns" {
   count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
@@ -114,7 +121,7 @@ resource "helm_release" "external_dns" {
         "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns.arn
       }
     }
-    sources    = ["service", "ingress", "istio-gateway", "istio-virtualservice"]
+    sources    = local.sources
     txtOwnerId = module.eks.cluster_id
   })]
 
