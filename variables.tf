@@ -570,7 +570,7 @@ variable "velero_namespace" {
 }
 
 variable "velero_plugin_version" {
-  default     = "v1.9.2"
+  default     = "v1.5.1"
   description = "Which version of the velero-plugin-for-aws to use."
   type        = string
 }
