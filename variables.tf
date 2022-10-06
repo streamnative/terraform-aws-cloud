@@ -564,8 +564,8 @@ variable "velero_helm_chart_version" {
 }
 
 variable "velero_namespace" {
-  default     = "sn-system"
-  description = "The kubernetes namespace where Velero should be deployed. This is required to set the appropriate policy permissions for IRSA, which grants the Kubernetes Service Account access to use the IAM role. Defaults to \"sn-system\""
+  default     = "velero"
+  description = "The kubernetes namespace where Velero should be deployed."
   type        = string
 }
 

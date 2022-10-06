@@ -128,51 +128,65 @@ resource "helm_release" "velero" {
   values = [
     yamlencode(
       {
-        "credentials" : {
-          "useSecret" : "false"
-        },
-        "configuration" : {
-          "provider" : "aws",
-          "backupStorageLocation" : {
-            "name" : "aws"
-            "bucket" : "${aws_s3_bucket.velero.id}"
-            "region" : var.region
+        credentials = {
+          useSecret = "false"
+        }
+        configuration = {
+          provider = "aws"
+          backupStorageLocation = {
+            name     = "aws"
+            provider = "velero.io/aws"
+            bucket   = aws_s3_bucket.velero.id
+            default  = true
+            config = {
+              region = var.region
+              kmsKeyId = local.s3_kms_key
+            }
           }
-        },
-        "initContainers" : [
+          volumeSnapshotLocation = {
+            name = "aws"
+            provider = "velero.io/aws"
+            config = {
+              region = var.region
+            }
+          }
+          logLevel = "debug"
+        }
+        initContainers = [
           {
-            "name" : "velero-plugin-for-aws",
-            "image" : "velero/velero-plugin-for-aws:${var.velero_plugin_version}",
-            "imagePullPolicy" : "IfNotPresent",
-            "volumeMounts" : [
+            name            = "velero-plugin-for-aws",
+            image           = "velero/velero-plugin-for-aws:${var.velero_plugin_version}"
+            imagePullPolicy = "IfNotPresent"
+            volumeMounts = [
               {
-                "mountPath" : "/target",
-                "name" : "plugins"
+                mountPath = "/target"
+                name      = "plugins"
               }
             ]
           }
-        ],
-        "podAnnotations" : {
-          "eks.amazonaws.com/role-arn" : "${aws_iam_role.velero.arn}"
-        },
-        "podSecurityContext" : {
-          "fsGroup" : 65534
-        },
-        "serviceAccount" : {
-          "server" : {
-            "name" : "${"velero"}"
-            "annotations" : {
-              "eks.amazonaws.com/role-arn" : "${aws_iam_role.velero.arn}"
+        ]
+        podAnnotations = {
+          "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
+        }
+        podSecurityContext = {
+          fsGroup = 1337
+        }
+        serviceAccount = {
+          server = {
+            create = true
+            name = "velero"
+            annotations = {
+              "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
             }
-          },
-        },
-        "schedules" : {
-          "cluster-wide-backup" : {
-            "schedule" : "${var.velero_backup_schedule}"
-            "template" : {
-              "excludedNamespaces" : "${var.velero_excluded_namespaces}"
-              "storageLocation" : "aws"
-              "volumeSnapshotLocations" : ["aws"]
+          }
+        }
+        schedules = {
+          cluster-wide-backup = {
+            schedule = var.velero_backup_schedule
+            template = {
+              excludedNamespaces      = var.velero_excluded_namespaces
+              storageLocation         = "aws"
+              volumeSnapshotLocations = ["aws"]
             }
           }
         }
@@ -186,5 +200,16 @@ resource "helm_release" "velero" {
       name  = set.key
       value = set.value
     }
+  }
+
+  depends_on = [ 
+    kubernetes_namespace.velero
+  ]
+}
+
+
+resource "kubernetes_namespace" "velero" {
+  metadata {
+    name = var.velero_namespace
   }
 }
