@@ -258,7 +258,6 @@ data "aws_iam_policy_document" "runtime_policy" {
       "route53:GetChange",
       "route53:ListHostedZones*",
       "route53:ListTagsForResource",
-      "route53:ListResourceRecordSets",
       "route53:ListHostedZones",
       "secretsmanager:ListSecrets"
     ]
@@ -269,7 +268,8 @@ data "aws_iam_policy_document" "runtime_policy" {
     sid    = "r53sc"
     effect = "Allow"
     actions = [
-      "route53:ChangeResourceRecordSets"
+      "route53:ChangeResourceRecordSets",
+      "route53:ListResourceRecordSets"
     ]
     resources = var.runtime_hosted_zone_allowed_ids
   }
