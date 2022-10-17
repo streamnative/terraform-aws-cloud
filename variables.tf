@@ -328,27 +328,11 @@ variable "kiali_operator_settings" {
   type        = map(any)
 }
 
-variable "map_additional_aws_accounts" {
-  default     = []
-  description = "Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap."
-  type        = list(string)
-}
-
 variable "map_additional_iam_roles" {
   default     = []
   description = "A list of IAM role bindings to add to the aws-auth ConfigMap."
   type = list(object({
     rolearn  = string
-    username = string
-    groups   = list(string)
-  }))
-}
-
-variable "map_additional_iam_users" {
-  default     = []
-  description = "Additional IAM roles to add to `config-map-aws-auth` ConfigMap."
-  type = list(object({
-    userarn  = string
     username = string
     groups   = list(string)
   }))
