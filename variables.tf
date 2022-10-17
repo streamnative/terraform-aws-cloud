@@ -71,30 +71,6 @@ variable "aws_load_balancer_controller_settings" {
   type        = map(string)
 }
 
-variable "calico_helm_chart_name" {
-  default     = "tigera-operator"
-  description = "The name of the Helm chart in the repository for Calico, which is installed alongside the tigera-operator."
-  type        = string
-}
-
-variable "calico_helm_chart_repository" {
-  default     = "https://stevehipwell.github.io/helm-charts/"
-  description = "The repository containing the calico helm chart. We are currently using a community provided chart, which is a fork of the official chart published by Tigera. This chart isn't as opinionated about namespaces, and should be used until this issue is resolved https://github.com/projectcalico/calico/issues/4812."
-  type        = string
-}
-
-variable "calico_helm_chart_version" {
-  default     = "1.5.0"
-  description = "Helm chart version for Calico. Defaults to \"1.0.5\". See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available version releases."
-  type        = string
-}
-
-variable "calico_settings" {
-  default     = {}
-  description = "Additional settings which will be passed to the Helm chart values. See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available options."
-  type        = map(any)
-}
-
 variable "cert_manager_helm_chart_name" {
   default     = "cert-manager"
   description = "The name of the Helm chart in the repository for cert-manager."
