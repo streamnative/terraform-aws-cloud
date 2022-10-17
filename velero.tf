@@ -139,12 +139,12 @@ resource "helm_release" "velero" {
             bucket   = aws_s3_bucket.velero.id
             default  = true
             config = {
-              region = var.region
+              region   = var.region
               kmsKeyId = local.s3_kms_key
             }
           }
           volumeSnapshotLocation = {
-            name = "aws"
+            name     = "aws"
             provider = "velero.io/aws"
             config = {
               region = var.region
@@ -174,7 +174,7 @@ resource "helm_release" "velero" {
         serviceAccount = {
           server = {
             create = true
-            name = "velero"
+            name   = "velero"
             annotations = {
               "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
             }
@@ -202,7 +202,7 @@ resource "helm_release" "velero" {
     }
   }
 
-  depends_on = [ 
+  depends_on = [
     kubernetes_namespace.velero
   ]
 }

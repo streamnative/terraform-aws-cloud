@@ -26,7 +26,11 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "autoscaling:DescribeAutoScalingInstances",
       "autoscaling:DescribeLaunchConfigurations",
       "autoscaling:DescribeTags",
+      "ec2:DescribeImages",
+      "ec2:DescribeInstanceTypes",
       "ec2:DescribeLaunchTemplateVersions",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DesribedNodegroup",
     ]
 
     resources = ["*"]
@@ -62,9 +66,14 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
       identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       values   = [format("system:serviceaccount:%s:%s", "kube-system", "cluster-autoscaler")]
       variable = format("%s:sub", local.oidc_issuer)
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = format("%s:aud", local.oidc_issuer)
     }
   }
 }
@@ -107,6 +116,7 @@ locals {
     "1.20" = "v1.20.1",
     "1.21" = "v1.21.1",
     "1.22" = "v1.22.1",
+    "1.23" = "v1.23.0"
   }
 
 }

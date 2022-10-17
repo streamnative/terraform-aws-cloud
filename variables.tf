@@ -138,7 +138,7 @@ variable "cluster_autoscaler_helm_chart_repository" {
 }
 
 variable "cluster_autoscaler_helm_chart_version" {
-  default     = "9.19.2"
+  default     = "9.21.0"
   description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
   type        = string
 }
@@ -164,6 +164,18 @@ variable "cluster_name" {
     condition     = can(length(var.cluster_name) <= 16)
     error_message = "The value for variable \"cluster_name\" must be a string of 16 characters or less."
   }
+}
+
+variable "cluster_security_group_additional_rules" {
+  default     = {}
+  description = "Additional rules to add to the cluster security group. Set source_node_security_group = true inside rules to set the node_security_group as source."
+  type        = any
+}
+
+variable "cluster_security_group_id" {
+  default     = ""
+  description = "The ID of an existing security group to use for the EKS cluster. If not provided, a new security group will be created."
+  type        = string
 }
 
 variable "cluster_version" {
@@ -196,9 +208,21 @@ variable "csi_settings" {
   type        = map(any)
 }
 
+variable "create_cluster_security_group" {
+  default     = true
+  description = "Whether to create a new security group for the EKS cluster. If set to false, you must provide an existing security group via the cluster_security_group_id variable."
+  type        = bool
+}
+
 variable "create_iam_policies" {
   default     = true
   description = "Whether to create IAM policies for the IAM roles. If set to false, the module will default to using existing policy ARNs that must be present in the AWS account"
+  type        = bool
+}
+
+variable "create_node_security_group" {
+  default     = true
+  description = "Whether to create a new security group for the EKS nodes. If set to false, you must provide an existing security group via the node_security_group_id variable."
   type        = bool
 }
 
@@ -263,7 +287,7 @@ variable "external_dns_helm_chart_repository" {
 }
 
 variable "external_dns_helm_chart_version" {
-  default     = "6.5.6"
+  default     = "6.10.2"
   description = "Helm chart version for ExternalDNS. See https://hub.helm.sh/charts/bitnami/external-dns for updates."
   type        = string
 }
@@ -376,6 +400,18 @@ variable "metrics_server_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options."
   type        = map(any)
+}
+
+variable "node_security_group_additional_rules" {
+  default     = {}
+  description = "Additional ingress rules to add to the node security group. Set source_cluster_security_group = true inside rules to set the cluster_security_group as source"
+  type        = any
+}
+
+variable "node_security_group_id" {
+  default     = ""
+  description = "An ID of an existing security group to use for the EKS node groups. If not specified, a new security group will be created."
+  type        = string
 }
 
 variable "node_termination_handler_helm_chart_name" {
