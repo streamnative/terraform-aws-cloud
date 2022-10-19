@@ -138,19 +138,23 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "18.29.0"
 
-  ##############################################################################################
-  ### Added these to avoid issues with the module refactor from 17.X to 18.X.                ###
-  ### Future versions of the terraform-aws-eks module may not require these to be specified. ###
-  prefix_separator                   = ""
-  iam_role_name                      = var.cluster_name
-  cluster_security_group_name        = var.cluster_name
-  cluster_security_group_description = "EKS cluster security group."
-  ###############################################################################################
+  ######################################################################################################
+  ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
+  ### They are only applicable if migration_mode is set to true, for upgrading existing clusters     ###
+  ######################################################################################################
+  prefix_separator                    = var.migration_mode ? "" : "-"
+  iam_role_name                       = var.migration_mode ? var.cluster_name : null
+  cluster_security_group_name         = var.migration_mode ? var.cluster_name : null
+  cluster_security_group_description  = var.migration_mode ? "EKS cluster security group." : "EKS cluster security group"
+  node_security_group_description     = var.migration_mode ? "Security group for all nodes in the cluster." : "EKS node shared security group"
+  node_security_group_use_name_prefix = var.migration_mode ? false : true
+  node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
+  ######################################################################################################
 
   aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
-  cluster_endpoint_private_access            = true  # Always set to true here, which enables private networking for the node groups
+  cluster_endpoint_private_access            = true # Always set to true here, which enables private networking for the node groups
   cluster_endpoint_public_access             = var.disable_public_eks_endpoint ? false : true
   cluster_endpoint_public_access_cidrs       = var.allowed_public_cidrs
   cluster_enabled_log_types                  = var.cluster_enabled_log_types

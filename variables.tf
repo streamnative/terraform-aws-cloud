@@ -362,6 +362,18 @@ variable "metrics_server_settings" {
   type        = map(any)
 }
 
+variable "migration_mode" {
+  default     = false
+  description = "Whether to enable migration mode for the cluster. This is used to migrate details from existing security groups, which have had their names and description changed in versions v18.X of the community EKS module."
+  type        = bool
+}
+
+variable "migration_mode_node_sg_name" {
+  default     = null
+  description = "The name (not ID!) of the existing security group used by worker nodes. This is required when \"migration_mode\" is set to \"true\", otherwise the parent module will attempt to set a new security group name and destroy the existin one."
+  type        = string
+}
+
 variable "node_security_group_additional_rules" {
   default     = {}
   description = "Additional ingress rules to add to the node security group. Set source_cluster_security_group = true inside rules to set the cluster_security_group as source"
