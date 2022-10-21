@@ -542,7 +542,7 @@ variable "sncloud_services_lb_policy_arn" {
 }
 
 variable "use_runtime_policy" {
-  default     = true
+  default     = false
   description = "Legacy variable, will be deprecated in future versions. The preference of this module is to have the parent EKS module create and manage the IAM role. However some older configurations may have had the cluster IAM role managed seperately, and this variable allows for backwards compatibility."
   type        = bool
 }
