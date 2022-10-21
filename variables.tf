@@ -280,6 +280,12 @@ variable "hosted_zone_id" {
   type        = string
 }
 
+variable "hosted_zone_domain_name_filters" {
+  default     = []
+  description = "A list domain names of the Route53 hosted zones, used by the cluster's External DNS configuration for domain filtering."
+  type        = list(string)
+}
+
 variable "iam_path" {
   default     = "/StreamNative/"
   description = "An IAM Path to be used for all IAM resources created by this module. Changing this from the default will cause issues with StreamNative's Vendor access, if applicable."
