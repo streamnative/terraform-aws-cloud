@@ -106,6 +106,7 @@ resource "helm_release" "external_dns" {
     aws = {
       region = var.region
     }
+    domainFilters = var.hosted_zone_domain_name_filters
     podSecurityContext = {
       fsGroup   = 65534
       runAsUser = 0

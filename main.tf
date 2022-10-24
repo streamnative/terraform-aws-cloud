@@ -47,10 +47,8 @@ locals {
 
   tags = merge(
     {
-      "kubernetes.io/cluster/${var.cluster_name}" = "owned",
-      "k8s.io/cluster/${var.cluster_name}"        = "owned",
-      "Vendor"                                    = "StreamNative"
-      "cluster-name"                              = var.cluster_name
+      "Vendor"       = "StreamNative"
+      "cluster-name" = var.cluster_name
     },
     var.additional_tags,
   )
@@ -136,7 +134,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.29.0"
+  version = "18.30.2"
 
   ######################################################################################################
   ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
@@ -178,6 +176,7 @@ module "eks" {
   openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
+
 }
 
 ### Additional Tags

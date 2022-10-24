@@ -280,6 +280,12 @@ variable "hosted_zone_id" {
   type        = string
 }
 
+variable "hosted_zone_domain_name_filters" {
+  default     = []
+  description = "A list domain names of the Route53 hosted zones, used by the cluster's External DNS configuration for domain filtering."
+  type        = list(string)
+}
+
 variable "iam_path" {
   default     = "/StreamNative/"
   description = "An IAM Path to be used for all IAM resources created by this module. Changing this from the default will cause issues with StreamNative's Vendor access, if applicable."
@@ -536,7 +542,7 @@ variable "sncloud_services_lb_policy_arn" {
 }
 
 variable "use_runtime_policy" {
-  default     = true
+  default     = false
   description = "Legacy variable, will be deprecated in future versions. The preference of this module is to have the parent EKS module create and manage the IAM role. However some older configurations may have had the cluster IAM role managed seperately, and this variable allows for backwards compatibility."
   type        = bool
 }
