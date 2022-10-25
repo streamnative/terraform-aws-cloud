@@ -97,7 +97,7 @@ output "external_dns_arn" {
   description = "The ARN for External DNS"
 }
   
-output "cluster_certificate_authority_data" {
+output "eks_cluster_certificate_authority_data" {
   value = module.eks.cluster_certificate_authority_data
   description = "Base64 encoded certificate data required to communicate with the cluster" 
 }
