@@ -86,3 +86,18 @@ output "velero_s3_bucket_arn" {
   value       = aws_s3_bucket.velero.arn
   description = "The ARN for the Velero S3 bucket created by this module"
 }
+
+output "cert_manager_arn" {
+  value = aws_iam_role.cert_manager.arn
+  description = "The ARN for Cert Manager"
+}
+
+output "external_dns_arn" {
+  value = aws_iam_role.external_dns.arn
+  description = "The ARN for External DNS"
+}
+  
+output "eks_cluster_certificate_authority_data" {
+  value = module.eks.cluster_certificate_authority_data
+  description = "Base64 encoded certificate data required to communicate with the cluster" 
+}
