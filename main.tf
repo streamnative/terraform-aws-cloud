@@ -109,6 +109,35 @@ locals {
     ]) : "${node_group.name}" => node_group
   }
 
+  ## Node Security Group Configuration
+  default_sg_rules = {
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    },
+    ingress_cluster = {
+      description              = "Allow workers pods to receive communication from the cluster control plane."
+      protocol                 = "tcp"
+      source_security_group_id = module.eks.cluster_security_group_id
+      from_port                = 1025
+      to_port                  = 65535
+      type                     = "ingress"
+    }
+  }
+
   ### IAM role bindings
   sncloud_control_plane_access = [
     {
@@ -172,7 +201,7 @@ module "eks" {
   iam_role_permissions_boundary              = var.permissions_boundary_arn
   manage_aws_auth_configmap                  = true
   node_security_group_id                     = var.node_security_group_id
-  node_security_group_additional_rules       = var.node_security_group_additional_rules
+  node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
   openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
