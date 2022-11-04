@@ -96,7 +96,12 @@ output "external_dns_arn" {
   value = aws_iam_role.external_dns.arn
   description = "The ARN for External DNS"
 }
-  
+
+output "aws_loadbalancer_arn" {
+  value = aws_iam_role.aws_load_balancer_controller.arn
+  description = "ARN for loadbalancer"
+}
+
 output "eks_cluster_certificate_authority_data" {
   value = module.eks.cluster_certificate_authority_data
   description = "Base64 encoded certificate data required to communicate with the cluster" 
