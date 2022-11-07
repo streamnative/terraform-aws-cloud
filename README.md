@@ -74,8 +74,9 @@ module "sn_cluster" {
   source = "streamnative/cloud/aws"
 
   cluster_name                   = "sn-cluster-${var.region}"
-  cluster_version                = "1.20"
+  cluster_version                = "1.21"
   hosted_zone_id                 = "Z04554535IN8Z31SKDVQ2" # Change this to your hosted zone ID
+  node_pool_max_size             = 3
 
   ## Note: EKS requires two subnets, each in their own availability zone
   public_subnet_ids  = ["subnet-abcde012", "subnet-bcde012a"]
@@ -85,72 +86,31 @@ module "sn_cluster" {
 }
 ```
 
-In the example `main.tf` above, we create a StreamNative Platform EKS cluster using Kubernetes version `1.20`, with two node groups (one per subnet[^1]), each group being set with a desired capacity of two and a maximum scaling of six, meaning four `c6i.xlarge` worker nodes in total will initially be created, but depending on cluster usage it can autoscale up to twelve.
+In the example `main.tf` above, a StreamNative Platform EKS cluster is created using Kubernetes version `1.21`. 
 
-_Note: If you are creating more than one EKS cluster in an AWS account, it is necessary to set the input `create_iam_policies_for_cluster_addon_services = false`. Otherwise Terraform will error stating that resources already exist with the desired name. This is a temporary workaround and will be improved in later versions of the module._
+By default, the cluster will come provisioned with 8 node groups (_reference node topology[^1]_), six of which have a desired capacity set to `0`, and only the "xlarge" node group has a default desired capacity of `1`. All 
 
-This creates an EKS cluster to your specifications, along with the following addons (and required IAM resources), which are enabled by default:
+In addition, the EKS cluster will be configured to support the following add-ons:
+
 - [AWS CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver)
 - [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller)
 - [AWS Node Terminiation Handler](https://github.com/aws/aws-node-termination-handler)
 - [cert-manager](https://github.com/jetstack/cert-manager)
 - [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler)
 - [external-dns](https://github.com/kubernetes-sigs/external-dns)
-- [external-secrets](https://github.com/external-secrets/kubernetes-external-secrets)
+- [Istio](https://istio.io/)
+- [metrics-server](https://github.com/kubernetes-sigs/metrics-server) 
+- [Velero](https://velero.io/) (for backup and restore)
 
 ## Creating a StreamNative Platform EKS Cluster
 When deploying StreamNative Platform, there are additional resources to be created alongside (and inside!) the EKS cluster:
 
 - StreamNative operators for Pulsar
-- Vault Operator
-- Vault Resources
-- Tiered Storage Resources (optional)
+- Vault Configuration & Resources
 
 We have made this easy by creating additional Terraform modules that can be included alongside your EKS module composition. Consider adding the following to the example `main.tf` file above:
 
 ```hcl
-#######
-### This module creates resources used for tiered storage offloading in Pulsar
-#######
-module "sn_tiered_storage_resources" {
-  source = "streamnative/cloud/aws//modules/tiered-storage-resources"
-
-  cluster_name         = module.sn_cluster.eks_cluster_id
-  oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
-  pulsar_namespace     = "my-pulsar-namespace"
-  service_account_name = "pulsar"
-
-  tags = {
-    Project     = "StreamNative Platform"
-    Environment = var.environment
-  }
-
-  depends_on = [
-    module.sn_cluster
-  ]
-}
-
-#######
-### This module creates resources used by Vault for storing and retrieving secrets related to the Pulsar cluster
-#######
-module "sn_tiered_storage_vault_resources" {
-  source = "streamnative/cloud/aws//modules/vault-resources"
-
-  cluster_name         = module.sn_cluster.eks_cluster_id
-  oidc_issuer          = module.sn_cluster.eks_cluster_oidc_issuer_string
-  pulsar_namespace     = "my-pulsar-namespace" # The namespace where you will be installing Pulsar
-  service_account_name = "vault"               # The name of the service account used by Vault in the Pulsar namespace
-
-  tags = {
-    Project     = "StreamNative Platform"
-    Environment = var.environment
-  }
-
-  depends_on = [
-    module.sn_cluster
-  ]
-}
-
 #######
 ### This module installs the necessary operators for StreamNative Platform
 ### See: https://registry.terraform.io/modules/streamnative/charts/helm/latest
@@ -185,7 +145,7 @@ We use a [Helm chart](https://github.com/streamnative/charts/tree/master/charts/
 _Note: Since this module manages all of the Kubernetes addon dependencies required by StreamNative Platform, it is not necessary to perform all of the [steps outlined in the Helm chart's README.](https://github.com/streamnative/charts/tree/master/charts/sn-platform#steps). Please [reach out](https://support.streamnative.io) to your customer representative if you have questions._
 
 
-[^1]: When running Apache Pulsar in Kubernetes, we make use of EBS backed Kubernetes Persistent Volume Claims (PVC). EBS volumes themselves are zonal, which means [an EC2 instance can only mount a volume that exists in its same AWS Availability Zone](https://aws.amazon.com/blogs/containers/amazon-eks-cluster-multi-zone-auto-scaling-groups/). For this reason we have added node group "zone affinity" functionality into our module, where **an EKS node group is created per AWS Availability Zone**. This is controlled by the number of subnets you pass to the EKS module, creating one node group per subnet.
+[^1]: When running Apache Pulsar in Kubernetes, we make use of EBS backed Kubernetes Persistent Volume Claims (PVC). EBS volumes themselves are zonal, which means [an EC2 instance can only mount a volume that exists in its same AWS Availability Zone](https://aws.amazon.com/blogs/containers/amazon-eks-cluster-multi-zone-auto-scaling-groups/). For this reason we have added node group "zone affinity" functionality into our module, where **an EKS node group is created per AWS Availability Zone**. This is controlled by the number of subnets you pass to the EKS module, creating one node group per subnet. In addition, we also create node groups based on instance classes, which allows us to perform more fine tuned control around scheduling and resource utilization. To illustrate, if a cluster is being created across 3 availability zones and the default 4 instance classes are being used, then 12 total node groups will be created, all except the nodes belonging to the `xlarge` (which has a default capicty of `1` for initial scheduling of workloads) group will remain empty until a corresponding Pulsar or addon workload is deployed.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
