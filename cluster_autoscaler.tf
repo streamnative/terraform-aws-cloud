@@ -26,7 +26,11 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "autoscaling:DescribeAutoScalingInstances",
       "autoscaling:DescribeLaunchConfigurations",
       "autoscaling:DescribeTags",
+      "ec2:DescribeImages",
+      "ec2:DescribeInstanceTypes",
       "ec2:DescribeLaunchTemplateVersions",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DesribedNodegroup",
     ]
 
     resources = ["*"]
@@ -59,39 +63,42 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       values   = [format("system:serviceaccount:%s:%s", "kube-system", "cluster-autoscaler")]
       variable = format("%s:sub", local.oidc_issuer)
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = format("%s:aud", local.oidc_issuer)
     }
   }
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  count                = var.enable_cluster_autoscaler ? 1 : 0
   name                 = format("%s-ca-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cluster_autoscaler_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags                 = local.tags
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
-  count       = local.create_ca_policy ? 1 : 0
+  count       = var.create_iam_policies ? 1 : 0
   name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.cluster_autoscaler.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
-  count      = var.enable_cluster_autoscaler ? 1 : 0
-  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.cluster_autoscaler[0].arn
-  role       = aws_iam_role.cluster_autoscaler[0].name
+  policy_arn = var.create_iam_policies ? aws_iam_policy.cluster_autoscaler[0].arn : local.default_service_policy_arn
+  role       = aws_iam_role.cluster_autoscaler.name
 }
 
 ############
@@ -109,11 +116,12 @@ locals {
     "1.20" = "v1.20.1",
     "1.21" = "v1.21.1",
     "1.22" = "v1.22.1",
+    "1.23" = "v1.23.0"
   }
 
 }
 resource "helm_release" "cluster_autoscaler" {
-  count           = var.enable_cluster_autoscaler ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true
@@ -151,21 +159,21 @@ resource "helm_release" "cluster_autoscaler" {
       }
     ]
     image = {
-      tag = lookup(local.k8s_to_autoscaler_version, var.cluster_version, "v1.20.1") # image.tag defaults to the version corresponding to var.cluster_version's default value and must manually be updated
+      tag = lookup(local.k8s_to_autoscaler_version, var.cluster_version, "v1.21.1") # image.tag defaults to the version corresponding to var.cluster_version's default value and must manually be updated
     }
     rbac = {
       create     = true
       pspEnabled = true
       serviceAccount = {
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler[0].arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler.arn
         },
         create                       = true
         name                         = "cluster-autoscaler"
         automountServiceAccountToken = true
       }
     }
-    replicaCount = "1"
+    replicaCount = "2"
     resources = {
       limits = {
         cpu    = "200m"

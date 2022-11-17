@@ -17,6 +17,12 @@
 # under the License.
 #
 
+variable "s3_encryption_kms_key_arn" {
+  default     = ""
+  description = "KMS key ARN to use for S3 encryption. If not set, the default AWS S3 key will be used."
+  type        = string
+}
+
 variable "additional_tags" {
   default     = {}
   description = "Additional tags to be added to the resources created by this module."
@@ -65,36 +71,6 @@ variable "aws_load_balancer_controller_settings" {
   type        = map(string)
 }
 
-variable "aws_partition" {
-  default     = "aws"
-  description = "AWS partition: 'aws', 'aws-cn', or 'aws-us-gov', used when constructing IRSA trust relationship policies."
-  type        = string
-}
-
-variable "calico_helm_chart_name" {
-  default     = "tigera-operator"
-  description = "The name of the Helm chart in the repository for Calico, which is installed alongside the tigera-operator."
-  type        = string
-}
-
-variable "calico_helm_chart_repository" {
-  default     = "https://stevehipwell.github.io/helm-charts/"
-  description = "The repository containing the calico helm chart. We are currently using a community provided chart, which is a fork of the official chart published by Tigera. This chart isn't as opinionated about namespaces, and should be used until this issue is resolved https://github.com/projectcalico/calico/issues/4812."
-  type        = string
-}
-
-variable "calico_helm_chart_version" {
-  default     = "1.5.0"
-  description = "Helm chart version for Calico. Defaults to \"1.0.5\". See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available version releases."
-  type        = string
-}
-
-variable "calico_settings" {
-  default     = {}
-  description = "Additional settings which will be passed to the Helm chart values. See https://github.com/stevehipwell/helm-charts/tree/master/charts/tigera-operator for available options."
-  type        = map(any)
-}
-
 variable "cert_manager_helm_chart_name" {
   default     = "cert-manager"
   description = "The name of the Helm chart in the repository for cert-manager."
@@ -138,7 +114,7 @@ variable "cluster_autoscaler_helm_chart_repository" {
 }
 
 variable "cluster_autoscaler_helm_chart_version" {
-  default     = "9.19.2"
+  default     = "9.21.0"
   description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
   type        = string
 }
@@ -155,18 +131,6 @@ variable "cluster_enabled_log_types" {
   type        = list(string)
 }
 
-variable "cluster_log_kms_key_id" {
-  default     = ""
-  description = "If a KMS Key ARN is set, this key will be used to encrypt the corresponding log group. Please be sure that the KMS Key has an appropriate key policy (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html)."
-  type        = string
-}
-
-variable "cluster_log_retention_in_days" {
-  default     = 365
-  description = "Number of days to retain log events. Defaults to 365 days."
-  type        = number
-}
-
 variable "cluster_name" {
   default     = ""
   description = "The name of your EKS cluster and associated resources. Must be 16 characters or less."
@@ -176,6 +140,18 @@ variable "cluster_name" {
     condition     = can(length(var.cluster_name) <= 16)
     error_message = "The value for variable \"cluster_name\" must be a string of 16 characters or less."
   }
+}
+
+variable "cluster_security_group_additional_rules" {
+  default     = {}
+  description = "Additional rules to add to the cluster security group. Set source_node_security_group = true inside rules to set the node_security_group as source."
+  type        = any
+}
+
+variable "cluster_security_group_id" {
+  default     = ""
+  description = "The ID of an existing security group to use for the EKS cluster. If not provided, a new security group will be created."
+  type        = string
 }
 
 variable "cluster_version" {
@@ -208,75 +184,57 @@ variable "csi_settings" {
   type        = map(any)
 }
 
-variable "disk_encryption_kms_key_id" {
+variable "create_cluster_security_group" {
+  default     = true
+  description = "Whether to create a new security group for the EKS cluster. If set to false, you must provide an existing security group via the cluster_security_group_id variable."
+  type        = bool
+}
+
+variable "create_iam_policies" {
+  default     = true
+  description = "Whether to create IAM policies for the IAM roles. If set to false, the module will default to using existing policy ARNs that must be present in the AWS account"
+  type        = bool
+}
+
+variable "create_node_security_group" {
+  default     = true
+  description = "Whether to create a new security group for the EKS nodes. If set to false, you must provide an existing security group via the node_security_group_id variable."
+  type        = bool
+}
+
+variable "disable_public_eks_endpoint" {
+  default     = false
+  description = "Whether to disable public access to the EKS control plane endpoint. If set to \"true\", additional configuration is required in order for the cluster to function properly, such as AWS PrivateLink for EC2, ECR, and S3, along with a VPN to access the EKS control plane. It is recommended to keep this setting to \"false\" unless you are familiar with this type of configuration."
+  type        = bool
+}
+
+variable "disable_public_pulsar_endpoint" {
+  default     = false
+  description = "Whether or not to make the Istio Gateway use a public facing or internal network load balancer. If set to \"true\", additional configuration is required in order to manage the cluster from the StreamNative console"
+  type        = bool
+}
+
+variable "disk_encryption_kms_key_arn" {
   default     = ""
-  description = "The KMS Key ARN to use for disk encryption."
+  description = "The KMS Key ARN to use for EBS disk encryption. If not set, the default EBS encryption key will be used."
   type        = string
 }
 
-variable "enable_aws_load_balancer_controller" {
+variable "enable_bootstrap" {
   default     = true
-  description = "Whether to enable the AWS Load Balancer Controller addon on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_calico" {
-  default     = false
-  description = "Enables the Calico networking service on the cluster. Defaults to \"false\"."
-  type        = bool
-}
-
-variable "enable_cert_manager" {
-  default     = true
-  description = "Enables the Cert-Manager addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_cluster_autoscaler" {
-  default     = true
-  description = "Enables the Cluster Autoscaler addon service on the cluster. Defaults to \"true\", and in most situations is recommened for StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_csi" {
-  default     = true
-  description = "Enables the EBS Container Storage Interface (CSI) driver on the cluster, which allows for EKS manage the lifecycle of persistant volumes in EBS."
-  type        = bool
-}
-
-variable "enable_external_secrets" {
-  default     = false
-  description = "Enables kubernetes-external-secrets addon service on the cluster. Defaults to \"false\""
-  type        = bool
-}
-
-variable "enable_external_dns" {
-  default     = true
-  description = "Enables the External DNS addon service on the cluster. Defaults to \"true\", and in most situations is required by StreamNative Cloud."
-  type        = bool
-}
-
-variable "enable_func_pool" {
-  default     = true
-  description = "Enable an additional dedicated function pool."
-  type        = bool
-}
-
-variable "enable_func_pool_monitoring" {
-  default     = true
-  description = "Enable CloudWatch monitoring for the dedicated function pool(s)."
+  description = "Enables bootstrapping of add-ons within the cluster."
   type        = bool
 }
 
 variable "enable_istio" {
   default     = true
-  description = "Enables Istio on the cluster. Set to \"true\" by default."
+  description = "Allows for enabling the bootstrap of Istio explicity in scenarios where the input \"var.enable_bootstrap\" is set to \"false\"."
   type        = bool
 }
 
-variable "enable_metrics_server" {
+variable "enable_sncloud_control_plane_access" {
   default     = true
-  description = "Enables the Kubernetes Metrics Server addon service on the cluster. Defaults to \"true\"."
+  description = "Whether to enable access to the EKS control plane endpoint. If set to \"false\", additional configuration is required in order for the cluster to function properly, such as AWS PrivateLink for EC2, ECR, and S3, along with a VPN to access the EKS control plane. It is recommended to keep this setting to \"true\" unless you are familiar with this type of configuration."
   type        = bool
 }
 
@@ -305,7 +263,7 @@ variable "external_dns_helm_chart_repository" {
 }
 
 variable "external_dns_helm_chart_version" {
-  default     = "6.5.6"
+  default     = "6.10.2"
   description = "Helm chart version for ExternalDNS. See https://hub.helm.sh/charts/bitnami/external-dns for updates."
   type        = string
 }
@@ -316,105 +274,16 @@ variable "external_dns_settings" {
   type        = map(any)
 }
 
-variable "external_secrets_helm_chart_name" {
-  default     = "kubernetes-external-secrets"
-  description = "The name of the Helm chart in the repository for kubernetes-external-secrets."
-  type        = string
-}
-
-variable "external_secrets_helm_chart_repository" {
-  default     = "https://external-secrets.github.io/kubernetes-external-secrets"
-  description = "The repository containing the kubernetes-external-secrets helm chart."
-  type        = string
-}
-
-variable "external_secrets_helm_chart_version" {
-  default     = "8.3.0"
-  description = "Helm chart version for kubernetes-external-secrets. Defaults to \"8.3.0\". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates."
-  type        = string
-}
-
-variable "external_secrets_settings" {
-  default     = {}
-  description = "Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options."
-  type        = map(any)
-}
-
-variable "func_pool_ami_id" {
-  default     = ""
-  description = "The AMI ID to use for the func pool nodes. Defaults to the latest EKS Optimized AMI provided by AWS"
-  type        = string
-}
-
-variable "func_pool_ami_is_eks_optimized" {
-  default     = true
-  description = "If the custom AMI is an EKS optimized image, ignored if ami_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre_userdata"
-  type        = bool
-}
-
-variable "func_pool_desired_size" {
-  default     = 0
-  description = "Desired number of worker nodes"
-  type        = number
-}
-
-variable "func_pool_disk_size" {
-  default     = 50
-  description = "Disk size in GiB for function worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided."
-  type        = number
-}
-
-variable "func_pool_disk_type" {
-  default     = "gp3"
-  description = "Disk type for function worker nodes. Defaults to gp3."
-  type        = string
-}
-
-variable "func_pool_instance_types" {
-  default     = ["c6i.large"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.large\"]. Terraform will only perform drift detection if a configuration value is provided."
-  type        = list(string)
-}
-
-variable "func_pool_labels" {
-  default     = {}
-  description = "Labels to apply to the function pool node group. Defaults to {}."
-  type        = map(string)
-}
-
-variable "func_pool_min_size" {
-  default     = 0
-  description = "The minimum size of the AutoScaling Group."
-  type        = number
-}
-
-variable "func_pool_max_size" {
-  default     = 5
-  description = "The maximum size of the AutoScaling Group."
-  type        = number
-}
-
-variable "func_pool_namespace" {
-  default     = "pulsar-funcs"
-  description = "The namespace where functions run."
-  type        = string
-}
-
-variable "func_pool_pre_userdata" {
-  default     = ""
-  description = "The pre-userdata script to run on the function worker nodes."
-  type        = string
-}
-
-variable "func_pool_sa_name" {
-  default     = "default"
-  description = "The service account name the functions use."
-  type        = string
-}
-
 variable "hosted_zone_id" {
+  default     = "*"
   description = "The ID of the Route53 hosted zone used by the cluster's External DNS configuration."
   type        = string
+}
+
+variable "hosted_zone_domain_name_filters" {
+  default     = []
+  description = "A list domain names of the Route53 hosted zones, used by the cluster's External DNS configuration for domain filtering."
+  type        = list(string)
 }
 
 variable "iam_path" {
@@ -465,27 +334,11 @@ variable "kiali_operator_settings" {
   type        = map(any)
 }
 
-variable "map_additional_aws_accounts" {
-  default     = []
-  description = "Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap."
-  type        = list(string)
-}
-
 variable "map_additional_iam_roles" {
   default     = []
-  description = "Additional IAM roles to add to `config-map-aws-auth` ConfigMap."
+  description = "A list of IAM role bindings to add to the aws-auth ConfigMap."
   type = list(object({
     rolearn  = string
-    username = string
-    groups   = list(string)
-  }))
-}
-
-variable "map_additional_iam_users" {
-  default     = []
-  description = "Additional IAM roles to add to `config-map-aws-auth` ConfigMap."
-  type = list(object({
-    userarn  = string
     username = string
     groups   = list(string)
   }))
@@ -515,6 +368,30 @@ variable "metrics_server_settings" {
   type        = map(any)
 }
 
+variable "migration_mode" {
+  default     = false
+  description = "Whether to enable migration mode for the cluster. This is used to migrate details from existing security groups, which have had their names and description changed in versions v18.X of the community EKS module."
+  type        = bool
+}
+
+variable "migration_mode_node_sg_name" {
+  default     = null
+  description = "The name (not ID!) of the existing security group used by worker nodes. This is required when \"migration_mode\" is set to \"true\", otherwise the parent module will attempt to set a new security group name and destroy the existin one."
+  type        = string
+}
+
+variable "node_security_group_additional_rules" {
+  default     = {}
+  description = "Additional ingress rules to add to the node security group. Set source_cluster_security_group = true inside rules to set the cluster_security_group as source"
+  type        = any
+}
+
+variable "node_security_group_id" {
+  default     = ""
+  description = "An ID of an existing security group to use for the EKS node groups. If not specified, a new security group will be created."
+  type        = string
+}
+
 variable "node_termination_handler_helm_chart_name" {
   default     = "aws-node-termination-handler"
   description = "The name of the Helm chart to use for the AWS Node Termination Handler."
@@ -541,24 +418,36 @@ variable "node_termination_handler_chart_version" {
 
 variable "node_pool_ami_id" {
   default     = ""
-  description = "The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS"
+  description = "The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS."
   type        = string
 }
 
-variable "node_pool_ami_is_eks_optimized" {
+variable "node_pool_disk_iops" {
+  default     = 3000
+  description = "The amount of provisioned IOPS for the worker node root EBS volume."
+  type        = number
+}
+
+variable "node_pool_ebs_optimized" {
   default     = true
-  description = "If the custom AMI is an EKS optimized image, ignored if ami_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre_userdata"
+  description = "If true, the launched EC2 instance(s) will be EBS-optimized. Specify this if using a custom AMI with pre-user data."
   type        = bool
 }
 
+variable "node_pool_block_device_name" {
+  default     = "/dev/nvme0n1"
+  description = "The name of the block device to use for the EKS cluster nodes."
+  type        = string
+}
+
 variable "node_pool_desired_size" {
-  default     = 1
+  default     = 0
   description = "Desired number of worker nodes in the node pool."
   type        = number
 }
 
 variable "node_pool_disk_size" {
-  default     = 50
+  default     = 100
   description = "Disk size in GiB for worker nodes in the node pool. Defaults to 50."
   type        = number
 }
@@ -570,14 +459,8 @@ variable "node_pool_disk_type" {
 }
 
 variable "node_pool_instance_types" {
-  default     = ["c6i.large"]
-  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"c6i.large\"]."
-  type        = list(string)
-}
-
-variable "extra_node_pool_instance_types" {
-  default     = []
-  description = "Set of instance types of an extra node pool. Same properties as default node pool except name and instance types."
+  default     = ["m6i.large", "m6i.xlarge", "m6i.2xlarge", "m6i.4xlarge", "m6i.8xlarge"]
+  description = "Set of instance types associated with the EKS Node Groups. Defaults to [\"m6i.large\", \"m6i.xlarge\", \"m6i.2xlarge\", \"m6i.4xlarge\", \"m6i.8xlarge\"], which will create empty node groups of each instance type to account for any workload configurable from StreamNative Cloud."
   type        = list(string)
 }
 
@@ -588,7 +471,7 @@ variable "node_pool_labels" {
 }
 
 variable "node_pool_min_size" {
-  default     = 1
+  default     = 0
   description = "The minimum size of the node pool AutoScaling group."
   type        = number
 }
@@ -602,6 +485,18 @@ variable "node_pool_pre_userdata" {
   default     = ""
   description = "The user data to apply to the worker nodes in the node pool. This is applied before the bootstrap.sh script."
   type        = string
+}
+
+variable "node_pool_taints" {
+  default     = {}
+  description = "A list of taints in map format to apply to the node pool."
+  type        = any
+}
+
+variable "node_pool_tags" {
+  default     = {}
+  description = "A map of tags to add to the node groups and supporting resources."
+  type        = map(string)
 }
 
 variable "permissions_boundary_arn" {
@@ -629,27 +524,81 @@ variable "region" {
 }
 
 variable "service_domain" {
-  default     = null
-  description = "The DNS domain for external service endpoints. This must be set when enabling Istio or else the deployment will fail."
+  default     = ""
+  description = "When Istio is enabled, the FQDN needed specifically for Istio's authorization policies."
   type        = string
 }
 
 variable "sncloud_services_iam_policy_arn" {
   default     = ""
-  description = "The IAM policy ARN to be used for all StreamNative Cloud Services that need to interact with AWS services external to EKS. This policy is typically created by the \"modules/managed-cloud\" sub-module in this repository, as a seperate customer driven process for managing StreamNative's Vendor Access into AWS. If no policy ARN is provided, the module will generate the policies needed by each cluster service we install and expects that the caller identity has appropriate IAM permissions that allow \"iam:CreatePolicy\" action. Otherwise the module will fail to run properly. Depends upon use"
+  description = "The IAM policy ARN to be used for all StreamNative Cloud Services that need to interact with AWS services external to EKS. This policy is typically created by StreamNative's \"terraform-managed-cloud\" module, as a seperate customer driven process for managing StreamNative's Vendor Access into AWS. If no policy ARN is provided, the module will default to the expected named policy of \"StreamNativeCloudRuntimePolicy\". This variable allows for flexibility in the event that the policy name changes, or if a custom policy provided by the customer is preferred."
   type        = string
 }
 
 variable "sncloud_services_lb_policy_arn" {
   default     = ""
-  description = "A custom IAM policy ARN for LB load balancer controller. If not specified, and use_runt"
+  description = "A custom IAM policy ARN for LB load balancer controller. This policy is typically created by StreamNative's \"terraform-managed-cloud\" module, as a seperate customer driven process for managing StreamNative's Vendor Access into AWS. If no policy ARN is provided, the module will default to the expected named policy of \"StreamNativeCloudLBPolicy\". This variable allows for flexibility in the event that the policy name changes, or if a custom policy provided by the customer is preferred."
   type        = string
 }
 
 variable "use_runtime_policy" {
   default     = false
-  description = "Indicates to use the runtime policy and attach a predefined policies as opposed to create roles. Currently defaults to false"
+  description = "Legacy variable, will be deprecated in future versions. The preference of this module is to have the parent EKS module create and manage the IAM role. However some older configurations may have had the cluster IAM role managed seperately, and this variable allows for backwards compatibility."
   type        = bool
+}
+
+variable "velero_backup_schedule" {
+  default     = "0 5 * * *"
+  description = "The scheduled time for Velero to perform backups. Written in cron expression, defaults to \"0 5 * * *\" or \"at 5:00am every day\""
+  type        = string
+}
+
+variable "velero_excluded_namespaces" {
+  default     = ["kube-system", "default", "operators", "olm"]
+  description = "A comma-separated list of namespaces to exclude from Velero backups. Defaults are set to [\"default\", \"kube-system\", \"operators\", \"olm\"]."
+  type        = list(string)
+}
+
+variable "velero_helm_chart_name" {
+  default     = "velero"
+  description = "The name of the Helm chart to use for Velero"
+  type        = string
+}
+
+variable "velero_helm_chart_repository" {
+  default     = "https://vmware-tanzu.github.io/helm-charts"
+  description = "The repository containing the Helm chart to use for velero"
+  type        = string
+}
+
+variable "velero_helm_chart_version" {
+  default     = "2.31.8"
+  description = "The version of the Helm chart to use for Velero. The current version can be found in github: https://github.com/vmware-tanzu/helm-charts/tree/main/charts/velero"
+  type        = string
+}
+
+variable "velero_namespace" {
+  default     = "velero"
+  description = "The kubernetes namespace where Velero should be deployed."
+  type        = string
+}
+
+variable "velero_plugin_version" {
+  default     = "v1.5.1"
+  description = "Which version of the velero-plugin-for-aws to use."
+  type        = string
+}
+
+variable "velero_policy_arn" {
+  default     = null
+  description = "The arn for the IAM policy used by the Velero backup addon service. For enhanced security, we allow for IAM policies used by cluster addon services to be created seperately from this module. This is only required if the input \"create_iam_policy_for_velero\" is set to \"false\". If created elsewhere, the expected name of the policy is \"StreamNativeCloudVeleroBackupPolicy\"."
+  type        = string
+}
+
+variable "velero_settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values for Velero. See https://github.com/vmware-tanzu/helm-charts/tree/main/charts/velero for available options"
+  type        = map(string)
 }
 
 variable "vpc_id" {
@@ -659,21 +608,5 @@ variable "vpc_id" {
   validation {
     condition     = length(var.vpc_id) > 4 && substr(var.vpc_id, 0, 4) == "vpc-"
     error_message = "The value for variable \"vpc_id\" must be a valid VPC id, starting with \"vpc-\"."
-  }
-}
-
-variable "wait_for_cluster_timeout" {
-  default     = 0
-  description = "Time in seconds to wait for the newly provisioned EKS cluster's API/healthcheck endpoint to return healthy, before applying the aws-auth configmap. Defaults to 300 seconds in the parent module \"terraform-aws-modules/eks/aws\", which is often too short. Increase to at least 900 seconds, if needed. See also https://github.com/terraform-aws-modules/terraform-aws-eks/pull/1420."
-  type        = number
-}
-
-variable "istio_network_loadbancer" {
-  type    = string
-  default = "internet_facing"
-
-  validation {
-    condition     = contains(["internet_facing", "internal_only"], var.istio_network_loadbancer)
-    error_message = "Allowed values for input_parameter are \"internet_facing\" or \"internal_only\"."
   }
 }

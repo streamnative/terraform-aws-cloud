@@ -34,8 +34,7 @@ locals {
 }
 
 module "istio" {
-  count = var.enable_istio ? 1 : 0
-
+  count  = var.enable_bootstrap || var.enable_istio ? 1 : 0
   source = "github.com/streamnative/terraform-helm-charts//modules/istio-operator?ref=v0.8.4"
 
   enable_istio_operator = true
@@ -56,7 +55,7 @@ module "istio" {
   }
   istio_settings = var.istio_settings
 
-  istio_ingress_gateway_service_annotations = lookup(local.lb_annotations, var.istio_network_loadbancer, local.lb_annotations.internet_facing)
+  istio_ingress_gateway_service_annotations = var.disable_public_pulsar_endpoint ? local.lb_annotations.internal_only : local.lb_annotations.internet_facing
   kiali_gateway_hosts                       = ["kiali.${var.service_domain}"]
   kiali_gateway_tls_secret                  = "istio-ingressgateway-tls"
   kiali_operator_settings                   = var.kiali_operator_settings

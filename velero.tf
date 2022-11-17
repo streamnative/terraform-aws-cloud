@@ -17,21 +17,31 @@
 # under the License.
 #
 
-data "aws_caller_identity" "current" {}
-
 resource "aws_s3_bucket" "velero" {
-  acl    = "private"
-  bucket = format("%s-velero-backup-%s", var.cluster_name, var.region)
+  bucket = format("%s-cluster-backup", var.cluster_name)
+  tags   = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "aws:kms"
-      }
+  lifecycle {
+    ignore_changes = [
+      bucket,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_acl" "velero" {
+  bucket = aws_s3_bucket.velero.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
+  bucket = aws_s3_bucket.velero.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = local.s3_kms_key
+      sse_algorithm     = "aws:kms"
     }
   }
-
-  tags = merge({ "Vendor" = "StreamNative", "Attributes" = "backup", "Name" = "velero-backups" }, var.tags)
 }
 
 data "aws_iam_policy_document" "velero" {
@@ -72,12 +82,12 @@ data "aws_iam_policy_document" "velero_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, data.aws_caller_identity.current.account_id, var.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
       test     = "StringLike"
       values   = [format("system:serviceaccount:%s:%s", var.velero_namespace, "velero")]
-      variable = format("%s:sub", var.oidc_issuer)
+      variable = format("%s:sub", local.oidc_issuer)
     }
   }
 }
@@ -86,27 +96,27 @@ resource "aws_iam_role" "velero" {
   name                 = format("%s-velero-backup-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA velero on StreamNative Cloud EKS cluster %s", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.velero_sts.json
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.tags)
+  tags                 = local.tags
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
 }
 
 resource "aws_iam_policy" "velero" {
-  count       = var.create_iam_policy_for_velero ? 1 : 0
+  count       = var.create_iam_policies ? 1 : 0
   name        = format("%s-VeleroBackupPolicy", var.cluster_name)
   description = "Policy that defines the permissions for the Velero backup addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.velero.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.tags)
+  tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "velero" {
-  count      = var.create_iam_policy_for_velero ? 1 : 0
-  policy_arn = var.create_iam_policy_for_velero ? aws_iam_policy.velero[0].arn : var.velero_policy_arn
+  policy_arn = var.create_iam_policies ? aws_iam_policy.velero[0].arn : local.default_service_policy_arn
   role       = aws_iam_role.velero.name
 }
 
 resource "helm_release" "velero" {
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.velero_helm_chart_name
   cleanup_on_fail = true
@@ -118,51 +128,65 @@ resource "helm_release" "velero" {
   values = [
     yamlencode(
       {
-        "credentials" : {
-          "useSecret" : "false"
-        },
-        "configuration" : {
-          "provider" : "aws",
-          "backupStorageLocation" : {
-            "name" : "aws"
-            "bucket" : "${aws_s3_bucket.velero.id}"
-            "region" : var.region
+        credentials = {
+          useSecret = "false"
+        }
+        configuration = {
+          provider = "aws"
+          backupStorageLocation = {
+            name     = "aws"
+            provider = "velero.io/aws"
+            bucket   = aws_s3_bucket.velero.id
+            default  = true
+            config = {
+              region   = var.region
+              kmsKeyId = local.s3_kms_key
+            }
           }
-        },
-        "initContainers" : [
+          volumeSnapshotLocation = {
+            name     = "aws"
+            provider = "velero.io/aws"
+            config = {
+              region = var.region
+            }
+          }
+          logLevel = "debug"
+        }
+        initContainers = [
           {
-            "name" : "velero-plugin-for-aws",
-            "image" : "velero/velero-plugin-for-aws:${var.velero_plugin_version}",
-            "imagePullPolicy" : "IfNotPresent",
-            "volumeMounts" : [
+            name            = "velero-plugin-for-aws",
+            image           = "velero/velero-plugin-for-aws:${var.velero_plugin_version}"
+            imagePullPolicy = "IfNotPresent"
+            volumeMounts = [
               {
-                "mountPath" : "/target",
-                "name" : "plugins"
+                mountPath = "/target"
+                name      = "plugins"
               }
             ]
           }
-        ],
-        "podAnnotations" : {
-          "eks.amazonaws.com/role-arn" : "${aws_iam_role.velero.arn}"
-        },
-        "podSecurityContext" : {
-          "fsGroup" : 65534
-        },
-        "serviceAccount" : {
-          "server" : {
-            "name" : "${"velero"}"
-            "annotations" : {
-              "eks.amazonaws.com/role-arn" : "${aws_iam_role.velero.arn}"
+        ]
+        podAnnotations = {
+          "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
+        }
+        podSecurityContext = {
+          fsGroup = 1337
+        }
+        serviceAccount = {
+          server = {
+            create = true
+            name   = "velero"
+            annotations = {
+              "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
             }
-          },
-        },
-        "schedules" : {
-          "cluster-wide-backup" : {
-            "schedule" : "${var.velero_backup_schedule}"
-            "template" : {
-              "excludedNamespaces" : "${var.velero_excluded_namespaces}"
-              "storageLocation" : "aws"
-              "volumeSnapshotLocations" : ["aws"]
+          }
+        }
+        schedules = {
+          cluster-wide-backup = {
+            schedule = var.velero_backup_schedule
+            template = {
+              excludedNamespaces      = var.velero_excluded_namespaces
+              storageLocation         = "aws"
+              volumeSnapshotLocations = ["aws"]
             }
           }
         }
@@ -176,5 +200,16 @@ resource "helm_release" "velero" {
       name  = set.key
       value = set.value
     }
+  }
+
+  depends_on = [
+    kubernetes_namespace.velero
+  ]
+}
+
+
+resource "kubernetes_namespace" "velero" {
+  metadata {
+    name = var.velero_namespace
   }
 }

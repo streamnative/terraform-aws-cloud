@@ -16,14 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-output "cloudwatch_log_group_arn" {
-  value       = module.eks.cloudwatch_log_group_arn
-  description = "Arn of cloudwatch log group created"
-}
 
 output "eks_cluster_arn" {
   value       = module.eks.cluster_arn
   description = "The ARN for the EKS cluster created by this module"
+}
+
+output "eks_cluster_endpoint" {
+  value       = module.eks.cluster_endpoint
+  description = "The endpoint for the EKS cluster created by this module"
 }
 
 output "eks_cluster_id" {
@@ -46,6 +47,11 @@ output "eks_cluster_identity_oidc_issuer_string" {
   description = "A formatted string containing the prefix for the OIDC issuer created by this module. Same as \"cluster_oidc_issuer_url\", but with \"https://\" stripped from the name. This output is typically used in other StreamNative modules that request the \"oidc_issuer\" input."
 }
 
+output "eks_cluster_platform_version" {
+  value       = module.eks.cluster_platform_version
+  description = "The platform version for the EKS cluster created by this module"
+}
+
 output "eks_cluster_primary_security_group_id" {
   value       = module.eks.cluster_primary_security_group_id
   description = "The id of the primary security group created by the EKS service itself, not by this module. This is labeled \"Cluster Security Group\" in the EKS console."
@@ -56,22 +62,47 @@ output "eks_cluster_secondary_security_group_id" {
   description = "The id of the secondary security group created by this module. This is labled \"Additional Security Groups\" in the EKS console."
 }
 
-output "node_groups" {
-  value       = module.eks.node_groups
-  description = "Outputs from EKS node groups. Map of maps, keyed by var.node_groups keys"
-}
-
-output "worker_iam_role_arn" {
-  value       = module.eks.worker_iam_role_arn
+output "eks_node_group_iam_role_arn" {
+  value       = aws_iam_role.ng.arn
   description = "The IAM Role ARN used by the Worker configuration"
 }
 
-output "worker_security_group_id" {
-  value       = module.eks.worker_security_group_id
+output "eks_node_group_security_group_id" {
+  value       = module.eks.node_security_group_id
   description = "Security group ID attached to the EKS node groups"
 }
 
-output "worker_https_ingress_security_group_rule" {
-  value       = module.eks.security_group_rule_cluster_https_worker_ingress
-  description = "Security group rule responsible for allowing pods to communicate with the EKS cluster API."
+output "eks_node_groups" {
+  value       = module.eks.eks_managed_node_groups
+  description = "Map of all attributes of the EKS node groups created by this module"
+}
+
+output "tiered_storage_s3_bucket_arn" {
+  value       = aws_s3_bucket.tiered_storage.arn
+  description = "The ARN for the tiered storage S3 bucket created by this module"
+}
+
+output "velero_s3_bucket_arn" {
+  value       = aws_s3_bucket.velero.arn
+  description = "The ARN for the Velero S3 bucket created by this module"
+}
+
+output "cert_manager_arn" {
+  value = aws_iam_role.cert_manager.arn
+  description = "The ARN for Cert Manager"
+}
+
+output "external_dns_arn" {
+  value = aws_iam_role.external_dns.arn
+  description = "The ARN for External DNS"
+}
+
+output "aws_loadbalancer_arn" {
+  value = aws_iam_role.aws_load_balancer_controller.arn
+  description = "ARN for loadbalancer"
+}
+
+output "eks_cluster_certificate_authority_data" {
+  value = module.eks.cluster_certificate_authority_data
+  description = "Base64 encoded certificate data required to communicate with the cluster" 
 }

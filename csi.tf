@@ -17,14 +17,6 @@
 # under the License.
 #
 
-data "aws_kms_key" "ebs_default" {
-  key_id = "alias/aws/ebs"
-}
-
-locals {
-  kms_key = var.disk_encryption_kms_key_id == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_id
-}
-
 data "aws_iam_policy_document" "csi" {
   statement {
     actions = [
@@ -47,8 +39,8 @@ data "aws_iam_policy_document" "csi" {
       "ec2:CreateTags"
     ]
     resources = [
-      "arn:${var.aws_partition}:ec2:*:*:volume/*",
-      "arn:${var.aws_partition}:ec2:*:*:snapshot/*"
+      "arn:${local.aws_partition}:ec2:*:*:volume/*",
+      "arn:${local.aws_partition}:ec2:*:*:snapshot/*"
     ]
     effect = "Allow"
     condition {
@@ -62,8 +54,8 @@ data "aws_iam_policy_document" "csi" {
       "ec2:DeleteTags"
     ]
     resources = [
-      "arn:${var.aws_partition}:ec2:*:*:volume/*",
-      "arn:${var.aws_partition}:ec2:*:*:snapshot/*"
+      "arn:${local.aws_partition}:ec2:*:*:volume/*",
+      "arn:${local.aws_partition}:ec2:*:*:snapshot/*"
     ]
     effect = "Allow"
   }
@@ -133,7 +125,7 @@ data "aws_iam_policy_document" "csi" {
       "kms:ListGrants",
       "kms:RevokeGrant",
     ]
-    resources = [local.kms_key]
+    resources = [local.ebs_kms_key]
     effect    = "Allow"
     condition {
       test     = "Bool"
@@ -149,7 +141,7 @@ data "aws_iam_policy_document" "csi" {
       "kms:GenerateDataKey*",
       "kms:DescribeKey"
     ]
-    resources = [local.kms_key]
+    resources = [local.ebs_kms_key]
     effect    = "Allow"
   }
 }
@@ -162,7 +154,7 @@ data "aws_iam_policy_document" "csi_sts" {
     effect = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", var.aws_partition, local.account_id, local.oidc_issuer)]
+      identifiers = [format("arn:%s:iam::%s:oidc-provider/%s", local.aws_partition, local.account_id, local.oidc_issuer)]
     }
     condition {
       test     = "StringEquals"
@@ -178,38 +170,35 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
-  count                = var.enable_csi ? 1 : 0
   name                 = format("%s-csi-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
-  tags                 = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags                 = local.tags
 }
 
 resource "aws_iam_policy" "csi" {
-  count       = local.create_csi_policy ? 1 : 0
+  count       = var.create_iam_policies ? 1 : 0
   name        = format("%s-CsiPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.csi.json
-  tags        = merge({ "Vendor" = "StreamNative" }, var.additional_tags)
+  tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "csi_managed" {
-  count      = var.enable_csi ? 1 : 0
-  policy_arn = "arn:${var.aws_partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-  role       = aws_iam_role.csi[0].name
+  policy_arn = "arn:${local.aws_partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.csi.name
 }
 
 resource "aws_iam_role_policy_attachment" "csi" {
-  count      = var.enable_csi ? 1 : 0
-  policy_arn = local.sn_serv_policy_arn != "" ? local.sn_serv_policy_arn : aws_iam_policy.csi[0].arn
-  role       = aws_iam_role.csi[0].name
+  policy_arn = var.create_iam_policies ? aws_iam_policy.csi[0].arn : local.default_service_policy_arn
+  role       = aws_iam_role.csi.name
 }
 
 resource "helm_release" "csi" {
-  count           = var.enable_csi ? 1 : 0
+  count           = var.enable_bootstrap ? 1 : 0
   atomic          = true
   chart           = var.csi_helm_chart_name
   cleanup_on_fail = true
@@ -227,7 +216,7 @@ resource "helm_release" "csi" {
         create = true
         name   = "ebs-csi-controller-sa"
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.csi[0].arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.csi.arn
         }
       }
     }
@@ -244,34 +233,4 @@ resource "helm_release" "csi" {
   depends_on = [
     module.eks
   ]
-}
-
-resource "kubernetes_storage_class" "sn_default" {
-  metadata {
-    name = "sn-default"
-  }
-  storage_provisioner = var.enable_csi ? "ebs.csi.aws.com" : "kubernetes.io/aws-ebs"
-  parameters = {
-    type      = "gp3"
-    encrypted = "true"
-    kmsKeyId  = local.kms_key
-  }
-  reclaim_policy         = "Delete"
-  allow_volume_expansion = true
-  volume_binding_mode    = "WaitForFirstConsumer"
-}
-
-resource "kubernetes_storage_class" "sn_ssd" {
-  metadata {
-    name = "sn-ssd"
-  }
-  storage_provisioner = "ebs.csi.aws.com"
-  parameters = {
-    type      = "gp3"
-    encrypted = "true"
-    kmsKeyId  = local.kms_key
-  }
-  reclaim_policy         = "Delete"
-  allow_volume_expansion = true
-  volume_binding_mode    = "WaitForFirstConsumer"
 }
