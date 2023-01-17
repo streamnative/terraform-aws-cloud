@@ -102,7 +102,6 @@ locals {
           subnet_ids     = [data.aws_subnet.private_subnets[i].id]
           instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          desired_size   = split(".", instance_type)[1] == "xlarge" ? 1 : 0
           labels         = merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") })
         }
       ]
