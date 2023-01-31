@@ -63,6 +63,7 @@ locals {
   }
 
   node_group_defaults = {
+    create_security_group = false
     ami_id = var.node_pool_ami_id
     block_device_mappings = {
       xvda = {
@@ -162,7 +163,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.30.2"
+  version = "18.30.2" #"19.6.0"
 
   ######################################################################################################
   ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
