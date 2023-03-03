@@ -88,7 +88,7 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
 locals {
   default_sources = ["service", "ingress"]
   istio_sources   = ["istio-gateway", "istio-virtualservice"]
-  sources         = var.enable_istio || var.enable_bootstrap ? concat(local.istio_sources, local.default_sources) : local.default_sources
+  sources         = var.enable_istio && var.enable_bootstrap ? concat(local.istio_sources, local.default_sources) : local.default_sources
 }
 
 resource "helm_release" "external_dns" {
