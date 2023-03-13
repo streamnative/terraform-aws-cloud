@@ -581,19 +581,19 @@ variable "extra_node_pool_instance_types" {
   type        = list(string)
 }
 
-variable "extra_node_pool_instance_max_size" {
+variable "extra_node_pool_max_size" {
   default     = 0
   description = "The max size of the node pool AutoScaling group."
   type        = number
 }
 
-variable "extra_node_pool_instance_min_size" {
+variable "extra_node_pool_min_size" {
   default     = 0
   description = "The minimum size of the node pool AutoScaling group."
   type        = number
 }
 
-variable "extra_node_pool_instance_desired_size" {
+variable "extra_node_pool_desired_size" {
   default     = 0
   description = "The desired size of the node pool AutoScaling group."
   type        = number
