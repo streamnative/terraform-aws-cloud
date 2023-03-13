@@ -581,6 +581,24 @@ variable "extra_node_pool_instance_types" {
   type        = list(string)
 }
 
+variable "extra_node_pool_instance_max_size" {
+  default     = 0
+  description = "The max size of the node pool AutoScaling group."
+  type        = number
+}
+
+variable "extra_node_pool_instance_min_size" {
+  default     = 0
+  description = "The minimum size of the node pool AutoScaling group."
+  type        = number
+}
+
+variable "extra_node_pool_instance_desired_size" {
+  default     = 0
+  description = "The desired size of the node pool AutoScaling group."
+  type        = number
+}
+
 variable "node_pool_labels" {
   default     = {}
   description = "A map of kubernetes labels to add to the node pool."
