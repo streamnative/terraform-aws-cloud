@@ -369,6 +369,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_external_secrets_helm_chart_repository"></a> [external\_secrets\_helm\_chart\_repository](#input\_external\_secrets\_helm\_chart\_repository) | The repository containing the kubernetes-external-secrets helm chart. | `string` | `"https://external-secrets.github.io/kubernetes-external-secrets"` | no |
 | <a name="input_external_secrets_helm_chart_version"></a> [external\_secrets\_helm\_chart\_version](#input\_external\_secrets\_helm\_chart\_version) | Helm chart version for kubernetes-external-secrets. Defaults to "8.3.0". See https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for updates. | `string` | `"8.3.0"` | no |
 | <a name="input_external_secrets_settings"></a> [external\_secrets\_settings](#input\_external\_secrets\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options. | `map(any)` | `{}` | no |
+| <a name="input_extra_node_pool_instance_types"></a> [extra\_node\_pool\_instance\_types](#input\_extra\_node\_pool\_instance\_types) | Set of instance types of an extra node pool. Same properties as default node pool except name and instance types. | `list(string)` | `[]` | no |
 | <a name="input_func_pool_ami_id"></a> [func\_pool\_ami\_id](#input\_func\_pool\_ami\_id) | The AMI ID to use for the func pool nodes. Defaults to the latest EKS Optimized AMI provided by AWS | `string` | `""` | no |
 | <a name="input_func_pool_ami_is_eks_optimized"></a> [func\_pool\_ami\_is\_eks\_optimized](#input\_func\_pool\_ami\_is\_eks\_optimized) | If the custom AMI is an EKS optimized image, ignored if ami\_id is not set. If this is true then bootstrap.sh is called automatically (max pod logic needs to be manually set), if this is false you need to provide all the node configuration in pre\_userdata | `bool` | `true` | no |
 | <a name="input_func_pool_desired_size"></a> [func\_pool\_desired\_size](#input\_func\_pool\_desired\_size) | Desired number of worker nodes | `number` | `0` | no |
@@ -404,7 +405,6 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `50` | no |
 | <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |
 | <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Group. Defaults to ["c6i.large"]. | `list(string)` | <pre>[<br>  "c6i.large"<br>]</pre> | no |
-| <a name="input_extra_node_pool_instance_types"></a> [extra\_node\_pool\_instance\_types](#input\_extra\_node\_pool\_instance\_types) | Set of instance types of an extra node pool. Same properties as default node pool except name and instance types. Defaults to []. | `list(string)` | <pre>[]</pre> | no |
 | <a name="input_node_pool_labels"></a> [node\_pool\_labels](#input\_node\_pool\_labels) | A map of kubernetes labels to add to the node pool. | `map(string)` | `{}` | no |
 | <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group. | `number` | n/a | yes |
 | <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | `1` | no |
@@ -428,7 +428,11 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 
 | Name | Description |
 |------|-------------|
+| <a name="output_aws_loadbalancer_arn"></a> [aws\_loadbalancer\_arn](#output\_aws\_loadbalancer\_arn) | ARN for loadbalancer |
+| <a name="output_cert_manager_arn"></a> [cert\_manager\_arn](#output\_cert\_manager\_arn) | The ARN for Cert Manager |
 | <a name="output_cloudwatch_log_group_arn"></a> [cloudwatch\_log\_group\_arn](#output\_cloudwatch\_log\_group\_arn) | Arn of cloudwatch log group created |
+| <a name="output_cluster_autoscaler_arn"></a> [cluster\_autoscaler\_arn](#output\_cluster\_autoscaler\_arn) | ARN for Cluster Autoscaler |
+| <a name="output_csi_arn"></a> [csi\_arn](#output\_csi\_arn) | ARN for csi |
 | <a name="output_eks_cluster_arn"></a> [eks\_cluster\_arn](#output\_eks\_cluster\_arn) | The ARN for the EKS cluster created by this module |
 | <a name="output_eks_cluster_id"></a> [eks\_cluster\_id](#output\_eks\_cluster\_id) | The id/name of the EKS cluster created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_arn"></a> [eks\_cluster\_identity\_oidc\_issuer\_arn](#output\_eks\_cluster\_identity\_oidc\_issuer\_arn) | The ARN for the OIDC issuer created by this module |
@@ -436,6 +440,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
 | <a name="output_eks_cluster_primary_security_group_id"></a> [eks\_cluster\_primary\_security\_group\_id](#output\_eks\_cluster\_primary\_security\_group\_id) | The id of the primary security group created by the EKS service itself, not by this module. This is labeled "Cluster Security Group" in the EKS console. |
 | <a name="output_eks_cluster_secondary_security_group_id"></a> [eks\_cluster\_secondary\_security\_group\_id](#output\_eks\_cluster\_secondary\_security\_group\_id) | The id of the secondary security group created by this module. This is labled "Additional Security Groups" in the EKS console. |
+| <a name="output_external_dns_arn"></a> [external\_dns\_arn](#output\_external\_dns\_arn) | The ARN for External DNS |
 | <a name="output_node_groups"></a> [node\_groups](#output\_node\_groups) | Outputs from EKS node groups. Map of maps, keyed by var.node\_groups keys |
 | <a name="output_worker_https_ingress_security_group_rule"></a> [worker\_https\_ingress\_security\_group\_rule](#output\_worker\_https\_ingress\_security\_group\_rule) | Security group rule responsible for allowing pods to communicate with the EKS cluster API. |
 | <a name="output_worker_iam_role_arn"></a> [worker\_iam\_role\_arn](#output\_worker\_iam\_role\_arn) | The IAM Role ARN used by the Worker configuration |
