@@ -431,7 +431,11 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 
 | Name | Description |
 |------|-------------|
+| <a name="output_aws_loadbalancer_arn"></a> [aws\_loadbalancer\_arn](#output\_aws\_loadbalancer\_arn) | ARN for loadbalancer |
+| <a name="output_cert_manager_arn"></a> [cert\_manager\_arn](#output\_cert\_manager\_arn) | The ARN for Cert Manager |
 | <a name="output_cloudwatch_log_group_arn"></a> [cloudwatch\_log\_group\_arn](#output\_cloudwatch\_log\_group\_arn) | Arn of cloudwatch log group created |
+| <a name="output_cluster_autoscaler_arn"></a> [cluster\_autoscaler\_arn](#output\_cluster\_autoscaler\_arn) | ARN for Cluster Autoscaler |
+| <a name="output_csi_arn"></a> [csi\_arn](#output\_csi\_arn) | ARN for csi |
 | <a name="output_eks_cluster_arn"></a> [eks\_cluster\_arn](#output\_eks\_cluster\_arn) | The ARN for the EKS cluster created by this module |
 | <a name="output_eks_cluster_id"></a> [eks\_cluster\_id](#output\_eks\_cluster\_id) | The id/name of the EKS cluster created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_arn"></a> [eks\_cluster\_identity\_oidc\_issuer\_arn](#output\_eks\_cluster\_identity\_oidc\_issuer\_arn) | The ARN for the OIDC issuer created by this module |
@@ -439,6 +443,7 @@ You can also disable `kubernetes-external-secrets` by setting the input `enable-
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
 | <a name="output_eks_cluster_primary_security_group_id"></a> [eks\_cluster\_primary\_security\_group\_id](#output\_eks\_cluster\_primary\_security\_group\_id) | The id of the primary security group created by the EKS service itself, not by this module. This is labeled "Cluster Security Group" in the EKS console. |
 | <a name="output_eks_cluster_secondary_security_group_id"></a> [eks\_cluster\_secondary\_security\_group\_id](#output\_eks\_cluster\_secondary\_security\_group\_id) | The id of the secondary security group created by this module. This is labled "Additional Security Groups" in the EKS console. |
+| <a name="output_external_dns_arn"></a> [external\_dns\_arn](#output\_external\_dns\_arn) | The ARN for External DNS |
 | <a name="output_node_groups"></a> [node\_groups](#output\_node\_groups) | Outputs from EKS node groups. Map of maps, keyed by var.node\_groups keys |
 | <a name="output_worker_https_ingress_security_group_rule"></a> [worker\_https\_ingress\_security\_group\_rule](#output\_worker\_https\_ingress\_security\_group\_rule) | Security group rule responsible for allowing pods to communicate with the EKS cluster API. |
 | <a name="output_worker_iam_role_arn"></a> [worker\_iam\_role\_arn](#output\_worker\_iam\_role\_arn) | The IAM Role ARN used by the Worker configuration |

@@ -75,3 +75,28 @@ output "worker_https_ingress_security_group_rule" {
   value       = module.eks.security_group_rule_cluster_https_worker_ingress
   description = "Security group rule responsible for allowing pods to communicate with the EKS cluster API."
 }
+
+output "cert_manager_arn" {
+  value = var.enable_cert_manager ? aws_iam_role.cert_manager[0].arn : ""
+  description = "The ARN for Cert Manager"
+}
+
+output "external_dns_arn" {
+  value = var.enable_external_dns ? aws_iam_role.external_dns[0].arn : ""
+  description = "The ARN for External DNS"
+}
+
+output "aws_loadbalancer_arn" {
+  value = var.enable_aws_load_balancer_controller ? aws_iam_role.aws_load_balancer_controller[0].arn : ""
+  description = "ARN for loadbalancer"
+}
+
+output "csi_arn" {
+  value = var.enable_csi ? aws_iam_role.csi[0].arn : ""
+  description = "ARN for csi"
+}
+
+output "cluster_autoscaler_arn" {
+  value = var.enable_cluster_autoscaler ? aws_iam_role.cluster_autoscaler[0].arn : ""
+  description = "ARN for Cluster Autoscaler"
+}
