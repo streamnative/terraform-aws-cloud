@@ -25,7 +25,7 @@ resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags                 = merge({ "Vendor" = "StreamNative", Name = format("%s-vpc", var.vpc_name) }, var.tags)
+  tags                 = merge({ "Vendor" = "StreamNative", Name = format("%s-vpc", var.vpc_name) }, var.tags, var.additional_tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -38,7 +38,7 @@ resource "aws_subnet" "public" {
   cidr_block              = cidrsubnet(var.vpc_cidr, var.public_subnet_newbits, var.public_subnet_start + count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = var.public_subnet_auto_ip
-  tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags)
+  tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags, var.additional_tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -50,7 +50,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.private_subnet_newbits, var.private_subnet_start + count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
-  tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
+  tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags, var.additional_tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -59,7 +59,7 @@ resource "aws_subnet" "private" {
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-igw", var.vpc_name) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-igw", var.vpc_name) }, var.tags, var.additional_tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -69,14 +69,14 @@ resource "aws_internet_gateway" "gw" {
 resource "aws_eip" "eip" {
   count = var.num_azs
   vpc   = true
-  tags  = merge({ "Vendor" = "StreamNative", Name = format("%s-eip", var.vpc_name) }, var.tags)
+  tags  = merge({ "Vendor" = "StreamNative", Name = format("%s-eip", var.vpc_name) }, var.tags, var.additional_tags)
 }
 
 resource "aws_nat_gateway" "nat_gw" {
   count         = var.num_azs
   allocation_id = aws_eip.eip[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
-  tags          = merge({ "Vendor" = "StreamNative", Name = format("%s-ngw-%s", var.vpc_name, count.index) }, var.tags)
+  tags          = merge({ "Vendor" = "StreamNative", Name = format("%s-ngw-%s", var.vpc_name, count.index) }, var.tags, var.additional_tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -86,7 +86,7 @@ resource "aws_nat_gateway" "nat_gw" {
 resource "aws_route_table" "public_route_table" {
   count  = var.num_azs
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-public-rtb-%s", var.vpc_name, count.index) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-public-rtb-%s", var.vpc_name, count.index) }, var.tags, var.additional_tags)
   lifecycle {
     ignore_changes = [tags]
   }
@@ -108,7 +108,7 @@ resource "aws_route_table_association" "public_assoc" {
 resource "aws_route_table" "private_route_table" {
   count  = var.num_azs
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }, var.tags, var.additional_tags)
 
   lifecycle {
     ignore_changes = [tags]

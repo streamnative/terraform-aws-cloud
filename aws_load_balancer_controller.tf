@@ -260,8 +260,8 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
 }
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
-  name                 = format("%s-lbc-role", module.eks.cluster_id)
-  description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
+  name                 = format("%s-lbc-role", module.eks.cluster_name)
+  description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
@@ -270,7 +270,7 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
   count       = var.create_iam_policies ? 1 : 0
-  name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
+  name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_name)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.aws_load_balancer_controller.json
@@ -293,7 +293,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   timeout         = 300
   version         = var.aws_load_balancer_controller_helm_chart_version
   values = [yamlencode({
-    clusterName = module.eks.cluster_id
+    clusterName = module.eks.cluster_name
     defaultTags = merge(var.additional_tags, {
       "Vendor" = "StreamNative"
     })

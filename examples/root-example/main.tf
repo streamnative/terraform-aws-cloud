@@ -30,11 +30,11 @@ variable "region" {
 ### These data sources are required by the Kubernetes and Helm providers in order to connect to the newly provisioned cluster
 #######
 data "aws_eks_cluster" "cluster" {
-  name = module.sn_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_name
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.sn_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_name
 }
 
 provider "aws" {

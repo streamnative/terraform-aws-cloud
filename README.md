@@ -169,7 +169,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 18.30.2 |
+| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 19.10.0 |
 | <a name="module_istio"></a> [istio](#module\_istio) | github.com/streamnative/terraform-helm-charts//modules/istio-operator | v0.8.4 |
 | <a name="module_vpc_tags"></a> [vpc\_tags](#module\_vpc\_tags) | ./modules/eks-vpc-tags | n/a |
 
@@ -350,9 +350,14 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 
 | Name | Description |
 |------|-------------|
+| <a name="output_aws_loadbalancer_arn"></a> [aws\_loadbalancer\_arn](#output\_aws\_loadbalancer\_arn) | ARN for loadbalancer |
+| <a name="output_cert_manager_arn"></a> [cert\_manager\_arn](#output\_cert\_manager\_arn) | The ARN for Cert Manager |
+| <a name="output_cluster_autoscaler_arn"></a> [cluster\_autoscaler\_arn](#output\_cluster\_autoscaler\_arn) | ARN for Cluster Autoscaler |
+| <a name="output_csi_arn"></a> [csi\_arn](#output\_csi\_arn) | ARN for csi |
 | <a name="output_eks_cluster_arn"></a> [eks\_cluster\_arn](#output\_eks\_cluster\_arn) | The ARN for the EKS cluster created by this module |
+| <a name="output_eks_cluster_certificate_authority_data"></a> [eks\_cluster\_certificate\_authority\_data](#output\_eks\_cluster\_certificate\_authority\_data) | Base64 encoded certificate data required to communicate with the cluster |
 | <a name="output_eks_cluster_endpoint"></a> [eks\_cluster\_endpoint](#output\_eks\_cluster\_endpoint) | The endpoint for the EKS cluster created by this module |
-| <a name="output_eks_cluster_id"></a> [eks\_cluster\_id](#output\_eks\_cluster\_id) | The id/name of the EKS cluster created by this module |
+| <a name="output_eks_cluster_id"></a> [eks\_cluster\_id](#output\_eks\_cluster\_id) | The name of the EKS cluster created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_arn"></a> [eks\_cluster\_identity\_oidc\_issuer\_arn](#output\_eks\_cluster\_identity\_oidc\_issuer\_arn) | The ARN for the OIDC issuer created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_string"></a> [eks\_cluster\_identity\_oidc\_issuer\_string](#output\_eks\_cluster\_identity\_oidc\_issuer\_string) | A formatted string containing the prefix for the OIDC issuer created by this module. Same as "cluster\_oidc\_issuer\_url", but with "https://" stripped from the name. This output is typically used in other StreamNative modules that request the "oidc\_issuer" input. |
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
@@ -362,6 +367,8 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="output_eks_node_group_iam_role_arn"></a> [eks\_node\_group\_iam\_role\_arn](#output\_eks\_node\_group\_iam\_role\_arn) | The IAM Role ARN used by the Worker configuration |
 | <a name="output_eks_node_group_security_group_id"></a> [eks\_node\_group\_security\_group\_id](#output\_eks\_node\_group\_security\_group\_id) | Security group ID attached to the EKS node groups |
 | <a name="output_eks_node_groups"></a> [eks\_node\_groups](#output\_eks\_node\_groups) | Map of all attributes of the EKS node groups created by this module |
+| <a name="output_external_dns_arn"></a> [external\_dns\_arn](#output\_external\_dns\_arn) | The ARN for External DNS |
 | <a name="output_tiered_storage_s3_bucket_arn"></a> [tiered\_storage\_s3\_bucket\_arn](#output\_tiered\_storage\_s3\_bucket\_arn) | The ARN for the tiered storage S3 bucket created by this module |
+| <a name="output_velero_arn"></a> [velero\_arn](#output\_velero\_arn) | ARN for Velero |
 | <a name="output_velero_s3_bucket_arn"></a> [velero\_s3\_bucket\_arn](#output\_velero\_s3\_bucket\_arn) | The ARN for the Velero S3 bucket created by this module |
 <!-- END_TF_DOCS -->

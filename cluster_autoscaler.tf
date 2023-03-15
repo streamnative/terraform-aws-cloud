@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
 
     condition {
       test     = "StringEquals"
-      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${module.eks.cluster_id}"
+      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${module.eks.cluster_name}"
       values   = ["owned"]
     }
   }
@@ -79,8 +79,8 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  name                 = format("%s-ca-role", module.eks.cluster_id)
-  description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
+  name                 = format("%s-ca-role", module.eks.cluster_name)
+  description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.cluster_autoscaler_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
@@ -89,7 +89,7 @@ resource "aws_iam_role" "cluster_autoscaler" {
 
 resource "aws_iam_policy" "cluster_autoscaler" {
   count       = var.create_iam_policies ? 1 : 0
-  name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_id)
+  name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_name)
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.cluster_autoscaler.json
@@ -132,14 +132,14 @@ resource "helm_release" "cluster_autoscaler" {
   version         = var.cluster_autoscaler_helm_chart_version
   values = [yamlencode({
     autoDiscovery = {
-      clusterName = module.eks.cluster_id
+      clusterName = module.eks.cluster_name
     }
     awsRegion     = var.region
     cloudProvider = "aws"
     extraArgs = {
       balance-similar-node-groups   = true
       expander                      = "random"
-      node-group-auto-discovery     = format("asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/%s", module.eks.cluster_id)
+      node-group-auto-discovery     = format("asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/%s", module.eks.cluster_name)
       skip-nodes-with-system-pods   = false
       skip-nodes-with-local-storage = false
     }

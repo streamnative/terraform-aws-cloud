@@ -69,6 +69,13 @@ variable "tags" {
   default     = {}
   description = "Additional to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
   type        = map(string)
+  deprecation = "This was an inconsistent name for the variable. Please use \"additional_tags\" instead."
+}
+
+variable "additional_tags" {
+  default     = {}
+  description = "Additional tags to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
+  type        = map(string)
 }
 
 variable "vpc_cidr" {

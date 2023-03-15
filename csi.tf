@@ -170,8 +170,8 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
-  name                 = format("%s-csi-role", module.eks.cluster_id)
-  description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
+  name                 = format("%s-csi-role", module.eks.cluster_name)
+  description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
@@ -180,7 +180,7 @@ resource "aws_iam_role" "csi" {
 
 resource "aws_iam_policy" "csi" {
   count       = var.create_iam_policies ? 1 : 0
-  name        = format("%s-CsiPolicy", module.eks.cluster_id)
+  name        = format("%s-CsiPolicy", module.eks.cluster_name)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
   policy      = data.aws_iam_policy_document.csi.json

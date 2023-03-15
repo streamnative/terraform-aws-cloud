@@ -28,8 +28,8 @@ output "eks_cluster_endpoint" {
 }
 
 output "eks_cluster_id" {
-  value       = module.eks.cluster_id
-  description = "The id/name of the EKS cluster created by this module"
+  value       = module.eks.cluster_name
+  description = "The name of the EKS cluster created by this module"
 }
 
 output "eks_cluster_identity_oidc_issuer_url" {

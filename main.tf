@@ -88,6 +88,13 @@ locals {
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
     taints                  = var.node_pool_taints
+
+    launch_template_tags = merge(local.tags, {
+      "k8s.io/cluster-autoscaler/enabled"                      = "true",
+      format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
+      "cluster-name"                                           = var.cluster_name
+    })
+
     tags = merge(var.node_pool_tags, local.tags, {
       "k8s.io/cluster-autoscaler/enabled"                      = "true",
       format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
@@ -163,7 +170,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.30.2" #"19.6.0"
+  version = "19.10.0" #"19.6.0"
 
   ######################################################################################################
   ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
@@ -206,6 +213,8 @@ module "eks" {
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
 
+  cluster_encryption_policy_path             = var.iam_path
+  cluster_encryption_config                  = []
 }
 
 ### Additional Tags
