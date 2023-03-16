@@ -108,7 +108,7 @@ variable "cert_manager_helm_chart_repository" {
 }
 
 variable "cert_manager_helm_chart_version" {
-  default     = "0.1.27"
+  default     = "0.7.8"
   description = "Helm chart version for the cert-manager. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases."
   type        = string
 }
