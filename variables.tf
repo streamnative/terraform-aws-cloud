@@ -54,7 +54,7 @@ variable "aws_load_balancer_controller_helm_chart_repository" {
 }
 
 variable "aws_load_balancer_controller_helm_chart_version" {
-  default     = "1.3.2"
+  default     = "1.4.2"
   description = "The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml."
   type        = string
 }
@@ -138,7 +138,7 @@ variable "cluster_autoscaler_helm_chart_repository" {
 }
 
 variable "cluster_autoscaler_helm_chart_version" {
-  default     = "9.10.8"
+  default     = "9.23.2"
   description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
   type        = string
 }
@@ -179,7 +179,7 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  default     = "1.20"
+  default     = "1.22"
   description = "The version of Kubernetes to be installed."
   type        = string
 }
@@ -197,7 +197,7 @@ variable "csi_helm_chart_repository" {
 }
 
 variable "csi_helm_chart_version" {
-  default     = "2.4.1"
+  default     = "2.8.0"
   description = "Helm chart version for CSI"
   type        = string
 }
@@ -292,7 +292,7 @@ variable "external_dns_helm_chart_repository" {
 }
 
 variable "external_dns_helm_chart_version" {
-  default     = "5.5.2"
+  default     = "6.5.6"
   description = "Helm chart version for ExternalDNS. Defaults to \"4.9.0\". See https://hub.helm.sh/charts/bitnami/external-dns for updates."
   type        = string
 }
@@ -467,7 +467,7 @@ variable "node_termination_handler_settings" {
 }
 
 variable "node_termination_handler_chart_version" {
-  default     = "0.16.0"
+  default     = "0.18.5"
   description = "The version of the Helm chart to use for the AWS Node Termination Handler."
   type        = string
 }
