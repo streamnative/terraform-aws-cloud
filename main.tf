@@ -57,6 +57,18 @@ locals {
     "8xlarge" = "Large"
   }
 
+  computed_node_taints = merge(
+    var.enable_cilium ? {
+      cilium = {
+        key    = "node.cilium.io/agent-not-ready"
+        value  = true
+        effect = "NO_EXECUTE"
+      }
+    } : {}
+  )
+
+  node_pool_taints = merge(var.node_pool_taints, local.computed_node_taints)
+
   node_group_defaults = {
     create_security_group = false
     ami_id = var.node_pool_ami_id
@@ -82,7 +94,7 @@ locals {
     min_size                = var.node_pool_min_size
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
-    taints                  = var.node_pool_taints
+    taints                  = local.node_pool_taints
     tags = merge(var.node_pool_tags, local.tags, {
       "k8s.io/cluster-autoscaler/enabled"                      = "true",
       format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
