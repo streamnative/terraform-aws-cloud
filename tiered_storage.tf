@@ -23,11 +23,6 @@ resource "aws_s3_bucket" "tiered_storage" {
   }
 }
 
-resource "aws_s3_bucket_acl" "tiered_storage" {
-  bucket = aws_s3_bucket.tiered_storage.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "tiered_storage" {
   bucket = aws_s3_bucket.tiered_storage.bucket
   rule {

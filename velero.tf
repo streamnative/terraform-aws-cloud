@@ -23,11 +23,6 @@ resource "aws_s3_bucket" "velero" {
   }
 }
 
-resource "aws_s3_bucket_acl" "velero" {
-  bucket = aws_s3_bucket.velero.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
   bucket = aws_s3_bucket.velero.bucket
 
