@@ -71,7 +71,7 @@ locals {
 
   node_group_defaults = {
     create_security_group = false
-    ami_id = var.node_pool_ami_id
+    ami_id                = var.node_pool_ami_id
     block_device_mappings = {
       xvda = {
         device_name = "/dev/xvda"
@@ -212,7 +212,7 @@ module "eks" {
   openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
-
+  cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
 }
 
 ### Additional Tags
