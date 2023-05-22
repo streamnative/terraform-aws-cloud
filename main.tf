@@ -234,6 +234,7 @@ resource "aws_ec2_tag" "cluster_security_group" {
 
 ### Kubernetes Configurations
 resource "kubernetes_namespace" "sn_system" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = "sn-system"
 
@@ -246,7 +247,13 @@ resource "kubernetes_namespace" "sn_system" {
   ]
 }
 
+moved {
+  from = kubernetes_namespace.sn_system
+  to   = kubernetes_namespace.sn_system[0]
+}
+
 resource "kubernetes_storage_class" "sn_default" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = "sn-default"
   }
@@ -261,7 +268,13 @@ resource "kubernetes_storage_class" "sn_default" {
   volume_binding_mode    = "WaitForFirstConsumer"
 }
 
+moved {
+  from = kubernetes_storage_class.sn_default
+  to   = kubernetes_storage_class.sn_default[0]
+}
+
 resource "kubernetes_storage_class" "sn_ssd" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = "sn-ssd"
   }
@@ -274,6 +287,11 @@ resource "kubernetes_storage_class" "sn_ssd" {
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
   volume_binding_mode    = "WaitForFirstConsumer"
+}
+
+moved {
+  from = kubernetes_storage_class.sn_ssd
+  to   = kubernetes_storage_class.sn_ssd[0]
 }
 
 ### Cluster IAM Role

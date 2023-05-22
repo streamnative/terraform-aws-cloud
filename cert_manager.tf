@@ -67,6 +67,7 @@ data "aws_iam_policy_document" "cert_manager_sts" {
 }
 
 resource "aws_iam_role" "cert_manager" {
+  count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-cm-role", module.eks.cluster_id)
   description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
@@ -75,8 +76,14 @@ resource "aws_iam_role" "cert_manager" {
   tags                 = local.tags
 }
 
+// add the move for this now being optional!
+moved {
+  from = aws_iam_role.cert_manager
+  to   = aws_iam_role.cert_manager[0]
+}
+
 resource "aws_iam_policy" "cert_manager" {
-  count       = var.create_iam_policies ? 1 : 0
+  count       = (var.enable_resource_creation && var.create_iam_policies) ? 1 : 0
   name        = format("%s-CertManagerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -85,12 +92,18 @@ resource "aws_iam_policy" "cert_manager" {
 }
 
 resource "aws_iam_role_policy_attachment" "cert_manager" {
+  count      = var.enable_resource_creation ? 1 : 0
   policy_arn = var.create_iam_policies ? aws_iam_policy.cert_manager[0].arn : local.default_service_policy_arn
-  role       = aws_iam_role.cert_manager.name
+  role       = aws_iam_role.cert_manager[0].name
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.cert_manager
+  to   = aws_iam_role_policy_attachment.cert_manager[0]
 }
 
 resource "helm_release" "cert_manager" {
-  count           = var.enable_bootstrap ? 1 : 0
+  count           = (var.enable_resource_creation && var.enable_bootstrap) ? 1 : 0
   atomic          = true
   chart           = var.cert_manager_helm_chart_name
   cleanup_on_fail = true
@@ -107,7 +120,7 @@ resource "helm_release" "cert_manager" {
       ]
       serviceAccount = {
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager.arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
         }
       }
       podSecurityContext = {
@@ -131,12 +144,12 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "helm_release" "cert_issuer" {
-  count           = var.enable_bootstrap ? 1 : 0
+  count           = (var.enable_resource_creation && var.enable_bootstrap) ? 1 : 0
   atomic          = true
   chart           = "${path.module}/charts/cert-issuer"
   cleanup_on_fail = true
   name            = "cert-issuer"
-  namespace       = kubernetes_namespace.sn_system.metadata[0].name
+  namespace       = kubernetes_namespace.sn_system[0].metadata[0].name
   timeout         = 300
   values = [yamlencode({
     supportEmail = var.cert_issuer_support_email

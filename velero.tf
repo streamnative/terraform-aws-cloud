@@ -13,6 +13,7 @@
 # limitations under the License.
 
 resource "aws_s3_bucket" "velero" {
+  count  = var.enable_resource_creation ? 1 : 0
   bucket = format("%s-cluster-backup", var.cluster_name)
   tags   = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
 
@@ -23,8 +24,13 @@ resource "aws_s3_bucket" "velero" {
   }
 }
 
+moved {
+  from = aws_s3_bucket.velero
+  to   = aws_s3_bucket.velero[0]
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
-  bucket = aws_s3_bucket.velero.bucket
+  bucket = aws_s3_bucket.velero[0].bucket
 
   rule {
     apply_server_side_encryption_by_default {
@@ -34,7 +40,14 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
   }
 }
 
+moved {
+  from = aws_s3_bucket_server_side_encryption_configuration.velero
+  to   = aws_s3_bucket_server_side_encryption_configuration.velero[0]
+}
+
 data "aws_iam_policy_document" "velero" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "ec2:DescribeVolumes",
@@ -58,13 +71,15 @@ data "aws_iam_policy_document" "velero" {
     ]
 
     resources = [
-      aws_s3_bucket.velero.arn,
-      "${aws_s3_bucket.velero.arn}/*",
+      aws_s3_bucket.velero[0].arn,
+      "${aws_s3_bucket.velero[0].arn}/*",
     ]
   }
 }
 
 data "aws_iam_policy_document" "velero_sts" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -83,30 +98,43 @@ data "aws_iam_policy_document" "velero_sts" {
 }
 
 resource "aws_iam_role" "velero" {
+  count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-velero-backup-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA velero on StreamNative Cloud EKS cluster %s", var.cluster_name)
-  assume_role_policy   = data.aws_iam_policy_document.velero_sts.json
+  assume_role_policy   = data.aws_iam_policy_document.velero_sts[0].json
   tags                 = local.tags
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
 }
 
+// add the move for this now being optional!
+moved {
+  from = aws_iam_role.velero
+  to   = aws_iam_role.velero[0]
+}
+
 resource "aws_iam_policy" "velero" {
-  count       = var.create_iam_policies ? 1 : 0
+  count       = (var.enable_resource_creation && var.create_iam_policies) ? 1 : 0
   name        = format("%s-VeleroBackupPolicy", var.cluster_name)
   description = "Policy that defines the permissions for the Velero backup addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
-  policy      = data.aws_iam_policy_document.velero.json
+  policy      = data.aws_iam_policy_document.velero[0].json
   tags        = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "velero" {
+  count      = var.enable_resource_creation ? 1 : 0
   policy_arn = var.create_iam_policies ? aws_iam_policy.velero[0].arn : local.default_service_policy_arn
-  role       = aws_iam_role.velero.name
+  role       = aws_iam_role.velero[0].name
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.velero
+  to   = aws_iam_role_policy_attachment.velero[0]
 }
 
 resource "helm_release" "velero" {
-  count           = var.enable_bootstrap ? 1 : 0
+  count           = (var.enable_resource_creation && var.enable_bootstrap) ? 1 : 0
   atomic          = true
   chart           = var.velero_helm_chart_name
   cleanup_on_fail = true
@@ -126,7 +154,7 @@ resource "helm_release" "velero" {
           backupStorageLocation = {
             name     = "aws"
             provider = "velero.io/aws"
-            bucket   = aws_s3_bucket.velero.id
+            bucket   = aws_s3_bucket.velero[0].id
             default  = true
             config = {
               region   = var.region
@@ -156,7 +184,7 @@ resource "helm_release" "velero" {
           }
         ]
         podAnnotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.velero[0].arn
         }
         podSecurityContext = {
           fsGroup = 1337
@@ -166,7 +194,7 @@ resource "helm_release" "velero" {
             create = true
             name   = "velero"
             annotations = {
-              "eks.amazonaws.com/role-arn" = aws_iam_role.velero.arn
+              "eks.amazonaws.com/role-arn" = aws_iam_role.velero[0].arn
             }
           }
         }
@@ -193,13 +221,19 @@ resource "helm_release" "velero" {
   }
 
   depends_on = [
-    kubernetes_namespace.velero
+    kubernetes_namespace.velero[0]
   ]
 }
 
 
 resource "kubernetes_namespace" "velero" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = var.velero_namespace
   }
+}
+
+moved {
+  from = kubernetes_namespace.velero
+  to   = kubernetes_namespace.velero[0]
 }

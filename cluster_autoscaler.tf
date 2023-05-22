@@ -74,6 +74,7 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
+  count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-ca-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.cluster_autoscaler_sts.json
@@ -82,8 +83,14 @@ resource "aws_iam_role" "cluster_autoscaler" {
   tags                 = local.tags
 }
 
+// add the move for this now being optional!
+moved {
+  from = aws_iam_role.cluster_autoscaler
+  to   = aws_iam_role.cluster_autoscaler[0]
+}
+
 resource "aws_iam_policy" "cluster_autoscaler" {
-  count       = var.create_iam_policies ? 1 : 0
+  count       = (var.enable_resource_creation && var.create_iam_policies) ? 1 : 0
   name        = format("%s-ClusterAutoscalerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cluster Autoscaler addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -92,8 +99,14 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
+  count      = var.enable_resource_creation ? 1 : 0
   policy_arn = var.create_iam_policies ? aws_iam_policy.cluster_autoscaler[0].arn : local.default_service_policy_arn
-  role       = aws_iam_role.cluster_autoscaler.name
+  role       = aws_iam_role.cluster_autoscaler[0].name
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.cluster_autoscaler
+  to   = aws_iam_role_policy_attachment.cluster_autoscaler[0]
 }
 
 ############
@@ -116,7 +129,7 @@ locals {
 
 }
 resource "helm_release" "cluster_autoscaler" {
-  count           = var.enable_bootstrap ? 1 : 0
+  count           = (var.enable_resource_creation && var.enable_bootstrap) ? 1 : 0
   atomic          = true
   chart           = var.cluster_autoscaler_helm_chart_name
   cleanup_on_fail = true
@@ -161,7 +174,7 @@ resource "helm_release" "cluster_autoscaler" {
       pspEnabled = true
       serviceAccount = {
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler.arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cluster_autoscaler[0].arn
         },
         create                       = true
         name                         = "cluster-autoscaler"

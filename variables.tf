@@ -227,6 +227,12 @@ variable "enable_istio" {
   type        = bool
 }
 
+variable "enable_resource_creation" {
+  default     = true
+  description = "When enabled, all dependencies, like roles, buckets, etc will be created. When disabled, they will note. Use in combination with `enable_bootstrap` to manage these outside this module"
+  type        = bool
+}
+
 variable "enable_sncloud_control_plane_access" {
   default     = true
   description = "Whether to enable access to the EKS control plane endpoint. If set to \"false\", additional configuration is required in order for the cluster to function properly, such as AWS PrivateLink for EC2, ECR, and S3, along with a VPN to access the EKS control plane. It is recommended to keep this setting to \"true\" unless you are familiar with this type of configuration."
