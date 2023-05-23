@@ -186,7 +186,7 @@ variable "create_cluster_security_group" {
 }
 
 variable "create_iam_policies" {
-  default     = true
+  default     = false 
   description = "Whether to create IAM policies for the IAM roles. If set to false, the module will default to using existing policy ARNs that must be present in the AWS account"
   type        = bool
 }
