@@ -206,7 +206,7 @@ module "eks" {
   iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
   iam_role_path                              = var.iam_path
   iam_role_permissions_boundary              = var.permissions_boundary_arn
-  manage_aws_auth_configmap                  = true
+  manage_aws_auth_configmap                  = var.manage_aws_auth_configmap
   node_security_group_id                     = var.node_security_group_id
   node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
   openid_connect_audiences                   = ["sts.amazonaws.com"]

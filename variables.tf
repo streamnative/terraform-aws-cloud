@@ -335,6 +335,12 @@ variable "kiali_operator_settings" {
   type        = map(any)
 }
 
+variable "manage_aws_auth_configmap" {
+  default     = true
+  description = "Whether to manage the aws_auth configmap"
+  type        = bool
+}
+
 variable "map_additional_iam_roles" {
   default     = []
   description = "A list of IAM role bindings to add to the aws-auth ConfigMap."
