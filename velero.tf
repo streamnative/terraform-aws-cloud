@@ -30,6 +30,8 @@ moved {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
+  count  = var.enable_resource_creation ? 1 : 0
+
   bucket = aws_s3_bucket.velero[0].bucket
 
   rule {
