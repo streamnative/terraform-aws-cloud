@@ -108,7 +108,7 @@ variable "cert_manager_helm_chart_repository" {
 }
 
 variable "cert_manager_helm_chart_version" {
-  default     = "0.6.2"
+  default     = "0.8.10"
   description = "Helm chart version for the cert-manager. See https://github.com/bitnami/charts/tree/master/bitnami/cert-manager for version releases."
   type        = string
 }
@@ -138,7 +138,7 @@ variable "cluster_autoscaler_helm_chart_repository" {
 }
 
 variable "cluster_autoscaler_helm_chart_version" {
-  default     = "9.19.2"
+  default     = "9.23.2"
   description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
   type        = string
 }
@@ -197,7 +197,7 @@ variable "csi_helm_chart_repository" {
 }
 
 variable "csi_helm_chart_version" {
-  default     = "2.8.0"
+  default     = "2.17.1"
   description = "Helm chart version for CSI"
   type        = string
 }
@@ -305,7 +305,7 @@ variable "external_dns_helm_chart_repository" {
 }
 
 variable "external_dns_helm_chart_version" {
-  default     = "6.5.6"
+  default     = "6.12.2"
   description = "Helm chart version for ExternalDNS. See https://hub.helm.sh/charts/bitnami/external-dns for updates."
   type        = string
 }
@@ -534,7 +534,7 @@ variable "node_termination_handler_settings" {
 }
 
 variable "node_termination_handler_chart_version" {
-  default     = "0.18.5"
+  default     = "0.21.0"
   description = "The version of the Helm chart to use for the AWS Node Termination Handler."
   type        = string
 }
