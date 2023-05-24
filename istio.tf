@@ -39,6 +39,7 @@ module "istio" {
   enable_istio_operator = true
   enable_kiali_operator = true
 
+  istio_chart_version             = var.istio_chart_version
   istio_cluster_name              = module.eks.cluster_id
   istio_network                   = var.istio_network
   istio_profile                   = var.istio_profile
