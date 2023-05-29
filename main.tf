@@ -57,8 +57,12 @@ locals {
     "8xlarge" = "Large"
   }
 
+  v3_compute_units = {
+    "large" = "Small"
+  }
+
   computed_node_taints = merge(
-    var.enable_cilium ? {
+    var.enable_cilium && var.enable_cilium_taint ? {
       cilium = {
         key    = "node.cilium.io/agent-not-ready"
         value  = true
@@ -103,7 +107,7 @@ locals {
   }
 
   ## Create the node groups, one for each instance type AND each availability zone/subnet
-  node_groups = {
+  v2_node_groups = {
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
@@ -115,6 +119,27 @@ locals {
       ]
     ]) : "${node_group.name}" => node_group
   }
+
+  v3_node_groups = {
+    "core" = {
+      subnet_ids     = var.private_subnet_ids
+      instance_types = [var.v3_node_group_core_instance_type]
+      name           = "snc-core"
+      taints = {
+        "core" = {
+          key    = "node.cloud.streamnative.io/core"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+      labels = merge(var.node_pool_labels, {
+        "cloud.streamnative.io/instance-type"  = "Small"
+        "cloud.streamnative.io/instance-group" = "Core"
+      })
+    }
+  }
+
+  node_groups = var.enable_v3_node_migration ? concat(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
 
   ## Node Security Group Configuration
   default_sg_rules = {
@@ -349,6 +374,18 @@ data "aws_iam_policy_document" "ng_assume_role_policy" {
       identifiers = ["ec2.amazonaws.com"]
     }
   }
+  // allow the same role to be used by fargate
+  statement {
+    sid = "FargateAssumeRole"
+    actions = [
+      "sts:AssumeRole"
+    ]
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["eks-fargate-pods.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_iam_role" "ng" {
@@ -374,3 +411,9 @@ resource "aws_iam_role_policy_attachment" "ng_AmazonEKSVPCResourceControllerPoli
   policy_arn = "arn:${local.aws_partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.ng.name
 }
+
+resource "aws_iam_role_policy_attachment" "ng_AmazonEKSFargatePodExecutionRolePolicy" {
+  policy_arn = "arn:${local.aws_partition}:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+  role       = aws_iam_role.ng.name
+}
+

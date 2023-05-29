@@ -251,6 +251,18 @@ variable "enable_node_pool_monitoring" {
   type        = bool
 }
 
+variable "enable_v3_node_groups" {
+  default     = false
+  description = "Enable v3 node groups, which uses a single ASG and all other node groups enabled elsewhere"
+  type        = bool
+}
+
+variable "enable_v3_node_migration" {
+  default     = false
+  description = "Enable v3 node and v2 node groups at the same time. Intended for use with migration to v3 nodes."
+  type        = bool
+}
+
 variable "external_dns_helm_chart_name" {
   default     = "external-dns"
   description = "The name of the Helm chart in the repository for ExternalDNS."
@@ -552,6 +564,12 @@ variable "use_runtime_policy" {
   default     = false
   description = "Legacy variable, will be deprecated in future versions. The preference of this module is to have the parent EKS module create and manage the IAM role. However some older configurations may have had the cluster IAM role managed seperately, and this variable allows for backwards compatibility."
   type        = bool
+}
+
+variable "v3_node_group_core_instance_type" {
+  default     = "m6i.large"
+  description = "The instance to use for the core node group"
+  type        = string
 }
 
 variable "velero_backup_schedule" {
