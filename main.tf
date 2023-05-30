@@ -113,7 +113,8 @@ locals {
           subnet_ids     = [data.aws_subnet.private_subnets[i].id]
           instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          labels         = merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") })
+          taints         = {}
+          labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
         }
       ]
     ]) : "${node_group.name}" => node_group
@@ -133,10 +134,10 @@ locals {
       instance_types = [var.v3_node_group_core_instance_type]
       name           = "snc-core"
       taints         = local.v3_node_taints
-      labels = merge(var.node_pool_labels, {
+      labels = tomap(merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
-      })
+      }))
     }
   })
 
