@@ -38,7 +38,6 @@ locals {
   default_service_policy_arn = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
   ebs_kms_key                = var.disk_encryption_kms_key_arn == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_arn
   oidc_issuer                = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
-  private_subnet_cidrs       = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_subnets[i].cidr_block]
 
   tags = merge(
     {
@@ -120,18 +119,20 @@ locals {
     ]) : "${node_group.name}" => node_group
   }
 
+  v3_node_taints = var.enable_v3_node_taints ? {
+    "core" = {
+      key    = "node.cloud.streamnative.io/core"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    }
+  } : {}
+
   v3_node_groups = {
     "core" = {
       subnet_ids     = var.private_subnet_ids
       instance_types = [var.v3_node_group_core_instance_type]
       name           = "snc-core"
-      taints = {
-        "core" = {
-          key    = "node.cloud.streamnative.io/core"
-          value  = "true"
-          effect = "NO_SCHEDULE"
-        }
-      }
+      taints         = local.v3_node_taints
       labels = merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"

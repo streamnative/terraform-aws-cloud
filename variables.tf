@@ -263,6 +263,12 @@ variable "enable_v3_node_migration" {
   type        = bool
 }
 
+variable "enable_v3_node_taints" {
+  default     = true
+  description = "When v3 node groups are enabled, use the node taints. Defaults to true"
+  type        = bool
+}
+
 variable "external_dns_helm_chart_name" {
   default     = "external-dns"
   description = "The name of the Helm chart in the repository for ExternalDNS."
