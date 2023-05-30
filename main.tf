@@ -106,7 +106,7 @@ locals {
   }
 
   ## Create the node groups, one for each instance type AND each availability zone/subnet
-  v2_node_groups = {
+  v2_node_groups = tomap({
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
@@ -117,7 +117,7 @@ locals {
         }
       ]
     ]) : "${node_group.name}" => node_group
-  }
+  })
 
   v3_node_taints = var.enable_v3_node_taints ? {
     "core" = {
@@ -127,7 +127,7 @@ locals {
     }
   } : {}
 
-  v3_node_groups = {
+  v3_node_groups = tomap({
     "core" = {
       subnet_ids     = var.private_subnet_ids
       instance_types = [var.v3_node_group_core_instance_type]
@@ -138,9 +138,9 @@ locals {
         "cloud.streamnative.io/instance-group" = "Core"
       })
     }
-  }
+  })
 
-  node_groups = var.enable_v3_node_migration ? concat(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
+  node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
 
   ## Node Security Group Configuration
   default_sg_rules = {
