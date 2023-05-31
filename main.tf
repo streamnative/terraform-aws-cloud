@@ -134,6 +134,9 @@ locals {
       instance_types = [var.v3_node_group_core_instance_type]
       name           = "snc-core"
       taints         = local.v3_node_taints
+      desired_size   = 3
+      min_size       = 3
+      max_size       = var.node_pool_max_size
       labels = tomap(merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
