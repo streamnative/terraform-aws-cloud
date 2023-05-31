@@ -376,18 +376,6 @@ data "aws_iam_policy_document" "ng_assume_role_policy" {
       identifiers = ["ec2.amazonaws.com"]
     }
   }
-  // allow the same role to be used by fargate
-  statement {
-    sid = "FargateAssumeRole"
-    actions = [
-      "sts:AssumeRole"
-    ]
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["eks-fargate-pods.amazonaws.com"]
-    }
-  }
 }
 
 resource "aws_iam_role" "ng" {
@@ -411,11 +399,6 @@ resource "aws_iam_role_policy_attachment" "ng_AmazonEKSServicePolicy" {
 
 resource "aws_iam_role_policy_attachment" "ng_AmazonEKSVPCResourceControllerPolicy" {
   policy_arn = "arn:${local.aws_partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.ng.name
-}
-
-resource "aws_iam_role_policy_attachment" "ng_AmazonEKSFargatePodExecutionRolePolicy" {
-  policy_arn = "arn:${local.aws_partition}:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
   role       = aws_iam_role.ng.name
 }
 
