@@ -114,6 +114,9 @@ locals {
           instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
           taints         = {}
+          desired_size   = null
+          min_size       = null
+          max_size       = null
           labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
         }
       ]
