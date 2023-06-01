@@ -55,6 +55,7 @@ locals {
     min_capacity         = var.func_pool_min_size
     max_capacity         = var.func_pool_max_size
     pre_userdata         = var.func_pool_pre_userdata
+    version              = var.cluster_version
     taints = [{
       key    = "reserveGroup"
       value  = "functions"
@@ -74,6 +75,7 @@ locals {
     min_capacity         = var.node_pool_min_size
     max_capacity         = var.node_pool_max_size
     pre_userdata         = var.node_pool_pre_userdata
+    version              = var.cluster_version
     taints               = []
   }
 
