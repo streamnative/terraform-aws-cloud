@@ -49,16 +49,16 @@ resource "helm_release" "cilium" {
 
   values = [yamlencode({
     cluster = {
-      id = 0
+      id   = 0
       name = var.cluster_name
     }
     cni = {
       chainingMode = "aws-cni"
-      exclusive = false
+      exclusive    = false
     }
     enableIPv4Masquerade = false
     enableIPv6Masquerade = false
-    tunnel = "disabled"
+    tunnel               = "disabled"
     encryption = {
       enabled = false
     }
