@@ -47,5 +47,4 @@ jobs:
         run: for module in modules/*/; do cd "${GITHUB_WORKSPACE}/${module}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color ; done
         
       - name: Terraform Validate Examples
-        id: validate-examples
         run: for example in examples/*/; do cd "${GITHUB_WORKSPACE}/${example}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color ; done
