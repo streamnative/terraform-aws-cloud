@@ -38,7 +38,6 @@ locals {
   default_service_policy_arn = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
   ebs_kms_key                = var.disk_encryption_kms_key_arn == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_arn
   oidc_issuer                = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
-  private_subnet_cidrs       = var.enable_node_group_private_networking == false ? [] : [for i, v in var.private_subnet_ids : data.aws_subnet.private_subnets[i].cidr_block]
 
   tags = merge(
     {
@@ -57,8 +56,12 @@ locals {
     "8xlarge" = "Large"
   }
 
+  v3_compute_units = {
+    "large" = "Small"
+  }
+
   computed_node_taints = merge(
-    var.enable_cilium ? {
+    var.enable_cilium && var.enable_cilium_taint ? {
       cilium = {
         key    = "node.cilium.io/agent-not-ready"
         value  = true
@@ -103,18 +106,48 @@ locals {
   }
 
   ## Create the node groups, one for each instance type AND each availability zone/subnet
-  node_groups = {
+  v2_node_groups = tomap({
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
           subnet_ids     = [data.aws_subnet.private_subnets[i].id]
           instance_types = [instance_type]
           name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          labels         = merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") })
+          taints         = {}
+          desired_size   = var.node_pool_desired_size
+          min_size       = var.node_pool_min_size
+          max_size       = var.node_pool_max_size
+          labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
         }
       ]
     ]) : "${node_group.name}" => node_group
-  }
+  })
+
+  v3_node_taints = var.enable_v3_node_taints ? {
+    "core" = {
+      key    = "node.cloud.streamnative.io/core"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    }
+  } : {}
+
+  v3_node_groups = tomap({
+    "snc-core" = {
+      subnet_ids     = var.private_subnet_ids
+      instance_types = [var.v3_node_group_core_instance_type]
+      name           = "snc-core"
+      taints         = local.v3_node_taints
+      desired_size   = var.node_pool_desired_size
+      min_size       = var.node_pool_min_size
+      max_size       = var.node_pool_max_size
+      labels = tomap(merge(var.node_pool_labels, {
+        "cloud.streamnative.io/instance-type"  = "Small"
+        "cloud.streamnative.io/instance-group" = "Core"
+      }))
+    }
+  })
+
+  node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
 
   ## Node Security Group Configuration
   default_sg_rules = {
@@ -206,7 +239,7 @@ module "eks" {
   iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
   iam_role_path                              = var.iam_path
   iam_role_permissions_boundary              = var.permissions_boundary_arn
-  manage_aws_auth_configmap                  = true
+  manage_aws_auth_configmap                  = var.manage_aws_auth_configmap
   node_security_group_id                     = var.node_security_group_id
   node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
   openid_connect_audiences                   = ["sts.amazonaws.com"]
@@ -234,6 +267,7 @@ resource "aws_ec2_tag" "cluster_security_group" {
 
 ### Kubernetes Configurations
 resource "kubernetes_namespace" "sn_system" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = "sn-system"
 
@@ -246,7 +280,13 @@ resource "kubernetes_namespace" "sn_system" {
   ]
 }
 
+moved {
+  from = kubernetes_namespace.sn_system
+  to   = kubernetes_namespace.sn_system[0]
+}
+
 resource "kubernetes_storage_class" "sn_default" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = "sn-default"
   }
@@ -261,7 +301,13 @@ resource "kubernetes_storage_class" "sn_default" {
   volume_binding_mode    = "WaitForFirstConsumer"
 }
 
+moved {
+  from = kubernetes_storage_class.sn_default
+  to   = kubernetes_storage_class.sn_default[0]
+}
+
 resource "kubernetes_storage_class" "sn_ssd" {
+  count = var.enable_resource_creation ? 1 : 0
   metadata {
     name = "sn-ssd"
   }
@@ -274,6 +320,11 @@ resource "kubernetes_storage_class" "sn_ssd" {
   reclaim_policy         = "Delete"
   allow_volume_expansion = true
   volume_binding_mode    = "WaitForFirstConsumer"
+}
+
+moved {
+  from = kubernetes_storage_class.sn_ssd
+  to   = kubernetes_storage_class.sn_ssd[0]
 }
 
 ### Cluster IAM Role
@@ -356,3 +407,4 @@ resource "aws_iam_role_policy_attachment" "ng_AmazonEKSVPCResourceControllerPoli
   policy_arn = "arn:${local.aws_partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.ng.name
 }
+

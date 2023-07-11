@@ -18,6 +18,12 @@ variable "enable_cilium" {
   type        = bool
 }
 
+variable "enable_cilium_taint" {
+  default     = true
+  description = "Adds the cillium taint to nodes. Is \"true\" by default. Should set to \"false\" if adding cillium to existing pool"
+  type        = bool
+}
+
 variable "cilium_helm_chart_name" {
   default     = "cilium"
   description = "The name of the Helm chart in the repository for Cilium."

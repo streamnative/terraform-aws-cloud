@@ -165,6 +165,7 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
+  count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-csi-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
   assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
@@ -173,8 +174,14 @@ resource "aws_iam_role" "csi" {
   tags                 = local.tags
 }
 
+// add the move for this now being optional!
+moved {
+  from = aws_iam_role.csi
+  to   = aws_iam_role.csi[0]
+}
+
 resource "aws_iam_policy" "csi" {
-  count       = var.create_iam_policies ? 1 : 0
+  count       = (var.enable_resource_creation && var.create_iam_policies) ? 1 : 0
   name        = format("%s-CsiPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
@@ -183,13 +190,25 @@ resource "aws_iam_policy" "csi" {
 }
 
 resource "aws_iam_role_policy_attachment" "csi_managed" {
+  count      = var.enable_resource_creation ? 1 : 0
   policy_arn = "arn:${local.aws_partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-  role       = aws_iam_role.csi.name
+  role       = aws_iam_role.csi[0].name
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.csi_managed
+  to   = aws_iam_role_policy_attachment.csi_managed[0]
 }
 
 resource "aws_iam_role_policy_attachment" "csi" {
+  count      = var.enable_resource_creation ? 1 : 0
   policy_arn = var.create_iam_policies ? aws_iam_policy.csi[0].arn : local.default_service_policy_arn
-  role       = aws_iam_role.csi.name
+  role       = aws_iam_role.csi[0].name
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.csi
+  to   = aws_iam_role_policy_attachment.csi[0]
 }
 
 resource "helm_release" "csi" {
@@ -211,7 +230,7 @@ resource "helm_release" "csi" {
         create = true
         name   = "ebs-csi-controller-sa"
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.csi.arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.csi[0].arn
         }
       }
     }

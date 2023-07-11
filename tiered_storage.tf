@@ -13,6 +13,7 @@
 # limitations under the License.
 
 resource "aws_s3_bucket" "tiered_storage" {
+  count  = var.enable_resource_creation ? 1 : 0
   bucket = format("%s-offload", var.cluster_name)
   tags   = merge({ "Attributes" = "offload" }, local.tags)
 
@@ -23,12 +24,23 @@ resource "aws_s3_bucket" "tiered_storage" {
   }
 }
 
+moved {
+  from = aws_s3_bucket.tiered_storage
+  to   = aws_s3_bucket.tiered_storage[0]
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "tiered_storage" {
-  bucket = aws_s3_bucket.tiered_storage.bucket
+  count  = var.enable_resource_creation ? 1 : 0
+  bucket = aws_s3_bucket.tiered_storage[0].bucket
   rule {
     apply_server_side_encryption_by_default {
       kms_master_key_id = local.s3_kms_key
       sse_algorithm     = "aws:kms"
     }
   }
+}
+
+moved {
+  from = aws_s3_bucket_server_side_encryption_configuration.tiered_storage
+  to   = aws_s3_bucket_server_side_encryption_configuration.tiered_storage[0]
 }

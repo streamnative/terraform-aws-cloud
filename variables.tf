@@ -227,6 +227,12 @@ variable "enable_istio" {
   type        = bool
 }
 
+variable "enable_resource_creation" {
+  default     = true
+  description = "When enabled, all dependencies, like roles, buckets, etc will be created. When disabled, they will note. Use in combination with `enable_bootstrap` to manage these outside this module"
+  type        = bool
+}
+
 variable "enable_sncloud_control_plane_access" {
   default     = true
   description = "Whether to enable access to the EKS control plane endpoint. If set to \"false\", additional configuration is required in order for the cluster to function properly, such as AWS PrivateLink for EC2, ECR, and S3, along with a VPN to access the EKS control plane. It is recommended to keep this setting to \"true\" unless you are familiar with this type of configuration."
@@ -242,6 +248,24 @@ variable "enable_node_group_private_networking" {
 variable "enable_node_pool_monitoring" {
   default     = true
   description = "Enable CloudWatch monitoring for the default pool(s)."
+  type        = bool
+}
+
+variable "enable_v3_node_groups" {
+  default     = false
+  description = "Enable v3 node groups, which uses a single ASG and all other node groups enabled elsewhere"
+  type        = bool
+}
+
+variable "enable_v3_node_migration" {
+  default     = false
+  description = "Enable v3 node and v2 node groups at the same time. Intended for use with migration to v3 nodes."
+  type        = bool
+}
+
+variable "enable_v3_node_taints" {
+  default     = true
+  description = "When v3 node groups are enabled, use the node taints. Defaults to true"
   type        = bool
 }
 
@@ -327,6 +351,12 @@ variable "kiali_operator_settings" {
   default     = {}
   description = "Additional settings which will be passed to the Helm chart values"
   type        = map(any)
+}
+
+variable "manage_aws_auth_configmap" {
+  default     = true
+  description = "Whether to manage the aws_auth configmap"
+  type        = bool
 }
 
 variable "map_additional_iam_roles" {
@@ -540,6 +570,12 @@ variable "use_runtime_policy" {
   default     = false
   description = "Legacy variable, will be deprecated in future versions. The preference of this module is to have the parent EKS module create and manage the IAM role. However some older configurations may have had the cluster IAM role managed seperately, and this variable allows for backwards compatibility."
   type        = bool
+}
+
+variable "v3_node_group_core_instance_type" {
+  default     = "m6i.large"
+  description = "The instance to use for the core node group"
+  type        = string
 }
 
 variable "velero_backup_schedule" {
