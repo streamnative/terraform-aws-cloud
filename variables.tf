@@ -138,8 +138,8 @@ variable "cluster_autoscaler_helm_chart_repository" {
 }
 
 variable "cluster_autoscaler_helm_chart_version" {
-  default     = "9.23.2"
-  description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.10.4\". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
+  default     = "9.24.0"
+  description = "Helm chart version for the cluster-autoscaler. Defaults to \"9.24.0\", adaptive to EKS v1.23. See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details."
   type        = string
 }
 
@@ -504,7 +504,7 @@ variable "metrics_server_helm_chart_repository" {
 }
 
 variable "metrics_server_helm_chart_version" {
-  default     = "3.8.2"
+  default     = "3.8.4"
   description = "Helm chart version for Metrics server"
   type        = string
 }
