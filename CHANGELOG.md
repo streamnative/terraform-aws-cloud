@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/streamnative/terraform-aws-cloud/compare/v2.7.0...v2.8.0) (2023-08-24)
+
+
+### Features
+
+* upgrade istio chart to v0.8.6 ([#116](https://github.com/streamnative/terraform-aws-cloud/issues/116)) ([9cff6cc](https://github.com/streamnative/terraform-aws-cloud/commit/9cff6ccc5e5af0d9bb4814eb9fbe2d1e7bf02ece))
+
 ## [2.7.0](https://github.com/streamnative/terraform-aws-cloud/compare/v2.6.0...v2.7.0) (2023-07-28)
 
 
