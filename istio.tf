@@ -30,7 +30,7 @@ locals {
 
 module "istio" {
   count  = var.enable_bootstrap || var.enable_istio ? 1 : 0
-  source = "github.com/streamnative/terraform-helm-charts//modules/istio-operator?ref=v0.8.4"
+  source = "github.com/streamnative/terraform-helm-charts//modules/istio-operator?ref=v0.8.6"
 
   enable_istio_operator = true
   enable_kiali_operator = true
