@@ -117,15 +117,15 @@ moved {
 # https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca
 ############
 
+# It's recommended to deploy the version matching the control plane
+# https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases
 locals {
   k8s_to_autoscaler_version = {
-    "1.18" = "v1.18.3",
-    "1.19" = "v1.19.2",
-    "1.20" = "v1.20.1",
-    "1.21" = "v1.21.1",
-    "1.22" = "v1.22.1",
-    "1.23" = "v1.23.0",
-    "1.24" = "v1.24.3"
+    "1.24" = "v1.24.3",
+    "1.25" = "v1.25.0",
+    "1.26" = "v1.26.1",
+    "1.27" = "v1.27.0",
+    "1.28" = "v1.28.0"
   }
 
 }
