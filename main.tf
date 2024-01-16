@@ -127,6 +127,10 @@ module "eks" {
     disk_kms_key_id        = local.kms_key # sourced from csi.tf -> locals{}
   }
 
+  workers_group_defaults = {
+    metadata_http_tokens = "required"
+  }
+
   tags = {
     format("k8s.io/cluster/%s", var.cluster_name) = "owned",
     "Vendor"                                      = "StreamNative"
