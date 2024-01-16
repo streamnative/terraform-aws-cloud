@@ -306,6 +306,8 @@ resource "helm_release" "aws_load_balancer_controller" {
         "eks.amazonaws.com/role-arn" = aws_iam_role.aws_load_balancer_controller[0].arn
       }
     }
+    region = var.region
+    vpcId = var.vpc_id
   })]
 
   dynamic "set" {
