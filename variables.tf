@@ -292,6 +292,12 @@ variable "iam_path" {
   type        = string
 }
 
+variable "istio_chart_version" {
+  default     = null
+  description = "The version of the Helm chart to install. See https://github.com/stevehipwell/helm-charts/tree/master/charts/istio-operator for available versions."
+  type        = string
+}
+
 variable "istio_mesh_id" {
   default     = null
   description = "The ID used by the Istio mesh. This is also the ID of the StreamNative Cloud Pool used for the workload environments. This is required when \"enable_istio_operator\" is set to \"true\"."
