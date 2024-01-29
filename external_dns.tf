@@ -112,9 +112,17 @@ resource "helm_release" "external_dns" {
 
   values = [yamlencode({
     aws = {
-      region = var.region
+      region             = var.region
+      batchChangeSize    = 4000
+      zonesCacheDuration = "24h"
     }
-    domainFilters = var.hosted_zone_domain_name_filters
+    interval           = "1h"
+    triggerLoopOnEvent = true
+    zoneIdFilters      = [var.hosted_zone_id]
+    domainFilters      = var.hosted_zone_domain_name_filters
+    extraArgs = {
+      "aws-batch-change-interval" = "10s"
+    }
     podSecurityContext = {
       fsGroup   = 65534
       runAsUser = 0
@@ -122,7 +130,7 @@ resource "helm_release" "external_dns" {
     rbac = {
       create = true
     }
-    replicaCount = 2
+    replicaCount = 1
     serviceAccount = {
       create = true
       name   = "external-dns"
@@ -130,8 +138,9 @@ resource "helm_release" "external_dns" {
         "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns[0].arn
       }
     }
-    sources    = local.sources
-    txtOwnerId = module.eks.cluster_id
+    sources           = local.sources
+    serviceTypeFilter = ["LoadBalancer"]
+    txtOwnerId        = module.eks.cluster_id
   })]
 
   dynamic "set" {
