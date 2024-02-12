@@ -104,11 +104,11 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
 
 locals {
   k8s_to_autoscaler_version = {
-    "1.18" = "v1.18.3",
-    "1.19" = "v1.19.2",
-    "1.20" = "v1.20.1",
-    "1.21" = "v1.21.1",
-    "1.22" = "v1.22.1",
+    "1.24" = "v1.24.3",
+    "1.25" = "v1.25.0",
+    "1.26" = "v1.26.1",
+    "1.27" = "v1.27.0",
+    "1.28" = "v1.28.0"
   }
 
 }
@@ -151,7 +151,7 @@ resource "helm_release" "cluster_autoscaler" {
       }
     ]
     image = {
-      tag = lookup(local.k8s_to_autoscaler_version, var.cluster_version, "v1.20.1") # image.tag defaults to the version corresponding to var.cluster_version's default value and must manually be updated
+      tag = lookup(local.k8s_to_autoscaler_version, var.cluster_version, "v1.24.3") # image.tag defaults to the version corresponding to var.cluster_version's default value and must manually be updated
     }
     rbac = {
       create     = true
