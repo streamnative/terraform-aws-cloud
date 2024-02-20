@@ -246,7 +246,7 @@ variable "enable_node_group_private_networking" {
 }
 
 variable "enable_node_pool_monitoring" {
-  default     = true
+  default     = false
   description = "Enable CloudWatch monitoring for the default pool(s)."
   type        = bool
 }
