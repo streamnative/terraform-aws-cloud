@@ -248,6 +248,38 @@ module "eks" {
   cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
 }
 
+data "aws_autoscaling_groups" "eks" {
+  filter {
+    name   = "tag:cluster-name"
+    values = [var.cluster_name]
+  }
+
+  filter {
+    name   = "tag:${format("kubernetes.io/cluster/%s", var.cluster_name)}"
+    values = ["owned"]
+  }
+
+  filter {
+    name   = "tag:${format("k8s.io/cluster-autoscaler/%s", var.cluster_name)}"
+    values = ["owned"]
+  }
+
+  filter {
+    name   = "tag:k8s.io/cluster-autoscaler/enabled"
+    values = ["true"]
+  }
+
+  depends_on = [module.eks]
+}
+
+resource "terraform_data" "disable_eks_asg_azrebalance" {
+  for_each = data.aws_autoscaling_groups.eks.names
+
+  provisioner "local-exec" {
+    command = "aws autoscaling suspend-processes --auto-scaling-group-name ${each.key} --scaling-processes AZRebalance"
+  }
+}
+
 ### Additional Tags
 module "vpc_tags" {
   source = "./modules/eks-vpc-tags"
