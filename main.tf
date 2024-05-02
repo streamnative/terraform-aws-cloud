@@ -273,10 +273,10 @@ data "aws_autoscaling_groups" "eks" {
 }
 
 resource "terraform_data" "disable_eks_asg_azrebalance" {
-  for_each = data.aws_autoscaling_groups.eks.names
+  for_each = toset(data.aws_autoscaling_groups.eks.names)
 
   provisioner "local-exec" {
-    command = "aws autoscaling suspend-processes --auto-scaling-group-name ${each.key} --scaling-processes AZRebalance"
+    command = "aws autoscaling suspend-processes --auto-scaling-group-name ${each.value} --scaling-processes AZRebalance"
   }
 }
 
