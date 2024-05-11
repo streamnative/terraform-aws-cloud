@@ -532,7 +532,7 @@ variable "permissions_boundary_arn" {
 
 variable "private_subnet_ids" {
   default     = []
-  description = "The ids of existing private subnets. If the length is 0 or null, nodes will use public IP."
+  description = "The ids of existing private subnets"
   type        = list(string)
 }
 
@@ -540,6 +540,12 @@ variable "public_subnet_ids" {
   default     = []
   description = "The ids of existing public subnets."
   type        = list(string)
+}
+
+variable "enable_nodes_use_public_subnet" {
+  default     = false
+  type        = bool
+  description = "When set to true, the node groups will use public subnet rather private subnet, and the public subnet must enable auto-assing public ip so that nodes can have public ip to access internet. Default is false."
 }
 
 variable "region" {

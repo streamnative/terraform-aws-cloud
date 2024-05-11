@@ -38,7 +38,7 @@ locals {
   default_service_policy_arn = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
   ebs_kms_key                = var.disk_encryption_kms_key_arn == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_arn
   oidc_issuer                = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
-  nodes_subnet_ids           = length(var.private_subnet_ids) == 0 || var.private_subnet_ids == null ? var.public_subnet_ids : var.private_subnet_ids
+  nodes_subnet_ids           = var.enable_nodes_use_public_subnet ? var.public_subnet_ids : var.private_subnet_ids
 
   tags = merge(
     {
