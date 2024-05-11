@@ -532,7 +532,7 @@ variable "permissions_boundary_arn" {
 
 variable "private_subnet_ids" {
   default     = []
-  description = "The ids of existing private subnets"
+  description = "The ids of existing private subnets."
   type        = list(string)
 }
 
