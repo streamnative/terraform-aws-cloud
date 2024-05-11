@@ -116,3 +116,8 @@ output "eks_cluster_certificate_authority_data" {
   value       = module.eks.cluster_certificate_authority_data
   description = "Base64 encoded certificate data required to communicate with the cluster"
 }
+
+output "eks" {
+  value       = module.eks
+  description = "All outputs of module.eks for provide convenient approach to access child module's outputs."
+}
