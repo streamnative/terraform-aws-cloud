@@ -71,8 +71,8 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "disable_private_subnet" {
+variable "disable_nat_gateway" {
   type        = bool
   default     = false
-  description = "Determin whether create private subnets, will use public ip when set to true. This could be useful when wanna save costs from nat gateway."
+  description = "If set to true, will not create NAT Gateway and EC2 Nodes should put in public subnets. This could be useful when wanna save costs from nat gateway."
 }
