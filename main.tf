@@ -140,7 +140,7 @@ locals {
 
   v3_node_groups = tomap({
     "snc-core" = {
-      subnet_ids     = local.nodes_subnet_ids
+      subnet_ids     = local.node_group_subnets
       instance_types = [var.v3_node_group_core_instance_type]
       name           = "snc-core"
       taints         = local.v3_node_taints
