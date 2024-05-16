@@ -25,7 +25,7 @@ locals {
   node_group_subnets = [
     for index, subnet in data.aws_subnet.private_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone)
   ]
-  node_group_subnet_ids = [for index, subnet in node_group_subnets : subnet.id]
+  node_group_subnet_ids = [for index, subnet in local.node_group_subnets : subnet.id]
 }
 
 data "aws_kms_key" "ebs_default" {
