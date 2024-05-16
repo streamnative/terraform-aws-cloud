@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 data "aws_availability_zones" "available" {
   state = "available"
+}
+
+locals {
+  num_azs = length(var.availability_zones) == 0 ? var.num_azs : length(var.availability_zones)
+  azs     = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_azs) : var.availability_zones
 }
 
 resource "aws_vpc" "vpc" {
@@ -28,7 +34,7 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_subnet" "public" {
-  count = var.num_azs
+  count = local.num_azs
 
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, var.public_subnet_newbits, var.public_subnet_start + count.index)
@@ -42,11 +48,11 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count = var.num_azs
+  count = local.num_azs
 
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.private_subnet_newbits, var.private_subnet_start + count.index)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
+  availability_zone = local.azs[count.index]
   tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", "kubernetes.io/role/internal-elb" = "1", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
 
   lifecycle {
@@ -107,7 +113,7 @@ resource "aws_route" "public_route" {
 }
 
 resource "aws_route_table_association" "public_assoc" {
-  count = var.num_azs
+  count = local.num_azs
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public_route_table[0].id

@@ -26,3 +26,8 @@ output "vpc_id" {
   value       = aws_vpc.vpc.id
   description = "The ID of the VPC created by this module"
 }
+
+output "azs" {
+  value       = local.azs
+  description = "The availability zones used by the VPC and subnets"
+}
