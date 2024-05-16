@@ -36,9 +36,9 @@ variable "num_azs" {
   default     = 2
 }
 
-variable "availability_zones" {
+variable "cluster_azs" {
   type        = list(string)
-  description = "The availability zones to use for the subnets"
+  description = "A list of availability zones to use for the EKS cluster. If not set, the module will auto detect availability zones based on num_azs."
   default     = []
 }
 

@@ -489,6 +489,12 @@ variable "node_pool_instance_types" {
   type        = list(string)
 }
 
+variable "node_pool_azs" {
+  type        = list(string)
+  description = "A list of availability zones to use for the EKS node group. If not set, the module will use the same availability zones with the cluster."
+  default     = []
+}
+
 variable "node_pool_labels" {
   default     = {}
   description = "A map of kubernetes labels to add to the node pool."

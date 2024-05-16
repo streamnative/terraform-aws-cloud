@@ -18,8 +18,8 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  num_azs = length(var.availability_zones) == 0 ? var.num_azs : length(var.availability_zones)
-  azs     = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_azs) : var.availability_zones
+  num_azs = length(var.cluster_azs) == 0 ? var.num_azs : length(var.cluster_azs)
+  azs     = length(var.cluster_azs) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_azs) : var.cluster_azs
 }
 
 resource "aws_vpc" "vpc" {
