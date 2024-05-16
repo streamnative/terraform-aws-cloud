@@ -25,6 +25,7 @@ locals {
   node_group_subnets = [
     for index, subnet in data.aws_subnet.private_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone)
   ]
+  node_group_subnet_ids = [for index, subnet in node_group_subnets : subnet.id]
 }
 
 data "aws_kms_key" "ebs_default" {
@@ -140,7 +141,7 @@ locals {
 
   v3_node_groups = tomap({
     "snc-core" = {
-      subnet_ids     = local.node_group_subnets
+      subnet_ids     = local.node_group_subnet_ids
       instance_types = [var.v3_node_group_core_instance_type]
       name           = "snc-core"
       taints         = local.v3_node_taints
@@ -225,7 +226,7 @@ module "eks" {
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
 
-  subnet_ids = data.aws_subnet.private_subnets.*.id
+  subnet_ids                                 = data.aws_subnet.private_subnets.*.id
   aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
