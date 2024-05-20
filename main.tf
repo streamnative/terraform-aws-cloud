@@ -226,7 +226,7 @@ module "eks" {
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
 
-  subnet_ids                                 = data.aws_subnet.private_subnets.*.id
+  # subnet_ids                                 = data.aws_subnet.private_subnets.*.id
   aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
