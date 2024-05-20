@@ -17,11 +17,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-locals {
-  num_azs = length(var.cluster_azs) == 0 ? var.num_azs : length(var.cluster_azs)
-  azs     = length(var.cluster_azs) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_azs) : var.cluster_azs
-}
-
 resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -34,11 +29,11 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_subnet" "public" {
-  count = local.num_azs
+  count = var.num_azs
 
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, var.public_subnet_newbits, var.public_subnet_start + count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  availability_zone       = data.aws_availability_zones.available[count.index]
   map_public_ip_on_launch = var.disable_nat_gateway ? true : var.public_subnet_auto_ip
   tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", "kubernetes.io/role/elb" = "1", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags)
 
@@ -48,11 +43,11 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count = local.num_azs
+  count = var.num_azs
 
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.private_subnet_newbits, var.private_subnet_start + count.index)
-  availability_zone = local.azs[count.index]
+  availability_zone = data.aws_availability_zones.available[count.index]
   tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", "kubernetes.io/role/internal-elb" = "1", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
 
   lifecycle {
@@ -113,7 +108,7 @@ resource "aws_route" "public_route" {
 }
 
 resource "aws_route_table_association" "public_assoc" {
-  count = local.num_azs
+  count = var.num_azs
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public_route_table[0].id
