@@ -117,10 +117,10 @@ locals {
   v2_node_groups = tomap({
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
-        for i, j in local.node_group_subnets : {
-          subnet_ids     = [local.node_group_subnets[i].id]
+        for i, j in data.aws_subnet.private_subnets : {
+          subnet_ids     = [data.aws_subnet.private_subnets[i].id]
           instance_types = [instance_type]
-          name           = "snc-${split(".", instance_type)[1]}-${local.node_group_subnets[i].availability_zone}"
+          name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
           taints         = {}
           desired_size   = var.node_pool_desired_size
           min_size       = var.node_pool_min_size
@@ -226,7 +226,6 @@ module "eks" {
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
 
-  # subnet_ids                                 = data.aws_subnet.private_subnets.*.id
   aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version

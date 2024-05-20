@@ -123,6 +123,6 @@ output "eks" {
 }
 
 output "inuse_azs" {
-  value       = [for index, subnet in local.node_group_subnets : subnet.availability_zone]
+  value       = distinct([for index, subnet in local.node_group_subnets : subnet.availability_zone])
   description = "The availability zones in which the EKS nodes is deployed"
 }
