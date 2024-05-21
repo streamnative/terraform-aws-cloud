@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.0.0](https://github.com/streamnative/terraform-aws-cloud/compare/v2.8.0...v3.0.0) (2024-05-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* use shared route table for public subnet ([#125](https://github.com/streamnative/terraform-aws-cloud/issues/125))
+
+### Features
+
+* add new output eks which contains all outputs of module.eks ([#131](https://github.com/streamnative/terraform-aws-cloud/issues/131)) ([6f7739e](https://github.com/streamnative/terraform-aws-cloud/commit/6f7739eb8d41f6dfb971cc2eee6f7c9713977432))
+* add output eks for provide convenient approach to access eks module's all outputs ([6f7739e](https://github.com/streamnative/terraform-aws-cloud/commit/6f7739eb8d41f6dfb971cc2eee6f7c9713977432))
+* **cluster_autoscaler:** removed old k8s versions, added new ones ([#120](https://github.com/streamnative/terraform-aws-cloud/issues/120)) ([853aba8](https://github.com/streamnative/terraform-aws-cloud/commit/853aba86bd144b3462947f02ce83513569cd67af))
+* Disable nodepool logging to cloudwatch by default ([#126](https://github.com/streamnative/terraform-aws-cloud/issues/126)) ([c9be3c1](https://github.com/streamnative/terraform-aws-cloud/commit/c9be3c188be0ab67927c799b52c1d88e6f3bb1e6))
+* support disable nat gateway and use public subnet ([#132](https://github.com/streamnative/terraform-aws-cloud/issues/132)) ([4c1b508](https://github.com/streamnative/terraform-aws-cloud/commit/4c1b508055a51ab9a8df3efd92785a6ac9c95736))
+* Support single zone node_group ([#133](https://github.com/streamnative/terraform-aws-cloud/issues/133)) ([8038bdf](https://github.com/streamnative/terraform-aws-cloud/commit/8038bdf08874221ac2778253148a97bd0c04aa8c))
+* use shared route table for public subnet ([#125](https://github.com/streamnative/terraform-aws-cloud/issues/125)) ([12e5ff0](https://github.com/streamnative/terraform-aws-cloud/commit/12e5ff074f4dfb03d8804ccfdc6adbaa55198400))
+
+
+### Bug Fixes
+
+* Correct default value ([#128](https://github.com/streamnative/terraform-aws-cloud/issues/128)) ([25d8171](https://github.com/streamnative/terraform-aws-cloud/commit/25d8171ff57a4bb83d697c718289b12cb3030b6a))
+* Optimize external-dns args to reduce api calls ([#124](https://github.com/streamnative/terraform-aws-cloud/issues/124)) ([5aa0166](https://github.com/streamnative/terraform-aws-cloud/commit/5aa01668a2735698d7ede1e31354e11529fe0710))
+
 ## [2.8.0](https://github.com/streamnative/terraform-aws-cloud/compare/v2.7.0...v2.8.0) (2023-08-24)
 
 
