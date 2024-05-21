@@ -542,6 +542,12 @@ variable "public_subnet_ids" {
   type        = list(string)
 }
 
+variable "enable_nodes_use_public_subnet" {
+  default     = false
+  type        = bool
+  description = "When set to true, the node groups will use public subnet rather private subnet, and the public subnet must enable auto-assing public ip so that nodes can have public ip to access internet. Default is false."
+}
+
 variable "region" {
   default     = null
   description = "The AWS region."
