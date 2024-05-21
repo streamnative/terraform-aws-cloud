@@ -21,15 +21,6 @@ data "aws_subnet" "private_subnets" {
   id    = var.private_subnet_ids[count.index]
 }
 
-locals {
-  node_group_subnets = var.enable_nodes_use_public_subnet ? length(var.node_pool_azs) != 0 ? [
-    for index, subnet in data.aws_subnet.public_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone) 
-  ] : data.aws_subnet.public_subnets : length(var.node_pool_azs) != 0 ? [
-    for index, subnet in data.aws_subnet.private_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone)
-  ] : data.aws_subnet.private_subnets
-  node_group_subnet_ids = [for index, subnet in local.node_group_subnets : subnet.id]
-}
-
 data "aws_kms_key" "ebs_default" {
   key_id = "alias/aws/ebs"
 }
@@ -47,7 +38,12 @@ locals {
   default_service_policy_arn = "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
   ebs_kms_key                = var.disk_encryption_kms_key_arn == "" ? data.aws_kms_key.ebs_default.arn : var.disk_encryption_kms_key_arn
   oidc_issuer                = trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
-  nodes_subnet_ids           = var.enable_nodes_use_public_subnet ? var.public_subnet_ids : var.private_subnet_ids
+
+  nodes_available_subnets = var.enable_nodes_use_public_subnet ? data.aws_subnet.public_subnets : data.aws_subnet.private_subnets
+  node_group_subnets = length(var.node_pool_azs) != 0 ? [
+    for index, subnet in local.nodes_available_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone)
+  ] : local.nodes_available_subnets
+  node_group_subnet_ids = [for index, subnet in local.node_group_subnets : subnet.id]
 
   tags = merge(
     {
