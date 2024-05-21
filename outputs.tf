@@ -121,3 +121,8 @@ output "eks" {
   value       = module.eks
   description = "All outputs of module.eks for provide convenient approach to access child module's outputs."
 }
+
+output "inuse_azs" {
+  value       = distinct([for index, subnet in local.node_group_subnets : subnet.availability_zone])
+  description = "The availability zones in which the EKS nodes is deployed"
+}

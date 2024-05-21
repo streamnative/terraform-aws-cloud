@@ -177,9 +177,9 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.49.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >=3.61.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.2.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.16.1 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >=2.6.1 |
 
 ## Modules
 
@@ -334,6 +334,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="input_migration_mode"></a> [migration\_mode](#input\_migration\_mode) | Whether to enable migration mode for the cluster. This is used to migrate details from existing security groups, which have had their names and description changed in versions v18.X of the community EKS module. | `bool` | `false` | no |
 | <a name="input_migration_mode_node_sg_name"></a> [migration\_mode\_node\_sg\_name](#input\_migration\_mode\_node\_sg\_name) | The name (not ID!) of the existing security group used by worker nodes. This is required when "migration\_mode" is set to "true", otherwise the parent module will attempt to set a new security group name and destroy the existin one. | `string` | `null` | no |
 | <a name="input_node_pool_ami_id"></a> [node\_pool\_ami\_id](#input\_node\_pool\_ami\_id) | The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS. | `string` | `""` | no |
+| <a name="input_node_pool_azs"></a> [node\_pool\_azs](#input\_node\_pool\_azs) | A list of availability zones to use for the EKS node group. If not set, the module will use the same availability zones with the cluster. | `list(string)` | `[]` | no |
 | <a name="input_node_pool_block_device_name"></a> [node\_pool\_block\_device\_name](#input\_node\_pool\_block\_device\_name) | The name of the block device to use for the EKS cluster nodes. | `string` | `"/dev/nvme0n1"` | no |
 | <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | `0` | no |
 | <a name="input_node_pool_disk_iops"></a> [node\_pool\_disk\_iops](#input\_node\_pool\_disk\_iops) | The amount of provisioned IOPS for the worker node root EBS volume. | `number` | `3000` | no |
@@ -397,6 +398,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="output_eks_node_group_security_group_id"></a> [eks\_node\_group\_security\_group\_id](#output\_eks\_node\_group\_security\_group\_id) | Security group ID attached to the EKS node groups |
 | <a name="output_eks_node_groups"></a> [eks\_node\_groups](#output\_eks\_node\_groups) | Map of all attributes of the EKS node groups created by this module |
 | <a name="output_external_dns_arn"></a> [external\_dns\_arn](#output\_external\_dns\_arn) | The ARN for External DNS |
+| <a name="output_inuse_azs"></a> [inuse\_azs](#output\_inuse\_azs) | The availability zones in which the EKS nodes is deployed |
 | <a name="output_tiered_storage_s3_bucket_arn"></a> [tiered\_storage\_s3\_bucket\_arn](#output\_tiered\_storage\_s3\_bucket\_arn) | The ARN for the tiered storage S3 bucket created by this module |
 | <a name="output_velero_arn"></a> [velero\_arn](#output\_velero\_arn) | ARN for Velero |
 | <a name="output_velero_s3_bucket_arn"></a> [velero\_s3\_bucket\_arn](#output\_velero\_s3\_bucket\_arn) | The ARN for the Velero S3 bucket created by this module |
