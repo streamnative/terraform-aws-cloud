@@ -21,6 +21,11 @@ data "aws_subnet" "private_subnets" {
   id    = var.private_subnet_ids[count.index]
 }
 
+data "aws_subnet" "public_subnets" {
+  count = length(var.private_subnet_ids)
+  id    = var.public_subnet_ids[count.index]
+}
+
 data "aws_kms_key" "ebs_default" {
   key_id = "alias/aws/ebs"
 }
