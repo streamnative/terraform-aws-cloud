@@ -22,7 +22,9 @@ data "aws_subnet" "private_subnets" {
 }
 
 locals {
-  node_group_subnets = length(var.node_pool_azs) != 0 ? [
+  node_group_subnets = var.enable_nodes_use_public_subnet ? length(var.node_pool_azs) != 0 ? [
+    for index, subnet in data.aws_subnet.public_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone) 
+  ] : data.aws_subnet.public_subnets : length(var.node_pool_azs) != 0 ? [
     for index, subnet in data.aws_subnet.private_subnets : subnet if contains(var.node_pool_azs, subnet.availability_zone)
   ] : data.aws_subnet.private_subnets
   node_group_subnet_ids = [for index, subnet in local.node_group_subnets : subnet.id]
