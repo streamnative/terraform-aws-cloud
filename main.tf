@@ -109,7 +109,7 @@ locals {
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
     taints                  = local.node_pool_taints
-    metadata_http_tokens    = "required"
+    metadata_http_tokens    = var.metadata_http_tokens
     tags = merge(var.node_pool_tags, local.tags, {
       "k8s.io/cluster-autoscaler/enabled"                      = "true",
       format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
@@ -130,7 +130,7 @@ locals {
           min_size       = var.node_pool_min_size
           max_size       = var.node_pool_max_size
           labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
-          metadata_http_tokens    = "required"
+          metadata_http_tokens    = var.metadata_http_tokens
         }
       ]
     ]) : "${node_group.name}" => node_group
@@ -157,7 +157,7 @@ locals {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
       }))
-      metadata_http_tokens    = "required"
+      metadata_http_tokens    = var.metadata_http_tokens
     }
   })
 

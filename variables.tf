@@ -369,6 +369,12 @@ variable "map_additional_iam_roles" {
   }))
 }
 
+variable "metadata_http_tokens" {
+  default     = "optional"
+  description = "Require tokens or not, setting to 'required' enables IMDSv2"
+  type        = string
+}
+
 variable "metrics_server_helm_chart_name" {
   default     = "metrics-server"
   description = "The name of the helm release to install"
