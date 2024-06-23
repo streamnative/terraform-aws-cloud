@@ -121,14 +121,15 @@ locals {
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
-          subnet_ids     = [data.aws_subnet.private_subnets[i].id]
-          instance_types = [instance_type]
-          name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          taints         = {}
-          desired_size   = var.node_pool_desired_size
-          min_size       = var.node_pool_min_size
-          max_size       = var.node_pool_max_size
-          labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
+          subnet_ids                   = [data.aws_subnet.private_subnets[i].id]
+          instance_types               = [instance_type]
+          name                         = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
+          taints                       = {}
+          desired_size                 = var.node_pool_desired_size
+          min_size                     = var.node_pool_min_size
+          max_size                     = var.node_pool_max_size
+          labels                       = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
+          iam_role_additional_policies = var.node_group_role_additional_iam_policies
         }
       ]
     ]) : "${node_group.name}" => node_group
