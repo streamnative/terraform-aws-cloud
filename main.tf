@@ -258,6 +258,7 @@ module "eks" {
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
   cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
+  cluster_addons                             = var.cluster_addons
 }
 
 ### Additional Tags

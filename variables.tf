@@ -665,3 +665,9 @@ variable "node_group_role_additional_iam_policies" {
   description = "A list of IAM policies to attach to the EKS node group role."
   type        = list(string)
 }
+
+variable "cluster_addons" {
+  default     = {}
+  description = "Map of cluster addon configurations to enable for the cluster. Addon name can be the map keys or set with `name`"
+  type        = any
+}
