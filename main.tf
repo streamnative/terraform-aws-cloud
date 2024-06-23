@@ -155,6 +155,7 @@ locals {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
       }))
+      iam_role_additional_policies = var.node_group_role_additional_iam_policies
     }
   })
 

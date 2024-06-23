@@ -659,3 +659,9 @@ variable "cluster_service_ipv4_cidr" {
   type        = string
   default     = null
 }
+
+variable "node_group_role_additional_iam_policies" {
+  default     = []
+  description = "A list of IAM policies to attach to the EKS node group role."
+  type        = list(string)
+}
