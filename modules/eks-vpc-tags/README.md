@@ -19,6 +19,7 @@ This module adds the resource tags necessary for allowing Kubernetes ingress con
 
 Just pass in the VPC ID, a list of private or public subnets, and the name of your EKS and the module will create the necessary tags.
 
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 No requirements.
@@ -54,3 +55,4 @@ No modules.
 ## Outputs
 
 No outputs.
+<!-- END_TF_DOCS -->

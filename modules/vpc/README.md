@@ -69,6 +69,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | The availability zones to provision. If specified will ignore num\_azs | `list(string)` | `[]` | no |
 | <a name="input_disable_nat_gateway"></a> [disable\_nat\_gateway](#input\_disable\_nat\_gateway) | If set to true, will not create NAT Gateway and EC2 Nodes should put in public subnets. This could be useful when wanna save costs from nat gateway. | `bool` | `false` | no |
 | <a name="input_num_azs"></a> [num\_azs](#input\_num\_azs) | The number of availability zones to provision | `number` | `2` | no |
 | <a name="input_private_subnet_newbits"></a> [private\_subnet\_newbits](#input\_private\_subnet\_newbits) | The number of bits to added to the VPC CIDR prefix. For instance, if your VPC CIDR is a /16 and you set this number to 4, the subnets will be /20s. | `number` | `4` | no |
