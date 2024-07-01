@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.0.0...v3.1.0) (2024-06-30)
+
+
+### Features
+
+* add availability_zones to vpc module ([#135](https://github.com/streamnative/terraform-aws-cloud/issues/135)) ([c85f5e2](https://github.com/streamnative/terraform-aws-cloud/commit/c85f5e2b737d12543262b6502ac01576879d6113))
+
 ## [3.0.0](https://github.com/streamnative/terraform-aws-cloud/compare/v2.8.0...v3.0.0) (2024-05-21)
 
 
