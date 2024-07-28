@@ -13,6 +13,8 @@
 # limitations under the License.
 
 data "aws_iam_policy_document" "external_dns" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     sid = "ChangeResourceRecordSets"
     actions = [
@@ -39,6 +41,8 @@ data "aws_iam_policy_document" "external_dns" {
 }
 
 data "aws_iam_policy_document" "external_dns_sts" {
+  count = var.enable_resource_creation ? 1 : 0
+  
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"

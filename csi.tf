@@ -13,6 +13,8 @@
 # limitations under the License.
 
 data "aws_iam_policy_document" "csi" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "ec2:CreateSnapshot",
@@ -142,6 +144,8 @@ data "aws_iam_policy_document" "csi" {
 }
 
 data "aws_iam_policy_document" "csi_sts" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"

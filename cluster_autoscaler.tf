@@ -13,6 +13,8 @@
 # limitations under the License.
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
+  count = var.enable_resource_creation ? 1 : 0
+  
   statement {
     effect = "Allow"
 
@@ -51,6 +53,8 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
 }
 
 data "aws_iam_policy_document" "cluster_autoscaler_sts" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"

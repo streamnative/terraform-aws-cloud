@@ -13,6 +13,8 @@
 # limitations under the License.
 
 data "aws_iam_policy_document" "aws_load_balancer_controller" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "iam:CreateServiceLinkedRole",
@@ -237,6 +239,8 @@ data "aws_iam_policy_document" "aws_load_balancer_controller" {
 }
 
 data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
