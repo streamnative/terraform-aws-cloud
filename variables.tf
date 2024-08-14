@@ -659,3 +659,33 @@ variable "cluster_service_ipv4_cidr" {
   type        = string
   default     = null
 }
+
+variable "bootstrap_self_managed_addons" {
+  description = "Indicates whether or not to bootstrap self-managed addons after the cluster has been created"
+  type        = bool
+  default     = null
+}
+
+# Sample
+/**
+node_groups = {
+    snc_core = {
+      name           = "snc-core"
+      use_name_prefix = true
+
+      launch_template_name = "snc-core"
+      launch_template_use_name_prefix = true
+
+      instance_types = ["m6i.large"]
+
+      min_size = 2
+      max_size = 5
+      desired_size = 2
+    }
+  }
+**/
+variable "node_groups" {
+  description = "Map of EKS managed node group definitions to create"
+  type        = any
+  default     = null
+}

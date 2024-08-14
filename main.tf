@@ -147,6 +147,7 @@ locals {
       subnet_ids     = local.node_group_subnet_ids
       instance_types = [var.v3_node_group_core_instance_type]
       name           = "snc-core"
+      use_name_prefix = true
       taints         = local.v3_node_taints
       desired_size   = var.node_pool_desired_size
       min_size       = var.node_pool_min_size
@@ -159,6 +160,7 @@ locals {
   })
 
   node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
+  eks_managed_node_groups = var.node_groups != null ? var.node_groups : local.node_groups
 
   ## Node Security Group Configuration
   default_sg_rules = {
@@ -214,7 +216,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.30.2" #"19.6.0"
+  version = "20.23.0"
 
   ######################################################################################################
   ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
@@ -229,7 +231,6 @@ module "eks" {
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
 
-  aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
   cluster_endpoint_private_access            = true # Always set to true here, which enables private networking for the node groups
@@ -244,19 +245,28 @@ module "eks" {
   create_cluster_security_group              = var.create_cluster_security_group
   create_node_security_group                 = var.create_node_security_group
   create_iam_role                            = var.use_runtime_policy ? false : true
-  eks_managed_node_groups                    = local.node_groups
+  eks_managed_node_groups                    = local.eks_managed_node_groups
   eks_managed_node_group_defaults            = local.node_group_defaults
   enable_irsa                                = true
   iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
   iam_role_path                              = var.iam_path
   iam_role_permissions_boundary              = var.permissions_boundary_arn
-  manage_aws_auth_configmap                  = var.manage_aws_auth_configmap
   node_security_group_id                     = var.node_security_group_id
   node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
   openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
   cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
+
+  bootstrap_self_managed_addons = var.bootstrap_self_managed_addons
+}
+
+module "eks_auth" {
+  source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
+  version = "20.20.0"
+
+  manage_aws_auth_configmap = var.manage_aws_auth_configmap
+  aws_auth_roles            = local.role_bindings
 }
 
 ### Additional Tags
