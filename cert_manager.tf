@@ -74,7 +74,7 @@ resource "aws_iam_role" "cert_manager" {
   count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-cm-role", module.eks.cluster_id)
   description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
-  assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
+  assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.0.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
   tags                 = local.tags
@@ -91,7 +91,7 @@ resource "aws_iam_policy" "cert_manager" {
   name        = format("%s-CertManagerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the Cert-Manager addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
-  policy      = data.aws_iam_policy_document.cert_manager.json
+  policy      = data.aws_iam_policy_document.cert_manager.0.json
   tags        = local.tags
 }
 

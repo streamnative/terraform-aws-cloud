@@ -675,6 +675,7 @@ node_groups = {
 
       launch_template_name = "snc-core"
       launch_template_use_name_prefix = true
+      launch_template_version = 9
 
       instance_types = ["m6i.large"]
 

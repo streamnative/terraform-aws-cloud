@@ -262,7 +262,7 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
   count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-lbc-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
-  assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
+  assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.0.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
   tags                 = local.tags
@@ -279,7 +279,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   name        = format("%s-AWSLoadBalancerControllerPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the AWS Load Balancer Controller addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
-  policy      = data.aws_iam_policy_document.aws_load_balancer_controller.json
+  policy      = data.aws_iam_policy_document.aws_load_balancer_controller.0.json
   tags        = local.tags
 }
 

@@ -64,7 +64,7 @@ resource "aws_iam_role" "external_dns" {
   count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-extdns-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA external-dns on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
-  assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
+  assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.0.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
   tags                 = local.tags
@@ -81,7 +81,7 @@ resource "aws_iam_policy" "external_dns" {
   name        = format("%s-ExternalDnsPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the ExternalDNS addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
-  policy      = data.aws_iam_policy_document.external_dns.json
+  policy      = data.aws_iam_policy_document.external_dns.0.json
   tags        = local.tags
 }
 
