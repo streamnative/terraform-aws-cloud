@@ -666,7 +666,7 @@ variable "bootstrap_self_managed_addons" {
   default     = null
 }
 
-# Sample
+# Example 
 /**
 node_groups = {
     snc_core = {
@@ -683,7 +683,7 @@ node_groups = {
       max_size = 5
       desired_size = 2
     }
-  }
+}
 **/
 variable "node_groups" {
   description = "Map of EKS managed node group definitions to create"

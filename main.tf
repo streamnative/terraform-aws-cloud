@@ -160,7 +160,13 @@ locals {
   })
 
   node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
-  eks_managed_node_groups = var.node_groups != null ? var.node_groups : local.node_groups
+  defaulted_node_groups = tomap({
+    for k, v in var.node_groups : k => merge(
+      v,
+      contains(keys(v), "subnet_ids") ? {} : { "subnet_ids" = local.node_group_subnet_ids },
+    )
+  })
+  eks_managed_node_groups = var.node_groups != null ? local.defaulted_node_groups : local.node_groups
 
   ## Node Security Group Configuration
   default_sg_rules = {
