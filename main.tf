@@ -236,7 +236,7 @@ module "eks" {
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
 
-  iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn)
+  iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
   iam_role_use_name_prefix      = try(var.cluster_iam.iam_role_use_name_prefix, true)
   iam_role_name                 = try(var.cluster_iam.iam_role_name, null)
