@@ -117,7 +117,7 @@ locals {
   }
 
   ## Create the node groups, one for each instance type AND each availability zone/subnet
-  v2_node_groups = tomap({
+  v2_node_groups = {
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
@@ -132,7 +132,7 @@ locals {
         }
       ]
     ]) : "${node_group.name}" => node_group
-  })
+  }
 
   v3_node_taints = var.enable_v3_node_taints ? {
     "core" = {
@@ -142,7 +142,7 @@ locals {
     }
   } : {}
 
-  v3_node_groups = tomap({
+  v3_node_groups = {
     "snc-core" = {
       subnet_ids     = local.node_group_subnet_ids
       instance_types = [var.v3_node_group_core_instance_type]
@@ -157,15 +157,15 @@ locals {
         "cloud.streamnative.io/instance-group" = "Core"
       }))
     }
-  })
+  }
 
   node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
-  defaulted_node_groups = tomap({
+  defaulted_node_groups = {
     for k, v in var.node_groups : k => merge(
       v,
       contains(keys(v), "subnet_ids") ? {} : { "subnet_ids" = local.node_group_subnet_ids },
     )
-  })
+  }
   eks_managed_node_groups = var.node_groups != null ? local.defaulted_node_groups : local.node_groups
 
   ## Node Security Group Configuration
