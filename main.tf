@@ -166,7 +166,7 @@ locals {
       contains(keys(v), "subnet_ids") ? {} : { "subnet_ids" = local.node_group_subnet_ids },
     )
   }
-  eks_managed_node_groups = var.node_groups != null ? local.defaulted_node_groups : local.node_groups
+  eks_managed_node_groups = [local.defaulted_node_groups, local.node_groups][var.node_groups != null ? 0 : 1]
 
   ## Node Security Group Configuration
   default_sg_rules = {
