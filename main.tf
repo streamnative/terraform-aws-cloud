@@ -144,14 +144,14 @@ locals {
 
   v3_node_groups = {
     "snc-core" = {
-      subnet_ids     = local.node_group_subnet_ids
-      instance_types = [var.v3_node_group_core_instance_type]
-      name           = "snc-core"
+      subnet_ids      = local.node_group_subnet_ids
+      instance_types  = [var.v3_node_group_core_instance_type]
+      name            = "snc-core"
       use_name_prefix = true
-      taints         = local.v3_node_taints
-      desired_size   = var.node_pool_desired_size
-      min_size       = var.node_pool_min_size
-      max_size       = var.node_pool_max_size
+      taints          = local.v3_node_taints
+      desired_size    = var.node_pool_desired_size
+      min_size        = var.node_pool_min_size
+      max_size        = var.node_pool_max_size
       labels = tomap(merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
@@ -229,13 +229,19 @@ module "eks" {
   ### They are only applicable if migration_mode is set to true, for upgrading existing clusters     ###
   ######################################################################################################
   prefix_separator                    = var.migration_mode ? "" : "-"
-  iam_role_name                       = var.migration_mode ? var.cluster_name : null
   cluster_security_group_name         = var.migration_mode ? var.cluster_name : null
   cluster_security_group_description  = var.migration_mode ? "EKS cluster security group." : "EKS cluster security group"
   node_security_group_description     = var.migration_mode ? "Security group for all nodes in the cluster." : "EKS node shared security group"
   node_security_group_use_name_prefix = var.migration_mode ? false : true
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
+
+  iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn)
+  create_iam_role               = try(var.cluster_iam.create_iam_role, true)
+  iam_role_use_name_prefix      = try(var.cluster_iam.iam_role_use_name_prefix, true)
+  iam_role_name                 = try(var.cluster_iam.iam_role_name, null)
+  iam_role_path                 = var.iam_path
+  iam_role_permissions_boundary = var.permissions_boundary_arn
 
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
@@ -250,19 +256,17 @@ module "eks" {
   create_cluster_primary_security_group_tags = false # Cleaner if we handle the tag in aws_ec2_tag.cluster_security_group
   create_cluster_security_group              = var.create_cluster_security_group
   create_node_security_group                 = var.create_node_security_group
-  create_iam_role                            = var.use_runtime_policy ? false : true
-  eks_managed_node_groups                    = local.eks_managed_node_groups
-  eks_managed_node_group_defaults            = local.node_group_defaults
-  enable_irsa                                = true
-  iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
-  iam_role_path                              = var.iam_path
-  iam_role_permissions_boundary              = var.permissions_boundary_arn
-  node_security_group_id                     = var.node_security_group_id
-  node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
-  openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
-  vpc_id                                     = var.vpc_id
-  cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
+
+  eks_managed_node_groups         = local.eks_managed_node_groups
+  eks_managed_node_group_defaults = local.node_group_defaults
+  enable_irsa                     = true
+
+  vpc_id                               = var.vpc_id
+  node_security_group_id               = var.node_security_group_id
+  node_security_group_additional_rules = merge(var.node_security_group_additional_rules, local.default_sg_rules)
+  openid_connect_audiences             = ["sts.amazonaws.com"]
+  cluster_service_ipv4_cidr            = var.cluster_service_ipv4_cidr
 
   bootstrap_self_managed_addons = var.bootstrap_self_managed_addons
 }

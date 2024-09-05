@@ -666,8 +666,7 @@ variable "bootstrap_self_managed_addons" {
   default     = null
 }
 
-# Example 
-/**
+/** Example
 node_groups = {
     snc_core = {
       name           = "snc-core"
@@ -687,6 +686,22 @@ node_groups = {
 **/
 variable "node_groups" {
   description = "Map of EKS managed node group definitions to create"
+  type        = any
+  default     = null
+}
+
+
+
+/** Example
+cluster_iam = {
+  create_iam_role = true
+  iam_role_use_name_prefix = false
+  iam_role_name = ""
+  iam_role_arn = ""
+}
+**/
+variable "cluster_iam" {
+  description = "Cluster IAM settings"
   type        = any
   default     = null
 }
