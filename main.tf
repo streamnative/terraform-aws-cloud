@@ -246,7 +246,7 @@ module "eks" {
   cluster_security_group_id                  = try(var.cluster_networking.cluster_security_group_id, var.cluster_security_group_id, "")
   cluster_additional_security_group_ids      = try(var.cluster_networking.cluster_additional_security_group_ids, [])
   create_cluster_security_group              = try(var.cluster_networking.create_cluster_security_group, var.create_cluster_security_group, true)
-  cluster_security_group_name                = try(var.cluster_networking.cluster_security_group_name, var.cluster_name, null)
+  cluster_security_group_name                = try(var.cluster_networking.cluster_security_group_name, null)
   cluster_security_group_additional_rules    = try(var.cluster_networking.cluster_security_group_additional_rules, var.cluster_security_group_additional_rules, {})
   create_cluster_primary_security_group_tags = false # Cleaner if we handle the tag in aws_ec2_tag.cluster_security_group
 
