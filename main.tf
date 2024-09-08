@@ -368,7 +368,7 @@ resource "aws_iam_role" "cluster" {
   count                = var.use_runtime_policy ? 1 : 0
   name                 = format("%s-cluster-role", var.cluster_name)
   description          = format("The IAM Role used by the %s EKS cluster", var.cluster_name)
-  assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy.json
+  assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy[0].json
   tags                 = local.tags
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
