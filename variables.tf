@@ -667,32 +667,6 @@ variable "bootstrap_self_managed_addons" {
 }
 
 /** Example
-node_groups = {
-    snc_core = {
-      name           = "snc-core"
-      use_name_prefix = true
-
-      launch_template_name = "snc-core"
-      launch_template_use_name_prefix = true
-      launch_template_version = 9
-
-      instance_types = ["m6i.large"]
-
-      min_size = 2
-      max_size = 5
-      desired_size = 2
-    }
-}
-**/
-variable "node_groups" {
-  description = "Map of EKS managed node group definitions to create"
-  type        = any
-  default     = null
-}
-
-
-
-/** Example
 cluster_iam = {
   create_iam_role = true
   iam_role_use_name_prefix = false
@@ -702,6 +676,68 @@ cluster_iam = {
 **/
 variable "cluster_iam" {
   description = "Cluster IAM settings"
+  type        = any
+  default     = null
+}
+
+/** Example
+cluster_networking = {
+    cluster_service_ipv4_cidr = null
+
+    cluster_security_group_id                  = ""
+    cluster_additional_security_group_ids      = []
+    create_cluster_security_group              = true 
+    cluster_security_group_name                = null
+    cluster_security_group_additional_rules    = {}
+    cluster_security_group_description         = ""
+    create_cluster_primary_security_group_tags = false
+}
+**/
+variable "cluster_networking" {
+  description = "Cluster Networking settings"
+  type        = any
+  default     = null
+}
+
+/** Example
+node_groups = {
+    snc_core = {
+      name            = "snc-core"
+      use_name_prefix = true
+
+      create_iam_role               = false 
+      iam_role_arn                  = null
+      iam_role_name                 = null
+      iam_role_use_name_prefix      = true
+      iam_role_path                 = null
+      iam_role_description          = ""
+      iam_role_permissions_boundary = null
+      iam_role_tags                 = {}
+      iam_role_attach_cni_policy    = true
+      iam_role_additional_policies  = {}
+      create_iam_role_policy        = true
+      iam_role_policy_statements    = []
+
+      create_launch_template = true
+      use_custom_launch_template = true
+      launch_template_id = ""
+      launch_template_name = "snc-core"
+      launch_template_use_name_prefix = true
+      launch_template_version = null
+      launch_template_default_version = null
+      update_launch_template_default_version = true
+      launch_template_description = ""
+      vpc_security_group_ids = []
+
+      instance_types = ["m6i.large"]
+      min_size = 2
+      max_size = 5
+      desired_size = 2
+    }
+}
+**/
+variable "node_groups" {
+  description = "Map of EKS managed node group definitions to create"
   type        = any
   default     = null
 }

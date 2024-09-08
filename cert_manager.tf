@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "cert_manager" {
 
 data "aws_iam_policy_document" "cert_manager_sts" {
   count = var.enable_resource_creation ? 1 : 0
-  
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"

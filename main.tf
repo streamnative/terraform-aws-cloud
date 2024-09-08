@@ -222,19 +222,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.23.0"
-
-  ######################################################################################################
-  ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
-  ### They are only applicable if migration_mode is set to true, for upgrading existing clusters     ###
-  ######################################################################################################
-  prefix_separator                    = var.migration_mode ? "" : "-"
-  cluster_security_group_name         = var.migration_mode ? var.cluster_name : null
-  cluster_security_group_description  = var.migration_mode ? "EKS cluster security group." : "EKS cluster security group"
-  node_security_group_description     = var.migration_mode ? "Security group for all nodes in the cluster." : "EKS node shared security group"
-  node_security_group_use_name_prefix = var.migration_mode ? false : true
-  node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
-  ######################################################################################################
+  version = "20.24.0"
 
   iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
@@ -243,37 +231,40 @@ module "eks" {
   iam_role_path                 = var.iam_path
   iam_role_permissions_boundary = var.permissions_boundary_arn
 
-  cluster_name                               = var.cluster_name
-  cluster_version                            = var.cluster_version
-  cluster_endpoint_private_access            = true # Always set to true here, which enables private networking for the node groups
-  cluster_endpoint_public_access             = var.disable_public_eks_endpoint ? false : true
-  cluster_endpoint_public_access_cidrs       = var.allowed_public_cidrs
-  cluster_enabled_log_types                  = var.cluster_enabled_log_types
-  cluster_security_group_additional_rules    = var.cluster_security_group_additional_rules
-  cluster_security_group_id                  = var.cluster_security_group_id
+  cluster_name                         = var.cluster_name
+  cluster_version                      = var.cluster_version
+  cluster_endpoint_private_access      = true # Always set to true here, which enables private networking for the node groups
+  cluster_endpoint_public_access       = var.disable_public_eks_endpoint ? false : true
+  cluster_endpoint_public_access_cidrs = var.allowed_public_cidrs
+  enable_irsa                          = true
+  openid_connect_audiences             = ["sts.amazonaws.com"]
+  bootstrap_self_managed_addons        = var.bootstrap_self_managed_addons
+
+  vpc_id                                     = var.vpc_id
   control_plane_subnet_ids                   = local.cluster_subnet_ids
-  create_cloudwatch_log_group                = false
+  cluster_service_ipv4_cidr                  = try(var.cluster_networking.cluster_service_ipv4_cidr, var.cluster_service_ipv4_cidr, null)
+  cluster_security_group_id                  = try(var.cluster_networking.cluster_security_group_id, var.cluster_security_group_id, "")
+  cluster_additional_security_group_ids      = try(var.cluster_networking.cluster_additional_security_group_ids, [])
+  create_cluster_security_group              = try(var.cluster_networking.create_cluster_security_group, var.create_cluster_security_group, true)
+  cluster_security_group_name                = try(var.cluster_networking.cluster_security_group_name, var.cluster_name, null)
+  cluster_security_group_additional_rules    = try(var.cluster_networking.cluster_security_group_additional_rules, var.cluster_security_group_additional_rules, {})
   create_cluster_primary_security_group_tags = false # Cleaner if we handle the tag in aws_ec2_tag.cluster_security_group
-  create_cluster_security_group              = var.create_cluster_security_group
-  create_node_security_group                 = var.create_node_security_group
-  tags                                       = local.tags
 
   eks_managed_node_groups         = local.eks_managed_node_groups
   eks_managed_node_group_defaults = local.node_group_defaults
-  enable_irsa                     = true
 
-  vpc_id                               = var.vpc_id
   node_security_group_id               = var.node_security_group_id
+  create_node_security_group           = var.create_node_security_group
   node_security_group_additional_rules = merge(var.node_security_group_additional_rules, local.default_sg_rules)
-  openid_connect_audiences             = ["sts.amazonaws.com"]
-  cluster_service_ipv4_cidr            = var.cluster_service_ipv4_cidr
 
-  bootstrap_self_managed_addons = var.bootstrap_self_managed_addons
+  cluster_enabled_log_types   = var.cluster_enabled_log_types
+  create_cloudwatch_log_group = false
+  tags                        = local.tags
 }
 
 module "eks_auth" {
   source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
-  version = "20.20.0"
+  version = "20.24.0"
 
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_roles            = local.role_bindings
@@ -360,6 +351,7 @@ moved {
 
 ### Cluster IAM Role
 data "aws_iam_policy_document" "cluster_assume_role_policy" {
+  count = var.use_runtime_policy ? 1 : 0
   statement {
     actions = [
       "sts:AssumeRole"
