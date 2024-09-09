@@ -27,7 +27,7 @@ output "private_route_table_ids" {
 }
 
 output "public_route_table_ids" {
-  value = [aws_route_table.public_route_table.id]
+  value = [aws_route_table.public_route_table.*.id]
 }
 
 output "vpc_id" {
