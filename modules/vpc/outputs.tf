@@ -22,11 +22,11 @@ output "public_subnet_ids" {
   description = "A list of public subnet ID's created by this module"
 }
 
-output "private_route_tables" {
+output "private_route_table_ids" {
   value = aws_route_table.private_route_table.*.id
 }
 
-output "public_route_tables" {
+output "public_route_table_ids" {
   value = [aws_route_table.public_route_table.id]
 }
 
