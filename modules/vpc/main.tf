@@ -96,7 +96,7 @@ resource "aws_route_table" "public_route_table" {
   count = 1
 
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-public-rtb", var.vpc_name) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-rtb", var.vpc_name) }, var.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -122,7 +122,7 @@ resource "aws_route_table" "private_route_table" {
   count = var.disable_nat_gateway ? 0 : local.num_azs
 
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }, var.tags)
 
   lifecycle {
     ignore_changes = [tags]
