@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.1.0...v3.2.0) (2024-09-10)
+
+
+### Features
+
+* Expose route tables info ([#138](https://github.com/streamnative/terraform-aws-cloud/issues/138)) ([13d1412](https://github.com/streamnative/terraform-aws-cloud/commit/13d141209539f4ef25eae9f87284eba0c0397170))
+
 ## [3.1.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.0.0...v3.1.0) (2024-06-30)
 
 
