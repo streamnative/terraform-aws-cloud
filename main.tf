@@ -222,7 +222,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.24.0"
+  version = "20.24.1"
 
   iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
