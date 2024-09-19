@@ -224,13 +224,6 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.24.1"
 
-  iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
-  create_iam_role               = try(var.cluster_iam.create_iam_role, true)
-  iam_role_use_name_prefix      = try(var.cluster_iam.iam_role_use_name_prefix, true)
-  iam_role_name                 = try(var.cluster_iam.iam_role_name, null)
-  iam_role_path                 = var.iam_path
-  iam_role_permissions_boundary = var.permissions_boundary_arn
-
   cluster_name                         = var.cluster_name
   cluster_version                      = var.cluster_version
   cluster_endpoint_private_access      = true # Always set to true here, which enables private networking for the node groups
@@ -239,6 +232,13 @@ module "eks" {
   enable_irsa                          = true
   openid_connect_audiences             = ["sts.amazonaws.com"]
   bootstrap_self_managed_addons        = var.bootstrap_self_managed_addons
+
+  iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
+  create_iam_role               = try(var.cluster_iam.create_iam_role, true)
+  iam_role_use_name_prefix      = try(var.cluster_iam.iam_role_use_name_prefix, true)
+  iam_role_name                 = try(var.cluster_iam.iam_role_name, null)
+  iam_role_path                 = try(var.cluster_iam.iam_role_path, var.iam_path, "/StreamNative/")
+  iam_role_permissions_boundary = try(var.cluster_iam.iam_role_permissions_boundary, var.permissions_boundary_arn, null)
 
   vpc_id                                     = var.vpc_id
   control_plane_subnet_ids                   = local.cluster_subnet_ids
