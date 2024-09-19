@@ -257,6 +257,7 @@ module "eks" {
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
   cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
+  bootstrap_self_managed_addons              = var.bootstrap_self_managed_addons
 }
 
 ### Additional Tags
