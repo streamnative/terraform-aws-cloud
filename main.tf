@@ -213,6 +213,15 @@ locals {
 }
 
 module "eks" {
+  source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
+  version = "~> 20.0"
+
+  aws_auth_roles            = local.role_bindings
+  manage_aws_auth_configmap = var.manage_aws_auth_configmap
+
+}
+
+module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.24.1" #"19.6.0"
 
@@ -229,7 +238,6 @@ module "eks" {
   node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
   ######################################################################################################
 
-  aws_auth_roles                             = local.role_bindings
   cluster_name                               = var.cluster_name
   cluster_version                            = var.cluster_version
   cluster_endpoint_private_access            = true # Always set to true here, which enables private networking for the node groups
@@ -250,7 +258,6 @@ module "eks" {
   iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
   iam_role_path                              = var.iam_path
   iam_role_permissions_boundary              = var.permissions_boundary_arn
-  manage_aws_auth_configmap                  = var.manage_aws_auth_configmap
   node_security_group_id                     = var.node_security_group_id
   node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
   openid_connect_audiences                   = ["sts.amazonaws.com"]
