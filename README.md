@@ -168,24 +168,25 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.1.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >=3.61.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.2 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.61 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.2.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >=2.6.1 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.32 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.49.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.61.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.2.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.16.1 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.32.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 18.30.2 |
+| <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 20.24.1 |
+| <a name="module_eks_auth"></a> [eks\_auth](#module\_eks\_auth) | terraform-aws-modules/eks/aws//modules/aws-auth | 20.24.0 |
 | <a name="module_istio"></a> [istio](#module\_istio) | github.com/streamnative/terraform-helm-charts//modules/istio-operator | v0.8.6 |
 | <a name="module_vpc_tags"></a> [vpc\_tags](#module\_vpc\_tags) | ./modules/eks-vpc-tags | n/a |
 
@@ -266,12 +267,13 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 |------|-------------|------|---------|:--------:|
 | <a name="input_add_vpc_tags"></a> [add\_vpc\_tags](#input\_add\_vpc\_tags) | Adds tags to VPC resources necessary for ingress resources within EKS to perform auto-discovery of subnets. Defaults to "true". Note that this may cause resource cycling (delete and recreate) if you are using Terraform to manage your VPC resources without having a `lifecycle { ignore_changes = [ tags ] }` block defined within them, since the VPC resources will want to manage the tags themselves and remove the ones added by this module. | `bool` | `true` | no |
 | <a name="input_additional_tags"></a> [additional\_tags](#input\_additional\_tags) | Additional tags to be added to the resources created by this module. | `map(any)` | `{}` | no |
-| <a name="input_allowed_public_cidrs"></a> [allowed\_public\_cidrs](#input\_allowed\_public\_cidrs) | List of CIDR blocks that are allowed to access the EKS cluster's public endpoint. Defaults to "0.0.0.0/0" (any). | `list(string)` | <pre>[<br>  "0.0.0.0/0"<br>]</pre> | no |
+| <a name="input_allowed_public_cidrs"></a> [allowed\_public\_cidrs](#input\_allowed\_public\_cidrs) | List of CIDR blocks that are allowed to access the EKS cluster's public endpoint. Defaults to "0.0.0.0/0" (any). | `list(string)` | <pre>[<br/>  "0.0.0.0/0"<br/>]</pre> | no |
 | <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | The a list of ARNs for secrets stored in ASM. This grants the kubernetes-external-secrets controller select access to secrets used by resources within the EKS cluster. If no arns are provided via this input, the IAM policy will allow read access to all secrets created in the provided region. | `list(string)` | `[]` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_name"></a> [aws\_load\_balancer\_controller\_helm\_chart\_name](#input\_aws\_load\_balancer\_controller\_helm\_chart\_name) | The name of the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"aws-load-balancer-controller"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_repository"></a> [aws\_load\_balancer\_controller\_helm\_chart\_repository](#input\_aws\_load\_balancer\_controller\_helm\_chart\_repository) | The repository containing the Helm chart to use for the AWS Load Balancer Controller. | `string` | `"https://aws.github.io/eks-charts"` | no |
 | <a name="input_aws_load_balancer_controller_helm_chart_version"></a> [aws\_load\_balancer\_controller\_helm\_chart\_version](#input\_aws\_load\_balancer\_controller\_helm\_chart\_version) | The version of the Helm chart to use for the AWS Load Balancer Controller. The current version can be found in github: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml. | `string` | `"1.4.2"` | no |
 | <a name="input_aws_load_balancer_controller_settings"></a> [aws\_load\_balancer\_controller\_settings](#input\_aws\_load\_balancer\_controller\_settings) | Additional settings which will be passed to the Helm chart values for the AWS Load Balancer Controller. See https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller for available options. | `map(string)` | `{}` | no |
+| <a name="input_bootstrap_self_managed_addons"></a> [bootstrap\_self\_managed\_addons](#input\_bootstrap\_self\_managed\_addons) | Indicates whether or not to bootstrap self-managed addons after the cluster has been created | `bool` | `null` | no |
 | <a name="input_cert_issuer_support_email"></a> [cert\_issuer\_support\_email](#input\_cert\_issuer\_support\_email) | The email address to receive notifications from the cert issuer. | `string` | `"certs-support@streamnative.io"` | no |
 | <a name="input_cert_manager_helm_chart_name"></a> [cert\_manager\_helm\_chart\_name](#input\_cert\_manager\_helm\_chart\_name) | The name of the Helm chart in the repository for cert-manager. | `string` | `"cert-manager"` | no |
 | <a name="input_cert_manager_helm_chart_repository"></a> [cert\_manager\_helm\_chart\_repository](#input\_cert\_manager\_helm\_chart\_repository) | The repository containing the cert-manager helm chart. | `string` | `"https://charts.bitnami.com/bitnami"` | no |
@@ -284,8 +286,10 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="input_cluster_autoscaler_helm_chart_repository"></a> [cluster\_autoscaler\_helm\_chart\_repository](#input\_cluster\_autoscaler\_helm\_chart\_repository) | The repository containing the cluster-autoscaler helm chart. | `string` | `"https://kubernetes.github.io/autoscaler"` | no |
 | <a name="input_cluster_autoscaler_helm_chart_version"></a> [cluster\_autoscaler\_helm\_chart\_version](#input\_cluster\_autoscaler\_helm\_chart\_version) | Helm chart version for the cluster-autoscaler. Defaults to "9.10.4". See https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for more details. | `string` | `"9.21.0"` | no |
 | <a name="input_cluster_autoscaler_settings"></a> [cluster\_autoscaler\_settings](#input\_cluster\_autoscaler\_settings) | Additional settings which will be passed to the Helm chart values for cluster-autoscaler, see https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler for options. | `map(any)` | `{}` | no |
-| <a name="input_cluster_enabled_log_types"></a> [cluster\_enabled\_log\_types](#input\_cluster\_enabled\_log\_types) | A list of the desired control plane logging to enable. For more information, see Amazon EKS Control Plane Logging documentation (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html). | `list(string)` | <pre>[<br>  "api",<br>  "audit",<br>  "authenticator",<br>  "controllerManager",<br>  "scheduler"<br>]</pre> | no |
+| <a name="input_cluster_enabled_log_types"></a> [cluster\_enabled\_log\_types](#input\_cluster\_enabled\_log\_types) | A list of the desired control plane logging to enable. For more information, see Amazon EKS Control Plane Logging documentation (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html). | `list(string)` | <pre>[<br/>  "api",<br/>  "audit",<br/>  "authenticator",<br/>  "controllerManager",<br/>  "scheduler"<br/>]</pre> | no |
+| <a name="input_cluster_iam"></a> [cluster\_iam](#input\_cluster\_iam) | Cluster IAM settings | `any` | `null` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of your EKS cluster and associated resources. Must be 16 characters or less. | `string` | `""` | no |
+| <a name="input_cluster_networking"></a> [cluster\_networking](#input\_cluster\_networking) | Cluster Networking settings | `any` | `null` | no |
 | <a name="input_cluster_security_group_additional_rules"></a> [cluster\_security\_group\_additional\_rules](#input\_cluster\_security\_group\_additional\_rules) | Additional rules to add to the cluster security group. Set source\_node\_security\_group = true inside rules to set the node\_security\_group as source. | `any` | `{}` | no |
 | <a name="input_cluster_security_group_id"></a> [cluster\_security\_group\_id](#input\_cluster\_security\_group\_id) | The ID of an existing security group to use for the EKS cluster. If not provided, a new security group will be created. | `string` | `""` | no |
 | <a name="input_cluster_service_ipv4_cidr"></a> [cluster\_service\_ipv4\_cidr](#input\_cluster\_service\_ipv4\_cidr) | The CIDR block to assign Kubernetes service IP addresses from. If you don't specify a block, Kubernetes assigns addresses from either the 10.100.0.0/16 or 172.20.0.0/16 CIDR blocks | `string` | `null` | no |
@@ -327,13 +331,14 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="input_istio_trust_domain"></a> [istio\_trust\_domain](#input\_istio\_trust\_domain) | The trust domain used for the Istio deployment, which corresponds to the root of a system. This is required when "enable\_istio\_operator" is set to "true". | `string` | `"cluster.local"` | no |
 | <a name="input_kiali_operator_settings"></a> [kiali\_operator\_settings](#input\_kiali\_operator\_settings) | Additional settings which will be passed to the Helm chart values | `map(any)` | `{}` | no |
 | <a name="input_manage_aws_auth_configmap"></a> [manage\_aws\_auth\_configmap](#input\_manage\_aws\_auth\_configmap) | Whether to manage the aws\_auth configmap | `bool` | `true` | no |
-| <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | A list of IAM role bindings to add to the aws-auth ConfigMap. | <pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre> | `[]` | no |
+| <a name="input_map_additional_iam_roles"></a> [map\_additional\_iam\_roles](#input\_map\_additional\_iam\_roles) | A list of IAM role bindings to add to the aws-auth ConfigMap. | <pre>list(object({<br/>    rolearn  = string<br/>    username = string<br/>    groups   = list(string)<br/>  }))</pre> | `[]` | no |
 | <a name="input_metrics_server_helm_chart_name"></a> [metrics\_server\_helm\_chart\_name](#input\_metrics\_server\_helm\_chart\_name) | The name of the helm release to install | `string` | `"metrics-server"` | no |
 | <a name="input_metrics_server_helm_chart_repository"></a> [metrics\_server\_helm\_chart\_repository](#input\_metrics\_server\_helm\_chart\_repository) | The repository containing the external-metrics helm chart. | `string` | `"https://kubernetes-sigs.github.io/metrics-server"` | no |
 | <a name="input_metrics_server_helm_chart_version"></a> [metrics\_server\_helm\_chart\_version](#input\_metrics\_server\_helm\_chart\_version) | Helm chart version for Metrics server | `string` | `"3.8.2"` | no |
 | <a name="input_metrics_server_settings"></a> [metrics\_server\_settings](#input\_metrics\_server\_settings) | Additional settings which will be passed to the Helm chart values, see https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets for available options. | `map(any)` | `{}` | no |
 | <a name="input_migration_mode"></a> [migration\_mode](#input\_migration\_mode) | Whether to enable migration mode for the cluster. This is used to migrate details from existing security groups, which have had their names and description changed in versions v18.X of the community EKS module. | `bool` | `false` | no |
 | <a name="input_migration_mode_node_sg_name"></a> [migration\_mode\_node\_sg\_name](#input\_migration\_mode\_node\_sg\_name) | The name (not ID!) of the existing security group used by worker nodes. This is required when "migration\_mode" is set to "true", otherwise the parent module will attempt to set a new security group name and destroy the existin one. | `string` | `null` | no |
+| <a name="input_node_groups"></a> [node\_groups](#input\_node\_groups) | Map of EKS managed node group definitions to create | `any` | `null` | no |
 | <a name="input_node_pool_ami_id"></a> [node\_pool\_ami\_id](#input\_node\_pool\_ami\_id) | The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS. | `string` | `""` | no |
 | <a name="input_node_pool_azs"></a> [node\_pool\_azs](#input\_node\_pool\_azs) | A list of availability zones to use for the EKS node group. If not set, the module will use the same availability zones with the cluster. | `list(string)` | `[]` | no |
 | <a name="input_node_pool_block_device_name"></a> [node\_pool\_block\_device\_name](#input\_node\_pool\_block\_device\_name) | The name of the block device to use for the EKS cluster nodes. | `string` | `"/dev/nvme0n1"` | no |
@@ -342,7 +347,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `100` | no |
 | <a name="input_node_pool_disk_type"></a> [node\_pool\_disk\_type](#input\_node\_pool\_disk\_type) | Disk type for worker nodes in the node pool. Defaults to gp3. | `string` | `"gp3"` | no |
 | <a name="input_node_pool_ebs_optimized"></a> [node\_pool\_ebs\_optimized](#input\_node\_pool\_ebs\_optimized) | If true, the launched EC2 instance(s) will be EBS-optimized. Specify this if using a custom AMI with pre-user data. | `bool` | `true` | no |
-| <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Groups. Defaults to ["m6i.large", "m6i.xlarge", "m6i.2xlarge", "m6i.4xlarge", "m6i.8xlarge"], which will create empty node groups of each instance type to account for any workload configurable from StreamNative Cloud. | `list(string)` | <pre>[<br>  "m6i.large",<br>  "m6i.xlarge",<br>  "m6i.2xlarge",<br>  "m6i.4xlarge",<br>  "m6i.8xlarge"<br>]</pre> | no |
+| <a name="input_node_pool_instance_types"></a> [node\_pool\_instance\_types](#input\_node\_pool\_instance\_types) | Set of instance types associated with the EKS Node Groups. Defaults to ["m6i.large", "m6i.xlarge", "m6i.2xlarge", "m6i.4xlarge", "m6i.8xlarge"], which will create empty node groups of each instance type to account for any workload configurable from StreamNative Cloud. | `list(string)` | <pre>[<br/>  "m6i.large",<br/>  "m6i.xlarge",<br/>  "m6i.2xlarge",<br/>  "m6i.4xlarge",<br/>  "m6i.8xlarge"<br/>]</pre> | no |
 | <a name="input_node_pool_labels"></a> [node\_pool\_labels](#input\_node\_pool\_labels) | A map of kubernetes labels to add to the node pool. | `map(string)` | `{}` | no |
 | <a name="input_node_pool_max_size"></a> [node\_pool\_max\_size](#input\_node\_pool\_max\_size) | The maximum size of the node pool Autoscaling group. | `number` | n/a | yes |
 | <a name="input_node_pool_min_size"></a> [node\_pool\_min\_size](#input\_node\_pool\_min\_size) | The minimum size of the node pool AutoScaling group. | `number` | `0` | no |
@@ -366,7 +371,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="input_use_runtime_policy"></a> [use\_runtime\_policy](#input\_use\_runtime\_policy) | Legacy variable, will be deprecated in future versions. The preference of this module is to have the parent EKS module create and manage the IAM role. However some older configurations may have had the cluster IAM role managed seperately, and this variable allows for backwards compatibility. | `bool` | `false` | no |
 | <a name="input_v3_node_group_core_instance_type"></a> [v3\_node\_group\_core\_instance\_type](#input\_v3\_node\_group\_core\_instance\_type) | The instance to use for the core node group | `string` | `"m6i.large"` | no |
 | <a name="input_velero_backup_schedule"></a> [velero\_backup\_schedule](#input\_velero\_backup\_schedule) | The scheduled time for Velero to perform backups. Written in cron expression, defaults to "0 5 * * *" or "at 5:00am every day" | `string` | `"0 5 * * *"` | no |
-| <a name="input_velero_excluded_namespaces"></a> [velero\_excluded\_namespaces](#input\_velero\_excluded\_namespaces) | A comma-separated list of namespaces to exclude from Velero backups. Defaults are set to ["default", "kube-system", "operators", "olm"]. | `list(string)` | <pre>[<br>  "kube-system",<br>  "default",<br>  "operators",<br>  "olm"<br>]</pre> | no |
+| <a name="input_velero_excluded_namespaces"></a> [velero\_excluded\_namespaces](#input\_velero\_excluded\_namespaces) | A comma-separated list of namespaces to exclude from Velero backups. Defaults are set to ["default", "kube-system", "operators", "olm"]. | `list(string)` | <pre>[<br/>  "kube-system",<br/>  "default",<br/>  "operators",<br/>  "olm"<br/>]</pre> | no |
 | <a name="input_velero_helm_chart_name"></a> [velero\_helm\_chart\_name](#input\_velero\_helm\_chart\_name) | The name of the Helm chart to use for Velero | `string` | `"velero"` | no |
 | <a name="input_velero_helm_chart_repository"></a> [velero\_helm\_chart\_repository](#input\_velero\_helm\_chart\_repository) | The repository containing the Helm chart to use for velero | `string` | `"https://vmware-tanzu.github.io/helm-charts"` | no |
 | <a name="input_velero_helm_chart_version"></a> [velero\_helm\_chart\_version](#input\_velero\_helm\_chart\_version) | The version of the Helm chart to use for Velero. The current version can be found in github: https://github.com/vmware-tanzu/helm-charts/tree/main/charts/velero | `string` | `"2.31.8"` | no |
