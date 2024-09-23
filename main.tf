@@ -121,14 +121,15 @@ locals {
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
-          subnet_ids     = [data.aws_subnet.private_subnets[i].id]
-          instance_types = [instance_type]
-          name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          taints         = {}
-          desired_size   = var.node_pool_desired_size
-          min_size       = var.node_pool_min_size
-          max_size       = var.node_pool_max_size
-          labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
+          subnet_ids      = [data.aws_subnet.private_subnets[i].id]
+          instance_types  = [instance_type]
+          name            = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
+          use_name_prefix = true
+          taints          = {}
+          desired_size    = var.node_pool_desired_size
+          min_size        = var.node_pool_min_size
+          max_size        = var.node_pool_max_size
+          labels          = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
         }
       ]
     ]) : "${node_group.name}" => node_group
@@ -160,12 +161,12 @@ locals {
   }
 
   node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
-  defaulted_node_groups = {
+  defaulted_node_groups = var.node_groups != null ? {
     for k, v in var.node_groups : k => merge(
       v,
       contains(keys(v), "subnet_ids") ? {} : { "subnet_ids" = local.node_group_subnet_ids },
     )
-  }
+  } : {}
   eks_managed_node_groups = [local.defaulted_node_groups, local.node_groups][var.node_groups != null ? 0 : 1]
 
   ## Node Security Group Configuration
