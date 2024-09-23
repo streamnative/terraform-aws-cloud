@@ -47,11 +47,11 @@ provider "kubernetes" {
 }
 
 data "aws_eks_cluster" "cluster" {
-  name = module.sn_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_name
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.sn_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_name
 }
 
 data "aws_caller_identity" "current" {}
@@ -131,7 +131,7 @@ module "sn_bootstrap" {
 module "sn_tiered_storage_resources" {
   source = "github.com/streamnative/terraform-aws-cloud//modules/tiered-storage-resources?ref=v2.2.4-alpha"
 
-  cluster_name     = module.sn_cluster.eks_cluster_id
+  cluster_name     = module.sn_cluster.eks_cluster_name
   oidc_issuer      = module.sn_cluster.eks_cluster_identity_oidc_issuer_string
   pulsar_namespace = local.pulsar_namespace
 
@@ -151,7 +151,7 @@ module "sn_tiered_storage_resources" {
 module "sn_tiered_storage_vault_resources" {
   source = "github.com/streamnative/terraform-aws-cloud//modules/vault-resources?ref=v2.2.4-alpha"
 
-  cluster_name     = module.sn_cluster.eks_cluster_id
+  cluster_name     = module.sn_cluster.eks_cluster_name
   oidc_issuer      = module.sn_cluster.eks_cluster_identity_oidc_issuer_string
   pulsar_namespace = local.pulsar_namespace
 
@@ -183,11 +183,11 @@ output "cleanup_for_destroying_cluster" {
 }
 
 output "connect_to_cluster" {
-  value = format("aws eks update-kubeconfig --name %s --kubeconfig ~/.kube/config --region %s", module.sn_cluster.eks_cluster_id, local.region)
+  value = format("aws eks update-kubeconfig --name %s --kubeconfig ~/.kube/config --region %s", module.sn_cluster.eks_cluster_name, local.region)
 }
 
-output "eks_cluster_id" {
-  value = module.sn_cluster.eks_cluster_id
+output "eks_cluster_name" {
+  value = module.sn_cluster.eks_cluster_name
 }
 
 output "vpc_id" {

@@ -56,11 +56,11 @@ A bare minimum configuration to execute the module:
 
 ```hcl
 data "aws_eks_cluster" "cluster" {
-  name = module.eks_cluster.eks_cluster_id
+  name = module.eks_cluster.eks_cluster_name
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks_cluster.eks_cluster_id
+  name = module.eks_cluster.eks_cluster_name
 }
 
 provider "aws" {
@@ -393,7 +393,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="output_eks_cluster_arn"></a> [eks\_cluster\_arn](#output\_eks\_cluster\_arn) | The ARN for the EKS cluster created by this module |
 | <a name="output_eks_cluster_certificate_authority_data"></a> [eks\_cluster\_certificate\_authority\_data](#output\_eks\_cluster\_certificate\_authority\_data) | Base64 encoded certificate data required to communicate with the cluster |
 | <a name="output_eks_cluster_endpoint"></a> [eks\_cluster\_endpoint](#output\_eks\_cluster\_endpoint) | The endpoint for the EKS cluster created by this module |
-| <a name="output_eks_cluster_id"></a> [eks\_cluster\_id](#output\_eks\_cluster\_id) | The id/name of the EKS cluster created by this module |
+| <a name="output_eks_cluster_name"></a> [eks\_cluster\_name](#output\_eks\_cluster\_name) | The name of the EKS cluster created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_arn"></a> [eks\_cluster\_identity\_oidc\_issuer\_arn](#output\_eks\_cluster\_identity\_oidc\_issuer\_arn) | The ARN for the OIDC issuer created by this module |
 | <a name="output_eks_cluster_identity_oidc_issuer_string"></a> [eks\_cluster\_identity\_oidc\_issuer\_string](#output\_eks\_cluster\_identity\_oidc\_issuer\_string) | A formatted string containing the prefix for the OIDC issuer created by this module. Same as "cluster\_oidc\_issuer\_url", but with "https://" stripped from the name. This output is typically used in other StreamNative modules that request the "oidc\_issuer" input. |
 | <a name="output_eks_cluster_identity_oidc_issuer_url"></a> [eks\_cluster\_identity\_oidc\_issuer\_url](#output\_eks\_cluster\_identity\_oidc\_issuer\_url) | The URL for the OIDC issuer created by this module |
