@@ -1,4 +1,5 @@
-name: "TF GH Action"
+name: Terraform
+
 on:
   - pull_request
 
@@ -38,10 +39,10 @@ jobs:
           terraform_version: ${{ matrix.terraform_version }}
 
       - name: Terraform Validate Root
-        run: cd "${GITHUB_WORKSPACE}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color
+        run: cd "${GITHUB_WORKSPACE}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate
 
       - name: Terraform Validate Modules
-        run: for module in modules/*/; do cd "${GITHUB_WORKSPACE}/${module}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color ; done
+        run: for module in modules/*/; do cd "${GITHUB_WORKSPACE}/${module}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate; done
         
       - name: Terraform Validate Examples
-        run: for example in examples/*/; do cd "${GITHUB_WORKSPACE}/${example}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color ; done
+        run: for example in examples/*/; do cd "${GITHUB_WORKSPACE}/${example}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate; done

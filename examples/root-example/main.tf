@@ -55,7 +55,7 @@ provider "kubernetes" {
 ### Create the StreamNative Platform Cluster
 #######
 module "sn_cluster" {
-  source = "streamnative/cloud/aws"
+  source = "../.."
 
   add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
   cluster_name             = local.cluster_name
