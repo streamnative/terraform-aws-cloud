@@ -223,7 +223,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.24.1"
+  version = "20.24.2"
 
   cluster_name                         = var.cluster_name
   cluster_version                      = var.cluster_version
@@ -265,7 +265,7 @@ module "eks" {
 
 module "eks_auth" {
   source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
-  version = "20.24.1"
+  version = "20.24.2"
 
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_roles            = local.role_bindings
