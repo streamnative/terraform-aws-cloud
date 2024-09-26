@@ -250,6 +250,7 @@ module "eks" {
   cluster_security_group_name                = try(var.cluster_networking.cluster_security_group_name, null)
   cluster_security_group_additional_rules    = try(var.cluster_networking.cluster_security_group_additional_rules, var.cluster_security_group_additional_rules, {})
   create_cluster_primary_security_group_tags = false # Cleaner if we handle the tag in aws_ec2_tag.cluster_security_group
+  attach_cluster_encryption_policy           = false #Don't create the policy
 
   eks_managed_node_groups         = local.eks_managed_node_groups
   eks_managed_node_group_defaults = local.node_group_defaults
