@@ -106,8 +106,15 @@ locals {
       )
     }
   )
-  snc_func_config = var.enable_func_pool ? { for i, v in var.private_subnet_ids : "snc-func-pool${i}" => merge(local.func_pool_defaults, { subnets = [var.private_subnet_ids[i]], name = "snc-func-pool${i}" }) } : {}
-  node_groups     = merge(local.snc_node_config, local.snc_func_config, local.snc_extra_node_config)
+  snc_func_config = var.enable_func_pool ? {
+    for i, v in var.private_subnet_ids : "snc-func-pool${i}" =>
+    merge(
+      local.func_pool_defaults,
+      { subnets = [var.private_subnet_ids[i]], name = "snc-func-pool${i}" },
+      var.func_node_pool_overrides
+    )
+  } : {}
+  node_groups = merge(local.snc_node_config, local.snc_func_config, local.snc_extra_node_config)
 }
 
 module "eks" {

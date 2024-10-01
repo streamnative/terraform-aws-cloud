@@ -591,6 +591,11 @@ variable "extra_node_pool_overrides" {
   type    = any
 }
 
+variable "func_node_pool_overrides" {
+  default = {}
+  type    = any
+}
+
 variable "extra_node_pool_max_size" {
   default     = 0
   description = "The max size of the node pool AutoScaling group."
