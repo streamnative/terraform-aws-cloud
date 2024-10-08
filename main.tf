@@ -117,22 +117,23 @@ locals {
   }
 
   ## Create the node groups, one for each instance type AND each availability zone/subnet
-  v2_node_groups = tomap({
+  v2_node_groups = {
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
-          subnet_ids     = [data.aws_subnet.private_subnets[i].id]
-          instance_types = [instance_type]
-          name           = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
-          taints         = {}
-          desired_size   = var.node_pool_desired_size
-          min_size       = var.node_pool_min_size
-          max_size       = var.node_pool_max_size
-          labels         = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
+          subnet_ids      = [data.aws_subnet.private_subnets[i].id]
+          instance_types  = [instance_type]
+          name            = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
+          use_name_prefix = true
+          taints          = {}
+          desired_size    = var.node_pool_desired_size
+          min_size        = var.node_pool_min_size
+          max_size        = var.node_pool_max_size
+          labels          = tomap(merge(var.node_pool_labels, { "cloud.streamnative.io/instance-type" = lookup(local.compute_units, split(".", instance_type)[1], "null") }))
         }
       ]
     ]) : "${node_group.name}" => node_group
-  })
+  }
 
   v3_node_taints = var.enable_v3_node_taints ? {
     "core" = {
@@ -142,23 +143,31 @@ locals {
     }
   } : {}
 
-  v3_node_groups = tomap({
+  v3_node_groups = {
     "snc-core" = {
-      subnet_ids     = local.node_group_subnet_ids
-      instance_types = [var.v3_node_group_core_instance_type]
-      name           = "snc-core"
-      taints         = local.v3_node_taints
-      desired_size   = var.node_pool_desired_size
-      min_size       = var.node_pool_min_size
-      max_size       = var.node_pool_max_size
+      subnet_ids      = local.node_group_subnet_ids
+      instance_types  = [var.v3_node_group_core_instance_type]
+      name            = "snc-core"
+      use_name_prefix = true
+      taints          = local.v3_node_taints
+      desired_size    = var.node_pool_desired_size
+      min_size        = var.node_pool_min_size
+      max_size        = var.node_pool_max_size
       labels = tomap(merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
       }))
     }
-  })
+  }
 
   node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
+  defaulted_node_groups = var.node_groups != null ? {
+    for k, v in var.node_groups : k => merge(
+      v,
+      contains(keys(v), "subnet_ids") ? {} : { "subnet_ids" = local.node_group_subnet_ids },
+    )
+  } : {}
+  eks_managed_node_groups = [local.defaulted_node_groups, local.node_groups][var.node_groups != null ? 0 : 1]
 
   ## Node Security Group Configuration
   default_sg_rules = {
@@ -214,49 +223,53 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "18.30.2" #"19.6.0"
+  version = "20.24.2"
 
-  ######################################################################################################
-  ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
-  ### They are only applicable if migration_mode is set to true, for upgrading existing clusters     ###
-  ######################################################################################################
-  prefix_separator                    = var.migration_mode ? "" : "-"
-  iam_role_name                       = var.migration_mode ? var.cluster_name : null
-  cluster_security_group_name         = var.migration_mode ? var.cluster_name : null
-  cluster_security_group_description  = var.migration_mode ? "EKS cluster security group." : "EKS cluster security group"
-  node_security_group_description     = var.migration_mode ? "Security group for all nodes in the cluster." : "EKS node shared security group"
-  node_security_group_use_name_prefix = var.migration_mode ? false : true
-  node_security_group_name            = var.migration_mode ? var.migration_mode_node_sg_name : null
-  ######################################################################################################
+  cluster_name                         = var.cluster_name
+  cluster_version                      = var.cluster_version
+  cluster_endpoint_private_access      = true # Always set to true here, which enables private networking for the node groups
+  cluster_endpoint_public_access       = var.disable_public_eks_endpoint ? false : true
+  cluster_endpoint_public_access_cidrs = var.allowed_public_cidrs
+  enable_irsa                          = true
+  openid_connect_audiences             = ["sts.amazonaws.com"]
+  bootstrap_self_managed_addons        = var.bootstrap_self_managed_addons
+  cluster_encryption_policy_path       = "/StreamNative/"
 
-  aws_auth_roles                             = local.role_bindings
-  cluster_name                               = var.cluster_name
-  cluster_version                            = var.cluster_version
-  cluster_endpoint_private_access            = true # Always set to true here, which enables private networking for the node groups
-  cluster_endpoint_public_access             = var.disable_public_eks_endpoint ? false : true
-  cluster_endpoint_public_access_cidrs       = var.allowed_public_cidrs
-  cluster_enabled_log_types                  = var.cluster_enabled_log_types
-  cluster_security_group_additional_rules    = var.cluster_security_group_additional_rules
-  cluster_security_group_id                  = var.cluster_security_group_id
-  control_plane_subnet_ids                   = local.cluster_subnet_ids
-  create_cloudwatch_log_group                = false
-  create_cluster_primary_security_group_tags = false # Cleaner if we handle the tag in aws_ec2_tag.cluster_security_group
-  create_cluster_security_group              = var.create_cluster_security_group
-  create_node_security_group                 = var.create_node_security_group
-  create_iam_role                            = var.use_runtime_policy ? false : true
-  eks_managed_node_groups                    = local.node_groups
-  eks_managed_node_group_defaults            = local.node_group_defaults
-  enable_irsa                                = true
-  iam_role_arn                               = var.use_runtime_policy ? aws_iam_role.cluster[0].arn : null
-  iam_role_path                              = var.iam_path
-  iam_role_permissions_boundary              = var.permissions_boundary_arn
-  manage_aws_auth_configmap                  = var.manage_aws_auth_configmap
-  node_security_group_id                     = var.node_security_group_id
-  node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
-  openid_connect_audiences                   = ["sts.amazonaws.com"]
-  tags                                       = local.tags
+  iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
+  create_iam_role               = try(var.cluster_iam.create_iam_role, true)
+  iam_role_use_name_prefix      = try(var.cluster_iam.iam_role_use_name_prefix, true)
+  iam_role_name                 = try(var.cluster_iam.iam_role_name, null)
+  iam_role_path                 = try(var.cluster_iam.iam_role_path, var.iam_path, "/StreamNative/")
+  iam_role_permissions_boundary = try(var.cluster_iam.iam_role_permissions_boundary, var.permissions_boundary_arn, null)
+
   vpc_id                                     = var.vpc_id
-  cluster_service_ipv4_cidr                  = var.cluster_service_ipv4_cidr
+  control_plane_subnet_ids                   = local.cluster_subnet_ids
+  cluster_service_ipv4_cidr                  = try(var.cluster_networking.cluster_service_ipv4_cidr, var.cluster_service_ipv4_cidr, null)
+  cluster_security_group_id                  = try(var.cluster_networking.cluster_security_group_id, var.cluster_security_group_id, "")
+  cluster_additional_security_group_ids      = try(var.cluster_networking.cluster_additional_security_group_ids, [])
+  create_cluster_security_group              = try(var.cluster_networking.create_cluster_security_group, var.create_cluster_security_group, true)
+  cluster_security_group_name                = try(var.cluster_networking.cluster_security_group_name, null)
+  cluster_security_group_additional_rules    = try(var.cluster_networking.cluster_security_group_additional_rules, var.cluster_security_group_additional_rules, {})
+  create_cluster_primary_security_group_tags = false # Cleaner if we handle the tag in aws_ec2_tag.cluster_security_group
+
+  eks_managed_node_groups         = local.eks_managed_node_groups
+  eks_managed_node_group_defaults = local.node_group_defaults
+
+  node_security_group_id               = var.node_security_group_id
+  create_node_security_group           = var.create_node_security_group
+  node_security_group_additional_rules = merge(var.node_security_group_additional_rules, local.default_sg_rules)
+
+  cluster_enabled_log_types   = var.cluster_enabled_log_types
+  create_cloudwatch_log_group = false
+  tags                        = local.tags
+}
+
+module "eks_auth" {
+  source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
+  version = "20.24.2"
+
+  manage_aws_auth_configmap = var.manage_aws_auth_configmap
+  aws_auth_roles            = local.role_bindings
 }
 
 ### Additional Tags
@@ -340,6 +353,7 @@ moved {
 
 ### Cluster IAM Role
 data "aws_iam_policy_document" "cluster_assume_role_policy" {
+  count = var.use_runtime_policy ? 1 : 0
   statement {
     actions = [
       "sts:AssumeRole"
@@ -356,7 +370,7 @@ resource "aws_iam_role" "cluster" {
   count                = var.use_runtime_policy ? 1 : 0
   name                 = format("%s-cluster-role", var.cluster_name)
   description          = format("The IAM Role used by the %s EKS cluster", var.cluster_name)
-  assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy.json
+  assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy[0].json
   tags                 = local.tags
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
