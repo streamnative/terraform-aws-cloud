@@ -233,6 +233,7 @@ module "eks" {
   enable_irsa                          = true
   openid_connect_audiences             = ["sts.amazonaws.com"]
   bootstrap_self_managed_addons        = var.bootstrap_self_managed_addons
+  cluster_encryption_policy_path       = "/StreamNative/"
 
   iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
