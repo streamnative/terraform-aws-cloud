@@ -260,7 +260,6 @@ module "eks" {
   node_security_group_additional_rules = merge(var.node_security_group_additional_rules, local.default_sg_rules)
 
   cluster_enabled_log_types   = var.cluster_enabled_log_types
-  cluster_encryption_config   = var.cluster_encryption_config
   create_cloudwatch_log_group = false
   tags                        = local.tags
 }

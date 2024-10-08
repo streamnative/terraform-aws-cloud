@@ -257,12 +257,6 @@ variable "enable_v3_node_groups" {
   type        = bool
 }
 
-variable "cluster_encryption_config" {
-  default     = {}
-  description = "Configuration block with encryption configuration for the cluster. To disable secret encryption, set this value to `{}`"
-  type        = any
-}
-
 variable "enable_v3_node_migration" {
   default     = false
   description = "Enable v3 node and v2 node groups at the same time. Intended for use with migration to v3 nodes."
