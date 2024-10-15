@@ -81,7 +81,8 @@ locals {
     } : {}
   )
 
-  node_pool_taints = merge(var.node_pool_taints, local.computed_node_taints)
+  node_pool_taints        = merge(var.node_pool_taints, local.computed_node_taints)
+  node_group_iam_role_arn = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "") # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
 
   node_group_defaults = {
     create_security_group = false
@@ -103,11 +104,11 @@ locals {
       max_unavailable = 1
     }
     create_iam_role         = false # We create the IAM role ourselves to reduce complexity in managing the aws-auth configmap
+    iam_role_arn            = local.node_group_iam_role_arn
     create_launch_template  = true
     desired_size            = var.node_pool_desired_size
     ebs_optimized           = var.node_pool_ebs_optimized
     enable_monitoring       = var.enable_node_pool_monitoring
-    iam_role_arn            = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "") # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
     min_size                = var.node_pool_min_size
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
@@ -218,6 +219,11 @@ locals {
   # Add the worker node role back in with the path so the EKS console reports healthy node status
   worker_node_role = [
     {
+      rolearn  = local.node_group_iam_role_arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups   = ["system:bootstrappers", "system:nodes"]
+    },
+    {
       rolearn  = aws_iam_role.ng.arn
       username = "system:node:{{EC2PrivateDNSName}}"
       groups   = ["system:bootstrappers", "system:nodes"]
@@ -226,7 +232,6 @@ locals {
 
   # Switches for different role binding scenarios
   role_bindings = var.enable_sncloud_control_plane_access && var.iam_path != "" ? concat(local.sncloud_control_plane_access, local.worker_node_role, var.map_additional_iam_roles) : var.enable_sncloud_control_plane_access && var.iam_path == "" ? concat(local.sncloud_control_plane_access, var.map_additional_iam_roles) : var.enable_sncloud_control_plane_access == false && var.iam_path != "" ? concat(var.map_additional_iam_roles, local.worker_node_role) : var.map_additional_iam_roles
-
 }
 
 module "eks" {
@@ -242,7 +247,7 @@ module "eks" {
   openid_connect_audiences                 = ["sts.amazonaws.com"]
   bootstrap_self_managed_addons            = var.bootstrap_self_managed_addons
   enable_cluster_creator_admin_permissions = true
-  cluster_encryption_policy_path           = "/StreamNative/"
+  cluster_encryption_policy_path           = var.iam_path
 
   iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
@@ -381,7 +386,7 @@ resource "aws_iam_role" "cluster" {
   description          = format("The IAM Role used by the %s EKS cluster", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.cluster_assume_role_policy[0].json
   tags                 = local.tags
-  path                 = "/StreamNative/"
+  path                 = var.iam_path
   permissions_boundary = var.permissions_boundary_arn
 }
 
@@ -423,7 +428,7 @@ resource "aws_iam_role" "ng" {
   description          = format("The IAM Role used by the %s EKS cluster's worker nodes", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.ng_assume_role_policy.json
   tags                 = local.tags
-  path                 = "/StreamNative/"
+  path                 = var.iam_path
   permissions_boundary = var.permissions_boundary_arn
 }
 
