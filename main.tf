@@ -99,6 +99,9 @@ locals {
         }
       }
     }
+    update_config = {
+      max_unavailable = 1
+    }
     create_iam_role         = false # We create the IAM role ourselves to reduce complexity in managing the aws-auth configmap
     create_launch_template  = true
     desired_size            = var.node_pool_desired_size
@@ -201,6 +204,11 @@ locals {
   ### IAM role bindings
   sncloud_control_plane_access = [
     {
+      rolearn  = format("arn:${local.aws_partition}:iam::%s:role/StreamNativeCloudBootstrapRole", local.account_id)
+      username = "sn-manager:{{AccountID}}:{{SessionName}}"
+      groups   = ["system:masters"]
+    },
+    {
       rolearn  = format("arn:${local.aws_partition}:iam::%s:role/StreamNativeCloudManagementRole", local.account_id)
       username = "sn-manager:{{AccountID}}:{{SessionName}}"
       groups   = ["system:masters"]
@@ -223,17 +231,18 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.24.2"
+  version = "20.26.0"
 
-  cluster_name                         = var.cluster_name
-  cluster_version                      = var.cluster_version
-  cluster_endpoint_private_access      = true # Always set to true here, which enables private networking for the node groups
-  cluster_endpoint_public_access       = var.disable_public_eks_endpoint ? false : true
-  cluster_endpoint_public_access_cidrs = var.allowed_public_cidrs
-  enable_irsa                          = true
-  openid_connect_audiences             = ["sts.amazonaws.com"]
-  bootstrap_self_managed_addons        = var.bootstrap_self_managed_addons
-  cluster_encryption_policy_path       = "/StreamNative/"
+  cluster_name                             = var.cluster_name
+  cluster_version                          = var.cluster_version
+  cluster_endpoint_private_access          = true # Always set to true here, which enables private networking for the node groups
+  cluster_endpoint_public_access           = var.disable_public_eks_endpoint ? false : true
+  cluster_endpoint_public_access_cidrs     = var.allowed_public_cidrs
+  enable_irsa                              = true
+  openid_connect_audiences                 = ["sts.amazonaws.com"]
+  bootstrap_self_managed_addons            = var.bootstrap_self_managed_addons
+  enable_cluster_creator_admin_permissions = true
+  cluster_encryption_policy_path           = "/StreamNative/"
 
   iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
@@ -266,7 +275,7 @@ module "eks" {
 
 module "eks_auth" {
   source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
-  version = "20.24.2"
+  version = "20.26.0"
 
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_roles            = local.role_bindings
