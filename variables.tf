@@ -126,6 +126,12 @@ variable "cluster_enabled_log_types" {
   type        = list(string)
 }
 
+variable "cluster_encryption_config" {
+  description = "Configuration block with encryption configuration for the cluster. To disable secret encryption, set this value to `{}`"
+  type        = any
+  default = {}
+}
+
 variable "cluster_name" {
   default     = ""
   description = "The name of your EKS cluster and associated resources. Must be 16 characters or less."
