@@ -129,7 +129,7 @@ variable "cluster_enabled_log_types" {
 variable "cluster_encryption_config" {
   description = "Configuration block with encryption configuration for the cluster. To disable secret encryption, set this value to `{}`"
   type        = any
-  default = {}
+  default     = {}
 }
 
 variable "cluster_name" {
