@@ -285,6 +285,13 @@ module "eks_auth" {
 
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_roles            = local.role_bindings
+
+  depends_on = [ module.eks ]
+}
+
+moved {
+  from = module.eks.kubernetes_config_map_v1_data.aws_auth[0]
+  to   = module.eks_auth.kubernetes_config_map_v1_data.aws_auth[0]
 }
 
 ### Additional Tags
