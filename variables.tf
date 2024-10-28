@@ -659,3 +659,33 @@ variable "cluster_service_ipv4_cidr" {
   type        = string
   default     = null
 }
+
+variable "cluster_encryption_config" {
+  description = "Configuration block with encryption configuration for the cluster. To disable secret encryption, set this value to `{}`"
+  type        = any
+  default     = {}
+}
+
+variable "bootstrap_self_managed_addons" {
+  description = "Indicates whether or not to bootstrap self-managed addons after the cluster has been created"
+  type        = bool
+  default     = null
+}
+
+variable "cluster_iam" {
+  description = "Cluster IAM settings"
+  type        = any
+  default     = null
+}
+
+variable "cluster_networking" {
+  description = "Cluster Networking settings"
+  type        = any
+  default     = null
+}
+
+variable "node_groups" {
+  description = "Map of EKS managed node group definitions to create"
+  type        = any
+  default     = null
+}
