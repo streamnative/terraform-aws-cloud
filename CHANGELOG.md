@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.2.0...v3.3.0) (2024-11-03)
+
+
+### Features
+
+* add new variables for forward compatibility ([#142](https://github.com/streamnative/terraform-aws-cloud/issues/142)) ([269b38f](https://github.com/streamnative/terraform-aws-cloud/commit/269b38fbc31e9464921ddf046629fb4ccaee7c4c))
+
 ## [3.2.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.1.0...v3.2.0) (2024-09-10)
 
 
