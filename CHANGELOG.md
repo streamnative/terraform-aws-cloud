@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.3.0...v4.0.0) (2024-11-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* support generic adoption variables ([#140](https://github.com/streamnative/terraform-aws-cloud/issues/140))
+
+### Features
+
+* support generic adoption variables ([#140](https://github.com/streamnative/terraform-aws-cloud/issues/140)) ([5008783](https://github.com/streamnative/terraform-aws-cloud/commit/5008783e9a3d856d9e16309c73aa5930479389f0))
+
 ## [3.3.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.2.0...v3.3.0) (2024-11-03)
 
 
