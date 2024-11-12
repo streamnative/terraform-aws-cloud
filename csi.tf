@@ -13,6 +13,8 @@
 # limitations under the License.
 
 data "aws_iam_policy_document" "csi" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "ec2:CreateSnapshot",
@@ -142,6 +144,8 @@ data "aws_iam_policy_document" "csi" {
 }
 
 data "aws_iam_policy_document" "csi_sts" {
+  count = var.enable_resource_creation ? 1 : 0
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -168,7 +172,7 @@ resource "aws_iam_role" "csi" {
   count                = var.enable_resource_creation ? 1 : 0
   name                 = format("%s-csi-role", module.eks.cluster_id)
   description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", module.eks.cluster_id)
-  assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
+  assume_role_policy   = data.aws_iam_policy_document.csi_sts.0.json
   path                 = "/StreamNative/"
   permissions_boundary = var.permissions_boundary_arn
   tags                 = local.tags
@@ -185,7 +189,7 @@ resource "aws_iam_policy" "csi" {
   name        = format("%s-CsiPolicy", module.eks.cluster_id)
   description = "Policy that defines the permissions for the EBS Container Storage Interface CSI addon service running in a StreamNative Cloud EKS cluster"
   path        = "/StreamNative/"
-  policy      = data.aws_iam_policy_document.csi.json
+  policy      = data.aws_iam_policy_document.csi.0.json
   tags        = local.tags
 }
 

@@ -1,4 +1,5 @@
-name: "TF GH Action"
+name: Terraform
+
 on:
   - pull_request
 
@@ -11,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1.3.2
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.1.x
+          terraform_version: "1.5.5"
 
       - name: Terraform fmt
         run: terraform fmt -recursive -write=false -check -diff .
@@ -27,21 +28,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        terraform_version: [1.1.x]
+        terraform_version: ["1.5.5"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Terraform ${{ matrix.terraform_version }}
-        uses: hashicorp/setup-terraform@v1.3.2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ matrix.terraform_version }}
 
       - name: Terraform Validate Root
-        run: cd "${GITHUB_WORKSPACE}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color
+        run: cd "${GITHUB_WORKSPACE}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate
 
       - name: Terraform Validate Modules
-        run: for module in modules/*/; do cd "${GITHUB_WORKSPACE}/${module}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color ; done
+        run: for module in modules/*/; do cd "${GITHUB_WORKSPACE}/${module}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate; done
         
       - name: Terraform Validate Examples
-        run: for example in examples/*/; do cd "${GITHUB_WORKSPACE}/${example}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate -no-color ; done
+        run: for example in examples/*/; do cd "${GITHUB_WORKSPACE}/${example}" && terraform init -backend=false && AWS_REGION=us-east-1 terraform validate; done

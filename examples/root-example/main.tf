@@ -25,11 +25,11 @@ variable "region" {
 ### These data sources are required by the Kubernetes and Helm providers in order to connect to the newly provisioned cluster
 #######
 data "aws_eks_cluster" "cluster" {
-  name = module.sn_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_name
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.sn_cluster.eks_cluster_id
+  name = module.sn_cluster.eks_cluster_name
 }
 
 provider "aws" {
@@ -55,7 +55,7 @@ provider "kubernetes" {
 ### Create the StreamNative Platform Cluster
 #######
 module "sn_cluster" {
-  source = "streamnative/cloud/aws"
+  source = "../.."
 
   add_vpc_tags             = true # This will add the necessary tags to the VPC resources for Ingress controller auto-discovery 
   cluster_name             = local.cluster_name
