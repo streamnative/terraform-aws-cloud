@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.0.0...v4.1.0) (2024-11-20)
+
+
+### Features
+
+* add module for dns and bucket ([#145](https://github.com/streamnative/terraform-aws-cloud/issues/145)) ([8b7202b](https://github.com/streamnative/terraform-aws-cloud/commit/8b7202b17bb7abe4e0f84e7785efbe1fa4c42635))
+
 ## [4.0.0](https://github.com/streamnative/terraform-aws-cloud/compare/v3.3.0...v4.0.0) (2024-11-12)
 
 
