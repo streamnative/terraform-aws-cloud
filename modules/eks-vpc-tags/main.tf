@@ -12,8 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+data "aws_subnet" "private_subnets" {
+  count = length(var.private_subnet_ids)
+  id    = var.private_subnet_ids[count.index]
+}
+
+data "aws_subnet" "public_subnets" {
+  count = length(var.public_subnet_ids)
+  id    = var.public_subnet_ids[count.index]
+}
+
 locals {
   cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
+  node_pool_private_subnets = [
+    for subnet in data.aws_subnet.private_subnets : subnet.id 
+    if length(var.node_pool_azs) != 0 ? contains(var.node_pool_azs, subnet.availability_zone) : true
+  ]
+  node_pool_public_subnets = [
+    for subnet in data.aws_subnet.public_subnets : subnet.id 
+    if length(var.node_pool_azs) != 0 ? contains(var.node_pool_azs, subnet.availability_zone) : true
+  ]
 }
 
 resource "aws_ec2_tag" "vpc_tag" {
@@ -30,15 +48,15 @@ resource "aws_ec2_tag" "cluster_subnet_tag" {
 }
 
 resource "aws_ec2_tag" "private_subnet_tag" {
-  count       = length(var.private_subnet_ids)
-  resource_id = var.private_subnet_ids[count.index]
+  count       = length(local.node_pool_private_subnets)
+  resource_id = local.node_pool_private_subnets[count.index]
   key         = "kubernetes.io/role/internal-elb"
   value       = "1"
 }
 
 resource "aws_ec2_tag" "public_subnet_tag" {
-  count       = length(var.public_subnet_ids)
-  resource_id = var.public_subnet_ids[count.index]
+  count       = length(local.node_pool_public_subnets)
+  resource_id = local.node_pool_public_subnets[count.index]
   key         = "kubernetes.io/role/elb"
   value       = "1"
 }
