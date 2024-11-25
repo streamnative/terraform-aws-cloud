@@ -57,3 +57,9 @@ variable "vpc_id" {
     error_message = "The value for variable \"vpc_id\" must be a valid VPC id, starting with \"vpc-\"."
   }
 }
+
+variable "node_pool_azs" {
+  type        = list(string)
+  description = "A list of availability zones to use for the EKS node group. If not set, the module will use the same availability zones with the cluster."
+  default     = []
+}

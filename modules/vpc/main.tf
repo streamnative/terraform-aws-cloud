@@ -39,7 +39,7 @@ resource "aws_subnet" "public" {
   cidr_block              = cidrsubnet(var.vpc_cidr, var.public_subnet_newbits, var.public_subnet_start + count.index)
   availability_zone       = local.azs[count.index]
   map_public_ip_on_launch = var.disable_nat_gateway ? true : var.public_subnet_auto_ip
-  tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", "kubernetes.io/role/elb" = "1", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags)
+  tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -52,7 +52,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.private_subnet_newbits, var.private_subnet_start + count.index)
   availability_zone = local.azs[count.index]
-  tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", "kubernetes.io/role/internal-elb" = "1", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
+  tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
 
   lifecycle {
     ignore_changes = [tags]
