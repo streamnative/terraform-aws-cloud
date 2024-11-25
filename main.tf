@@ -303,6 +303,7 @@ module "vpc_tags" {
   vpc_id             = var.vpc_id
   public_subnet_ids  = var.public_subnet_ids
   private_subnet_ids = var.private_subnet_ids
+  node_pool_azs      = var.node_pool_azs
 }
 
 resource "aws_ec2_tag" "cluster_security_group" {
