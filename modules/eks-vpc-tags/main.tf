@@ -25,12 +25,10 @@ data "aws_subnet" "public_subnets" {
 locals {
   cluster_subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
   node_pool_private_subnets = [
-    for subnet in data.aws_subnet.private_subnets : subnet.id 
-    if length(var.node_pool_azs) != 0 ? contains(var.node_pool_azs, subnet.availability_zone) : true
+    for subnet in data.aws_subnet.private_subnets : subnet.id if(length(var.node_pool_azs) == 0 || contains(var.node_pool_azs, subnet.availability_zone))
   ]
   node_pool_public_subnets = [
-    for subnet in data.aws_subnet.public_subnets : subnet.id 
-    if length(var.node_pool_azs) != 0 ? contains(var.node_pool_azs, subnet.availability_zone) : true
+    for subnet in data.aws_subnet.public_subnets : subnet.id if(length(var.node_pool_azs) == 0 || contains(var.node_pool_azs, subnet.availability_zone))
   ]
 }
 
