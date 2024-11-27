@@ -1,0 +1,15 @@
+{
+    "separate-pull-requests": true,
+    "include-component-in-tag": true,
+    "packages": {
+        ".": {
+            "release-type": "terraform-module",
+            "bump-minor-pre-major": true,
+            "versioning": "default",
+            "include-component-in-tag": false,
+            "exclude-paths": [
+                ".github"
+            ]
+        }
+    }
+}
