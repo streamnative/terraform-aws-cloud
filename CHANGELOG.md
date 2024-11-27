@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.0...v4.1.1) (2024-11-27)
+
+
+### Bug Fixes
+
+* update release CI ([#148](https://github.com/streamnative/terraform-aws-cloud/issues/148)) ([d2f67da](https://github.com/streamnative/terraform-aws-cloud/commit/d2f67da974035398a8cc6a00ad2c3e4f552cbad9))
+
 ## [4.1.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.0.0...v4.1.0) (2024-11-20)
 
 
