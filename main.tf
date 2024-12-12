@@ -253,7 +253,7 @@ module "eks" {
   iam_role_arn                  = try(var.cluster_iam.iam_role_arn, aws_iam_role.cluster[0].arn, null)
   create_iam_role               = try(var.cluster_iam.create_iam_role, true)
   iam_role_use_name_prefix      = try(var.cluster_iam.iam_role_use_name_prefix, true)
-  iam_role_name                 = try(var.cluster_iam.iam_role_name, null)
+  iam_role_name                 = try(var.cluster_iam.iam_role_name, substr("${var.cluster_name}-cluster", 0, 37), null)
   iam_role_path                 = try(var.cluster_iam.iam_role_path, var.iam_path, "/StreamNative/")
   iam_role_permissions_boundary = try(var.cluster_iam.iam_role_permissions_boundary, var.permissions_boundary_arn, null)
 
