@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.1...v4.1.2) (2024-12-12)
+
+
+### Bug Fixes
+
+* restrict cluster iam role name prefix length ([#150](https://github.com/streamnative/terraform-aws-cloud/issues/150)) ([8c50e1f](https://github.com/streamnative/terraform-aws-cloud/commit/8c50e1fb9f4e971c924549db4226e1c106e81c27))
+
 ## [4.1.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.0...v4.1.1) (2024-11-27)
 
 
