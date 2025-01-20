@@ -148,10 +148,13 @@ module "eks" {
   node_groups = local.node_groups
 
   node_groups_defaults = {
-    additional_tags = merge({
-      "k8s.io/cluster-autoscaler/enabled"                      = "true",
-      format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
-      "Vendor"                                                 = "StreamNative"
+    additional_tags = merge(
+      {
+        "k8s.io/cluster-autoscaler/enabled" = "true"
+      } ? var.enable_auto_scaling : {},
+      {
+        format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
+        "Vendor"                                                 = "StreamNative"
       },
     )
     create_launch_template = true

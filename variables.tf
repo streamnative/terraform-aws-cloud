@@ -614,6 +614,12 @@ variable "extra_node_pool_desired_size" {
   type        = number
 }
 
+variable "enable_auto_scaling" {
+  default     = false
+  description = "Disables the auto scaling group for the node pool."
+  type        = bool
+}
+
 variable "node_pool_labels" {
   default     = {}
   description = "A map of kubernetes labels to add to the node pool."
