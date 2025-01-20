@@ -149,9 +149,9 @@ module "eks" {
 
   node_groups_defaults = {
     additional_tags = merge(
-      {
+      var.enable_auto_scaling ? {
         "k8s.io/cluster-autoscaler/enabled" = "true"
-      } ? var.enable_auto_scaling : {},
+      } : {},
       {
         format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
         "Vendor"                                                 = "StreamNative"
