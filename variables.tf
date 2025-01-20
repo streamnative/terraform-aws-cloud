@@ -615,8 +615,8 @@ variable "extra_node_pool_desired_size" {
 }
 
 variable "enable_auto_scaling" {
-  default     = false
-  description = "Disables the auto scaling group for the node pool."
+  default     = true
+  description = "Enable the auto scaling of the node pool."
   type        = bool
 }
 
