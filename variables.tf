@@ -747,3 +747,10 @@ variable "node_groups" {
   type        = any
   default     = null
 }
+
+variable "capacity_type" {
+  description = "The capacity type for the node group. Defaults to \"ON_DEMAND\". If set to \"SPOT\", the node group will be a spot instance node group."
+  type        = string
+  default     = "ON_DEMAND"
+  
+}

@@ -127,6 +127,7 @@ locals {
         for i, j in data.aws_subnet.private_subnets : {
           subnet_ids      = [data.aws_subnet.private_subnets[i].id]
           instance_types  = [instance_type]
+          capacity_type   = var.capacity_type
           name            = "snc-${split(".", instance_type)[1]}-${data.aws_subnet.private_subnets[i].availability_zone}"
           use_name_prefix = true
           taints          = {}
@@ -151,6 +152,7 @@ locals {
     "snc-core" = {
       subnet_ids      = local.node_group_subnet_ids
       instance_types  = [var.v3_node_group_core_instance_type]
+      capacity_type   = var.capacity_type
       name            = "snc-core"
       use_name_prefix = true
       taints          = local.v3_node_taints
