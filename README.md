@@ -343,6 +343,7 @@ _Note: Since this module manages all of the Kubernetes addon dependencies requir
 | <a name="input_node_pool_ami_id"></a> [node\_pool\_ami\_id](#input\_node\_pool\_ami\_id) | The AMI ID to use for the EKS cluster nodes. Defaults to the latest EKS Optimized AMI provided by AWS. | `string` | `""` | no |
 | <a name="input_node_pool_azs"></a> [node\_pool\_azs](#input\_node\_pool\_azs) | A list of availability zones to use for the EKS node group. If not set, the module will use the same availability zones with the cluster. | `list(string)` | `[]` | no |
 | <a name="input_node_pool_block_device_name"></a> [node\_pool\_block\_device\_name](#input\_node\_pool\_block\_device\_name) | The name of the block device to use for the EKS cluster nodes. | `string` | `"/dev/nvme0n1"` | no |
+| <a name="input_node_pool_capacity_type"></a> [node\_pool\_capacity\_type](#input\_node\_pool\_capacity\_type) | The capacity type for the node group. | `string` | `ON_DEMAND` | no |
 | <a name="input_node_pool_desired_size"></a> [node\_pool\_desired\_size](#input\_node\_pool\_desired\_size) | Desired number of worker nodes in the node pool. | `number` | `0` | no |
 | <a name="input_node_pool_disk_iops"></a> [node\_pool\_disk\_iops](#input\_node\_pool\_disk\_iops) | The amount of provisioned IOPS for the worker node root EBS volume. | `number` | `3000` | no |
 | <a name="input_node_pool_disk_size"></a> [node\_pool\_disk\_size](#input\_node\_pool\_disk\_size) | Disk size in GiB for worker nodes in the node pool. Defaults to 50. | `number` | `100` | no |
