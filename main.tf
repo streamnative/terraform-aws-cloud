@@ -109,6 +109,7 @@ locals {
     desired_size            = var.node_pool_desired_size
     ebs_optimized           = var.node_pool_ebs_optimized
     enable_monitoring       = var.enable_node_pool_monitoring
+    capacity_type           = var.capacity_type
     min_size                = var.node_pool_min_size
     max_size                = var.node_pool_max_size
     pre_bootstrap_user_data = var.node_pool_pre_userdata
