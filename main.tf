@@ -245,7 +245,6 @@ module "eks" {
   cluster_endpoint_public_access_cidrs     = var.allowed_public_cidrs
   enable_irsa                              = true
   openid_connect_audiences                 = ["sts.amazonaws.com"]
-  bootstrap_self_managed_addons            = var.bootstrap_self_managed_addons
   enable_cluster_creator_admin_permissions = true
   cluster_encryption_config                = var.cluster_encryption_config
   cluster_encryption_policy_path           = var.iam_path
@@ -274,6 +273,27 @@ module "eks" {
   create_node_security_group           = var.create_node_security_group
   node_security_group_additional_rules = merge(var.node_security_group_additional_rules, local.default_sg_rules)
 
+  bootstrap_self_managed_addons = var.bootstrap_self_managed_addons
+  cluster_addons = {
+    coredns = {
+      most_recent = true
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    vpc-cni = {
+      most_recent    = true
+      before_compute = true
+      configuration_values = jsonencode({
+        env = {
+          # Reference docs https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html
+          ENABLE_PREFIX_DELEGATION = "true"
+          WARM_PREFIX_TARGET       = "1"
+        }
+      })
+    }
+  }
+
   cluster_enabled_log_types   = var.cluster_enabled_log_types
   create_cloudwatch_log_group = false
   tags                        = local.tags
@@ -286,7 +306,7 @@ module "eks_auth" {
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_roles            = local.role_bindings
 
-  depends_on = [ module.eks ]
+  depends_on = [module.eks]
 }
 
 moved {
