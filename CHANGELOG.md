@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.2...v4.2.0) (2025-03-04)
+
+
+### Features
+
+* take over self-managed add-ons with Amazon EKS add-ons ([#153](https://github.com/streamnative/terraform-aws-cloud/issues/153)) ([60a8b1d](https://github.com/streamnative/terraform-aws-cloud/commit/60a8b1d0a83d03addb664477a6b32c353187d3c9))
+
 ## [4.1.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.1...v4.1.2) (2024-12-12)
 
 
