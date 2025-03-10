@@ -669,7 +669,7 @@ variable "cluster_service_ipv4_cidr" {
 variable "bootstrap_self_managed_addons" {
   description = "Indicates whether or not to bootstrap self-managed addons after the cluster has been created"
   type        = bool
-  default     = null
+  default     = false
 }
 
 /** Example
