@@ -412,6 +412,12 @@ variable "func_pool_sa_name" {
   type        = string
 }
 
+variable "workers_group_defaults" {
+  description = "Override default values for target groups. See workers_group_defaults_defaults in local.tf for valid keys."
+  type        = any
+  default     = {}
+}
+
 variable "hosted_zone_id" {
   description = "The ID of the Route53 hosted zone used by the cluster's External DNS configuration."
   type        = string
