@@ -471,6 +471,13 @@ variable "node_pool_block_device_name" {
   type        = string
 }
 
+variable "node_pool_capacity_type" {
+  description = "The capacity type for the node group. Defaults to \"ON_DEMAND\". If set to \"SPOT\", the node group will be a spot instance node group."
+  type        = string
+  default     = "ON_DEMAND"
+  
+}
+
 variable "node_pool_desired_size" {
   default     = 0
   description = "Desired number of worker nodes in the node pool."
