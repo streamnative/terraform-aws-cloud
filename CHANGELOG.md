@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.2.0...v4.2.1) (2025-05-07)
+
+
+### Bug Fixes
+
+* **vpc:** region regex validation ([#155](https://github.com/streamnative/terraform-aws-cloud/issues/155)) ([9b5ce47](https://github.com/streamnative/terraform-aws-cloud/commit/9b5ce47e533642fa282554910384fab7af2665de))
+
 ## [4.2.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.2...v4.2.0) (2025-03-04)
 
 
