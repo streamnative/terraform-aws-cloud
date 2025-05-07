@@ -15,7 +15,7 @@
 variable "region" {
   type = string
   validation {
-    condition     = can(regex("^(us|af|ap|ca|eu|me|sa|cn)\\-(east|west|south|northeast|southeast|central|north|northwest)\\-(1|2|3)$", var.region))
+    condition     = can(regex("^(us|af|ap|ca|eu|il|mx|me|sa|cn)\\-(east|west|south|northeast|southeast|central|north|northwest)\\-\\d$", var.region))
     error_message = "The region must be a proper AWS region."
   }
 }
