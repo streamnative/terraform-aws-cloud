@@ -747,3 +747,9 @@ variable "node_groups" {
   type        = any
   default     = null
 }
+
+variable "enable_vpc_cni_prefix_delegation" {
+  type        = bool
+  default     = true
+  description = "Whether set ENABLE_PREFIX_DELEGATION for vpc-cni addon"
+}
