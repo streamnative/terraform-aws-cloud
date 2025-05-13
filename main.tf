@@ -285,11 +285,11 @@ module "eks" {
       most_recent    = true
       before_compute = true
       configuration_values = jsonencode({
-        env = {
+        env = merge(var.enable_vpc_cni_prefix_delegation ? {
           # Reference docs https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html
-          ENABLE_PREFIX_DELEGATION = var.enable_vpc_cni_prefix_delegation ? "true" : null
-          WARM_PREFIX_TARGET       = var.enable_vpc_cni_prefix_delegation ? "1" : null
-        }
+          ENABLE_PREFIX_DELEGATION = "true"
+          WARM_PREFIX_TARGET       = "1"
+        } : {})
       })
     }
   }
