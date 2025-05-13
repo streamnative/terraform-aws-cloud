@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.2.1...v4.3.0) (2025-05-13)
+
+
+### Features
+
+* add variable enable_vpc_cni_prefix_delegation ([#157](https://github.com/streamnative/terraform-aws-cloud/issues/157)) ([632789b](https://github.com/streamnative/terraform-aws-cloud/commit/632789bf9edd7a584d08c748e268463b78baa902))
+
 ## [4.2.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.2.0...v4.2.1) (2025-05-07)
 
 
