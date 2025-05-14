@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.0...v4.3.1) (2025-05-14)
+
+
+### Bug Fixes
+
+* conditional set env rather than null value ([#159](https://github.com/streamnative/terraform-aws-cloud/issues/159)) ([7a4e9c3](https://github.com/streamnative/terraform-aws-cloud/commit/7a4e9c326a266289b30f2fbfd4005cb938fd84a5))
+
 ## [4.3.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.2.1...v4.3.0) (2025-05-13)
 
 
