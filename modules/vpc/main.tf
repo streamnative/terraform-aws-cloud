@@ -143,3 +143,31 @@ resource "aws_route_table_association" "private_assoc" {
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private_route_table[count.index].id
 }
+
+resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
+  count = var.disable_nat_gateway ? 0 : 1
+
+  vpc_id            = aws_vpc.vpc.id
+  service_name      = format("com.amazonaws.%s.s3", var.region)
+  route_table_ids   = aws_route_table.private_route_table[*].id
+  vpc_endpoint_type = "Gateway"
+
+  policy = <<POLICY
+{
+  "Version": "2008-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": "*"
+    }
+  ]
+}
+POLICY
+
+  tags = {
+    Name   = "${var.vpc_name}-s3-gateway-endpoint"
+    Vendor = "StreamNative"
+  }
+}
