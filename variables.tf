@@ -305,6 +305,11 @@ variable "hosted_zone_domain_name_filters" {
   type        = list(string)
 }
 
+variable "iam_role_use_name_prefix" {
+  default     = true
+  type        = bool
+}
+
 variable "iam_path" {
   default     = "/StreamNative/"
   description = "An IAM Path to be used for all IAM resources created by this module. Changing this from the default will cause issues with StreamNative's Vendor access, if applicable."

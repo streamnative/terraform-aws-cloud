@@ -252,6 +252,7 @@ module "eks" {
   node_security_group_id                     = var.node_security_group_id
   node_security_group_additional_rules       = merge(var.node_security_group_additional_rules, local.default_sg_rules)
   bootstrap_self_managed_addons              = var.bootstrap_self_managed_addons
+  iam_role_use_name_prefix                   = var.iam_role_use_name_prefix
   openid_connect_audiences                   = ["sts.amazonaws.com"]
   tags                                       = local.tags
   vpc_id                                     = var.vpc_id
