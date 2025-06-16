@@ -221,7 +221,7 @@ module "eks" {
   ### They are only applicable if migration_mode is set to true, for upgrading existing clusters     ###
   ######################################################################################################
   prefix_separator                    = var.migration_mode ? "" : "-"
-  iam_role_name                       = var.iam_role_name ? var.iam_role_name : var.migration_mode ? var.cluster_name : null
+  iam_role_name                       = var.iam_role_name != "" ? var.iam_role_name : var.migration_mode ? var.cluster_name : null
   cluster_security_group_name         = var.migration_mode ? var.cluster_name : null
   cluster_security_group_description  = var.migration_mode ? "EKS cluster security group." : "EKS cluster security group"
   node_security_group_description     = var.migration_mode ? "Security group for all nodes in the cluster." : "EKS node shared security group"
