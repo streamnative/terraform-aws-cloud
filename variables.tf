@@ -305,6 +305,11 @@ variable "hosted_zone_domain_name_filters" {
   type        = list(string)
 }
 
+variable "iam_role_name" {
+  default = ""
+  type = string
+}
+
 variable "iam_role_use_name_prefix" {
   default     = false
   type        = bool
