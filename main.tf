@@ -214,7 +214,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.29.0" #"19.6.0"
+  version = "20.29.0"
 
   ######################################################################################################
   ### This section takes into account the breaking changes made in v18.X of the community EKS module ###
