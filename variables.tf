@@ -306,7 +306,7 @@ variable "hosted_zone_domain_name_filters" {
 }
 
 variable "iam_role_use_name_prefix" {
-  default     = true
+  default     = false
   type        = bool
 }
 
