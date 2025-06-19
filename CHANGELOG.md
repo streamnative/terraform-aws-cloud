@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.1...v4.3.2) (2025-06-19)
+
+
+### Bug Fixes
+
+* Remove unused applications ([#163](https://github.com/streamnative/terraform-aws-cloud/issues/163)) ([2254307](https://github.com/streamnative/terraform-aws-cloud/commit/2254307595ca1d514073aa6f89e105df6a00603a))
+
 ## [4.3.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.0...v4.3.1) (2025-05-14)
 
 
