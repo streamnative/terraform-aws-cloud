@@ -72,46 +72,6 @@ output "eks_node_groups" {
   description = "Map of all attributes of the EKS node groups created by this module"
 }
 
-output "tiered_storage_s3_bucket_arn" {
-  value       = var.enable_resource_creation ? aws_s3_bucket.tiered_storage[0].arn : null
-  description = "The ARN for the tiered storage S3 bucket created by this module"
-}
-
-output "velero_s3_bucket_arn" {
-  value       = var.enable_resource_creation ? aws_s3_bucket.velero[0].arn : null
-  description = "The ARN for the Velero S3 bucket created by this module"
-}
-
-output "cert_manager_arn" {
-  value       = var.enable_resource_creation ? aws_iam_role.cert_manager[0].arn : null
-  description = "The ARN for Cert Manager"
-}
-
-output "external_dns_arn" {
-  value       = var.enable_resource_creation ? aws_iam_role.external_dns[0].arn : null
-  description = "The ARN for External DNS"
-}
-
-output "aws_loadbalancer_arn" {
-  value       = var.enable_resource_creation ? aws_iam_role.aws_load_balancer_controller[0].arn : null
-  description = "ARN for loadbalancer"
-}
-
-output "csi_arn" {
-  value       = var.enable_resource_creation ? aws_iam_role.csi[0].arn : null
-  description = "ARN for csi"
-}
-
-output "cluster_autoscaler_arn" {
-  value       = var.enable_resource_creation ? aws_iam_role.cluster_autoscaler[0].arn : null
-  description = "ARN for Cluster Autoscaler"
-}
-
-output "velero_arn" {
-  value       = var.enable_resource_creation ? aws_iam_role.velero[0].arn : null
-  description = "ARN for Velero"
-}
-
 output "eks_cluster_certificate_authority_data" {
   value       = module.eks.cluster_certificate_authority_data
   description = "Base64 encoded certificate data required to communicate with the cluster"
