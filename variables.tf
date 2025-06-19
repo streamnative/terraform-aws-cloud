@@ -431,3 +431,9 @@ variable "enable_resource_creation" {
   default = true
   type    = bool
 }
+
+// deprecated
+variable "create_iam_policies" {
+  default     = false
+  type        = bool
+}
