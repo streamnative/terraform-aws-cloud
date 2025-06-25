@@ -47,24 +47,6 @@ variable "enable_velero" {
   description = "Enable velero for backups. If set to false, no velero resources will be created."
 }
 
-variable "s3_encryption_kms_key_arn" {
-  default     = ""
-  description = "KMS key ARN to use for S3 encryption. If not set, the default AWS S3 key will be used."
-  type        = string
-}
-
-variable "backup_bucket" {
-  description = "The name of the s3 bucket to use for backups"
-  type        = string
-}
-
-variable "velero_backup_schedule" {
-  default     = "0 5 * * *"
-  description = "The scheduled time for Velero to perform backups. Written in cron expression, defaults to \"0 5 * * *\" or \"at 5:00am every day\""
-  type        = string
-}
-
-
 variable "extra_aws_tags" {
   default     = {}
   description = "extra aws tags to add to any resources"
