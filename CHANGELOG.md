@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.4.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.2...v4.4.0) (2025-07-24)
+
+
+### Features
+
+* add iam submodule for managing applications iam ([#162](https://github.com/streamnative/terraform-aws-cloud/issues/162)) ([8ea10c0](https://github.com/streamnative/terraform-aws-cloud/commit/8ea10c0e4d4d9d2e5176048c3899c5155f7c6c1a))
+* **vpc:** add s3 gateway endpoint ([#165](https://github.com/streamnative/terraform-aws-cloud/issues/165)) ([9e5a88b](https://github.com/streamnative/terraform-aws-cloud/commit/9e5a88b6c641354301a12498f0ac23dd4957162b))
+
 ## [4.3.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.1...v4.3.2) (2025-06-19)
 
 
