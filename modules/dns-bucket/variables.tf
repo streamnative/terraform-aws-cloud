@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable "pm_namespace" {
+  type        = string
+  description = "The namespace of the poolmember"
+}
+
 variable "pm_name" {
   description = "The name of the poolmember, for new clusters, this should be like `pm-<xxxxx>`"
   type        = string
@@ -34,6 +39,11 @@ variable "custom_dns_zone_name" {
   description = "must be passed if custom_dns_zone_id is passed, this is the zone name to use"
 }
 
+variable "bucket_location" {
+  type        = string
+  description = "The location of the bucket"
+}
+
 variable "s3_encryption_kms_key_arn" {
   default     = ""
   description = "KMS key ARN to use for S3 encryption. If not set, the default AWS S3 key will be used."
@@ -50,4 +60,10 @@ locals {
   tags = merge({
     "Vendor" = "StreamNative"
   }, var.extra_aws_tags)
+}
+
+variable "enable_loki" {
+  type        = bool
+  default     = false
+  description = "Enable loki storage bucket creation"
 }
