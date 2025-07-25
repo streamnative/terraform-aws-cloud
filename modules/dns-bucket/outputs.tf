@@ -33,5 +33,5 @@ output "tiered_storage_bucket" {
 }
 
 output "loki_bucket" {
-  value = var.enable_loki ? aws_s3_bucket.loki.bucket : ""
+  value = var.enable_loki ? aws_s3_bucket.loki[0].bucket : ""
 }
