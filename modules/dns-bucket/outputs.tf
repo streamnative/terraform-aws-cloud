@@ -31,3 +31,7 @@ output "backup_bucket_kms_key_id" {
 output "tiered_storage_bucket" {
   value = aws_s3_bucket.tiered_storage.bucket
 }
+
+output "loki_bucket" {
+  value = var.enable_loki ? aws_s3_bucket.loki.bucket : ""
+}
