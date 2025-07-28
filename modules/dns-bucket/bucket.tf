@@ -24,7 +24,7 @@ resource "aws_s3_bucket" "velero" {
   }
 }
 
-provider "aws" {
+provider "aws_loki" {
   alias  = "source"
   region = var.bucket_location
 }
@@ -43,7 +43,7 @@ resource "aws_s3_bucket" "tiered_storage" {
 
 resource "aws_s3_bucket" "loki" {
   count         = var.enable_loki ? 1 : 0
-  provider      = aws.source
+  provider      = aws_loki.source
   bucket        = format("loki-%s-%s", var.pm_namespace, var.pm_name)
   tags          = merge({ "Attributes" = "loki", "Name" = "logs-byoc" }, local.tags)
   force_destroy = true
