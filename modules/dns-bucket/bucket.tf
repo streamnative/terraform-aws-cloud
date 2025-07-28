@@ -24,6 +24,11 @@ resource "aws_s3_bucket" "velero" {
   }
 }
 
+provider "aws" {
+  alias  = "source"
+  region = var.bucket_location
+}
+
 resource "aws_s3_bucket" "tiered_storage" {
   bucket        = format("%s-tiered-storage-snc", var.pm_name)
   tags          = merge({ "Attributes" = "tiered-storage" }, local.tags)
@@ -39,13 +44,6 @@ resource "aws_s3_bucket" "tiered_storage" {
 resource "aws_s3_bucket" "loki" {
   count         = var.enable_loki ? 1 : 0
   provider      = aws.source
-  # Only required if region is NOT us-east-1
-  dynamic "create_bucket_configuration" {
-    for_each = var.bucket_location == "us-east-1" ? [] : [1]
-    content {
-      location_constraint = var.bucket_location
-    }
-  }
   bucket        = format("loki-%s-%s", var.pm_namespace, var.pm_name)
   tags          = merge({ "Attributes" = "loki", "Name" = "logs-byoc" }, local.tags)
   force_destroy = true
