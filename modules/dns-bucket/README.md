@@ -28,9 +28,9 @@ A basic module used to create Route53 Zone and S3 Buckets.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
-| <a name="provider_aws.source"></a> [aws.source](#provider\_aws.source) | n/a |
-| <a name="provider_aws.target"></a> [aws.target](#provider\_aws.target) | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.6.0 |
+| <a name="provider_aws.source"></a> [aws.source](#provider\_aws.source) | 6.6.0 |
+| <a name="provider_aws.target"></a> [aws.target](#provider\_aws.target) | 6.6.0 |
 
 ## Modules
 
