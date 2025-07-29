@@ -39,6 +39,10 @@ variable "custom_dns_zone_name" {
   description = "must be passed if custom_dns_zone_id is passed, this is the zone name to use"
 }
 
+variable "bucket_location" {
+  type        = string
+  description = "The location of the bucket"
+}
 
 variable "s3_encryption_kms_key_arn" {
   default     = ""
