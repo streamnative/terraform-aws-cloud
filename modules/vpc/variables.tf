@@ -82,3 +82,9 @@ variable "disable_nat_gateway" {
   default     = false
   description = "If set to true, will not create NAT Gateway and EC2 Nodes should put in public subnets. This could be useful when wanna save costs from nat gateway."
 }
+
+variable "enable_s3_gateway_endpoint" {
+  type        = bool
+  default     = false
+  description = "If set to true, will create S3 VPC Endpoint. This could be useful when wanna save costs from NAT Gateway."
+}

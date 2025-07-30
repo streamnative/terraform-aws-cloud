@@ -145,7 +145,7 @@ resource "aws_route_table_association" "private_assoc" {
 }
 
 resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
-  count = var.disable_nat_gateway ? 0 : 1
+  count = var.disable_nat_gateway || !var.enable_s3_gateway_endpoint ? 0 : 1
 
   vpc_id            = aws_vpc.vpc.id
   service_name      = format("com.amazonaws.%s.s3", var.region)
