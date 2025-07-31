@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.4.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.2...v4.4.0) (2025-07-31)
+
+
+### Features
+
+* add iam submodule for managing applications iam ([#162](https://github.com/streamnative/terraform-aws-cloud/issues/162)) ([8ea10c0](https://github.com/streamnative/terraform-aws-cloud/commit/8ea10c0e4d4d9d2e5176048c3899c5155f7c6c1a))
+* support loki bucket for aws BYOC poolmembers  ([#170](https://github.com/streamnative/terraform-aws-cloud/issues/170)) ([92713e7](https://github.com/streamnative/terraform-aws-cloud/commit/92713e7805b6e66aab0d825e7fea51c2466c3a9a))
+* **vpc:** add enable_s3_gateway_endpoint variable ([#168](https://github.com/streamnative/terraform-aws-cloud/issues/168)) ([5211726](https://github.com/streamnative/terraform-aws-cloud/commit/52117262556d3d882a42157a99fc212a3bf0e799))
+* **vpc:** add s3 gateway endpoint ([#165](https://github.com/streamnative/terraform-aws-cloud/issues/165)) ([9e5a88b](https://github.com/streamnative/terraform-aws-cloud/commit/9e5a88b6c641354301a12498f0ac23dd4957162b))
+
+
+### Reverts
+
+* support loki bucket for aws BYOC poolmembers ([#169](https://github.com/streamnative/terraform-aws-cloud/issues/169)) ([055f7f2](https://github.com/streamnative/terraform-aws-cloud/commit/055f7f2a6e54de142ed976f4284fe87200b16e10))
+
 ## [4.3.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.1...v4.3.2) (2025-06-19)
 
 
