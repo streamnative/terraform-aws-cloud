@@ -42,12 +42,6 @@ resource "aws_s3_bucket" "loki" {
   bucket        = format("loki-%s-%s", var.pm_namespace, var.pm_name)
   tags          = merge({ "Attributes" = "loki", "Name" = "logs-byoc" }, local.tags)
   force_destroy = true
-
-  lifecycle {
-    ignore_changes = [
-      bucket,
-    ]
-  }
 }
 
 data "aws_kms_key" "s3_default" {
