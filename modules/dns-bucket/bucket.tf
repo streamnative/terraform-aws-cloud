@@ -13,25 +13,27 @@
 # limitations under the License.
 
 resource "aws_s3_bucket" "velero" {
-  provider      = aws.target
   bucket        = format("%s-cluster-backup-snc", var.pm_name)
   tags          = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
   force_destroy = true
+
+  lifecycle {
+    ignore_changes = [
+      bucket,
+    ]
+  }
 }
 
 resource "aws_s3_bucket" "tiered_storage" {
-  provider      = aws.target
   bucket        = format("%s-tiered-storage-snc", var.pm_name)
   tags          = merge({ "Attributes" = "tiered-storage" }, local.tags)
   force_destroy = true
-}
 
-resource "aws_s3_bucket" "loki" {
-  count         = var.enable_loki ? 1 : 0
-  provider      = aws.source
-  bucket        = format("loki-%s-%s", var.pm_namespace, var.pm_name)
-  tags          = merge({ "Attributes" = "loki", "Name" = "logs-byoc" }, local.tags)
-  force_destroy = true
+  lifecycle {
+    ignore_changes = [
+      bucket,
+    ]
+  }
 }
 
 data "aws_kms_key" "s3_default" {
