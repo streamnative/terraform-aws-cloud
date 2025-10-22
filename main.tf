@@ -136,14 +136,15 @@ locals {
 
   v3_node_groups = {
     "snc-core" = {
-      subnet_ids      = local.node_group_subnet_ids
-      instance_types  = [var.v3_node_group_core_instance_type]
-      name            = "snc-core"
-      use_name_prefix = true
-      taints          = local.v3_node_taints
-      desired_size    = var.node_pool_desired_size
-      min_size        = var.node_pool_min_size
-      max_size        = var.node_pool_max_size
+      subnet_ids             = local.node_group_subnet_ids
+      instance_types         = [var.v3_node_group_core_instance_type]
+      name                   = "snc-core"
+      use_name_prefix        = true
+      taints                 = local.v3_node_taints
+      desired_size           = var.node_pool_desired_size
+      min_size               = var.node_pool_min_size
+      max_size               = var.node_pool_max_size
+      create_placement_group = true
       labels = tomap(merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
