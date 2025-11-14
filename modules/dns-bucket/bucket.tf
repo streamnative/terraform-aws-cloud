@@ -27,10 +27,9 @@ resource "aws_s3_bucket" "tiered_storage" {
 }
 
 resource "aws_s3_bucket" "loki" {
-  count         = var.enable_loki ? 1 : 0
   provider      = aws.source
   bucket        = format("loki-%s-%s", var.pm_namespace, var.pm_name)
-  tags          = merge({ "Attributes" = "loki", "Name" = "logs-byoc" }, local.tags)
+  tags          = merge({ "Attributes" = "loki" }, local.tags)
   force_destroy = true
 }
 
