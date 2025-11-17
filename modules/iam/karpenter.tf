@@ -380,7 +380,7 @@ data "aws_iam_policy_document" "karpenter" {
   statement {
     sid       = "AllowInstanceProfileReadActions"
     resources = ["arn:${local.aws_partition}:iam::${local.account_id}:instance-profile/*"]
-    actions   = ["iam:GetInstanceProfile"]
+    actions   = ["iam:GetInstanceProfile", "iam:ListInstanceProfiles"]
   }
 
   statement {
