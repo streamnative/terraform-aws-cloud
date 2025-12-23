@@ -7,7 +7,7 @@ output "cert_manager_arn" {
 }
 
 output "cluster_autoscaler_arn" {
-  value = aws_iam_role.cluster_autoscaler.0.arn
+  value = try(aws_iam_role.cluster_autoscaler[0].arn, null)
 }
 
 output "csi_arn" {
@@ -19,9 +19,9 @@ output "external_dns_arn" {
 }
 
 output "karpenter_arn" {
-  value = aws_iam_role.karpenter.0.arn
+  value = try(aws_iam_role.karpenter[0].arn, null)
 }
 
 output "velero_arn" {
-  value = aws_iam_role.velero.0.arn
+  value = try(aws_iam_role.velero[0].arn, null)
 }
