@@ -30,12 +30,7 @@ data "aws_kms_key" "ebs_default" {
   key_id = "alias/aws/ebs"
 }
 
-data "aws_kms_key" "s3_default" {
-  key_id = "alias/aws/s3"
-}
-
 locals {
-  s3_kms_key                 = var.s3_encryption_kms_key_arn == "" ? data.aws_kms_key.s3_default.arn : var.s3_encryption_kms_key_arn
   aws_partition              = data.aws_partition.current.partition
   account_id                 = data.aws_caller_identity.current.account_id
   cluster_subnet_ids         = concat(var.private_subnet_ids, var.public_subnet_ids)
@@ -71,15 +66,7 @@ locals {
     "large" = "Small"
   }
 
-  computed_node_taints = merge(
-    var.enable_cilium && var.enable_cilium_taint ? {
-      cilium = {
-        key    = "node.cilium.io/agent-not-ready"
-        value  = true
-        effect = "NO_EXECUTE"
-      }
-    } : {}
-  )
+  computed_node_taints = {}
 
   node_pool_taints        = merge(var.node_pool_taints, local.computed_node_taints)
   node_group_iam_role_arn = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "") # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
@@ -248,7 +235,6 @@ module "eks" {
   cluster_endpoint_public_access_cidrs     = var.allowed_public_cidrs
   enable_irsa                              = true
   openid_connect_audiences                 = ["sts.amazonaws.com"]
-  bootstrap_self_managed_addons            = var.bootstrap_self_managed_addons
   enable_cluster_creator_admin_permissions = true
   cluster_encryption_config                = var.cluster_encryption_config
   cluster_encryption_policy_path           = var.iam_path
@@ -277,6 +263,27 @@ module "eks" {
   create_node_security_group           = var.create_node_security_group
   node_security_group_additional_rules = merge(var.node_security_group_additional_rules, local.default_sg_rules)
 
+  bootstrap_self_managed_addons = var.bootstrap_self_managed_addons
+  cluster_addons = {
+    coredns = {
+      most_recent = true
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    vpc-cni = {
+      most_recent    = true
+      before_compute = true
+      configuration_values = jsonencode({
+        env = merge(var.enable_vpc_cni_prefix_delegation ? {
+          # Reference docs https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html
+          ENABLE_PREFIX_DELEGATION = "true"
+          WARM_PREFIX_TARGET       = "1"
+        } : {})
+      })
+    }
+  }
+
   cluster_enabled_log_types   = var.cluster_enabled_log_types
   create_cloudwatch_log_group = false
   tags                        = local.tags
@@ -289,7 +296,7 @@ module "eks_auth" {
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_roles            = local.role_bindings
 
-  depends_on = [ module.eks ]
+  depends_on = [module.eks]
 }
 
 moved {
@@ -313,68 +320,6 @@ resource "aws_ec2_tag" "cluster_security_group" {
   resource_id = module.eks.cluster_primary_security_group_id
   key         = "Vendor"
   value       = "StreamNative"
-}
-
-### Kubernetes Configurations
-resource "kubernetes_namespace" "sn_system" {
-  count = var.enable_resource_creation ? 1 : 0
-  metadata {
-    name = "sn-system"
-
-    labels = {
-      "istio.io/rev" = var.istio_revision_tag
-    }
-  }
-  depends_on = [
-    module.eks
-  ]
-}
-
-moved {
-  from = kubernetes_namespace.sn_system
-  to   = kubernetes_namespace.sn_system[0]
-}
-
-resource "kubernetes_storage_class" "sn_default" {
-  count = var.enable_resource_creation ? 1 : 0
-  metadata {
-    name = "sn-default"
-  }
-  storage_provisioner = "ebs.csi.aws.com"
-  parameters = {
-    type      = "gp3"
-    encrypted = "true"
-    kmsKeyId  = local.ebs_kms_key
-  }
-  reclaim_policy         = "Delete"
-  allow_volume_expansion = true
-  volume_binding_mode    = "WaitForFirstConsumer"
-}
-
-moved {
-  from = kubernetes_storage_class.sn_default
-  to   = kubernetes_storage_class.sn_default[0]
-}
-
-resource "kubernetes_storage_class" "sn_ssd" {
-  count = var.enable_resource_creation ? 1 : 0
-  metadata {
-    name = "sn-ssd"
-  }
-  storage_provisioner = "ebs.csi.aws.com"
-  parameters = {
-    type      = "gp3"
-    encrypted = "true"
-    kmsKeyId  = local.ebs_kms_key
-  }
-  reclaim_policy         = "Delete"
-  allow_volume_expansion = true
-  volume_binding_mode    = "WaitForFirstConsumer"
-}
-
-moved {
-  from = kubernetes_storage_class.sn_ssd
-  to   = kubernetes_storage_class.sn_ssd[0]
 }
 
 ### Cluster IAM Role

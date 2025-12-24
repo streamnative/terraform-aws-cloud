@@ -1,4 +1,4 @@
-# Copyright 2023 StreamNative, Inc.
+# Copyright 2025 StreamNative, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v2
-name: cert-issuer
-description: Certificate issuer(s) for SN Cloud.
-type: application
-version: 0.1.0
+terraform {
+  required_version = ">=1.2.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.64.2"
+    }
+  }
+}
+

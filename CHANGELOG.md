@@ -1,5 +1,55 @@
 # Changelog
 
+## [4.4.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.2...v4.4.0) (2025-07-31)
+
+
+### Features
+
+* add iam submodule for managing applications iam ([#162](https://github.com/streamnative/terraform-aws-cloud/issues/162)) ([8ea10c0](https://github.com/streamnative/terraform-aws-cloud/commit/8ea10c0e4d4d9d2e5176048c3899c5155f7c6c1a))
+* support loki bucket for aws BYOC poolmembers  ([#170](https://github.com/streamnative/terraform-aws-cloud/issues/170)) ([92713e7](https://github.com/streamnative/terraform-aws-cloud/commit/92713e7805b6e66aab0d825e7fea51c2466c3a9a))
+* **vpc:** add enable_s3_gateway_endpoint variable ([#168](https://github.com/streamnative/terraform-aws-cloud/issues/168)) ([5211726](https://github.com/streamnative/terraform-aws-cloud/commit/52117262556d3d882a42157a99fc212a3bf0e799))
+* **vpc:** add s3 gateway endpoint ([#165](https://github.com/streamnative/terraform-aws-cloud/issues/165)) ([9e5a88b](https://github.com/streamnative/terraform-aws-cloud/commit/9e5a88b6c641354301a12498f0ac23dd4957162b))
+
+
+### Reverts
+
+* support loki bucket for aws BYOC poolmembers ([#169](https://github.com/streamnative/terraform-aws-cloud/issues/169)) ([055f7f2](https://github.com/streamnative/terraform-aws-cloud/commit/055f7f2a6e54de142ed976f4284fe87200b16e10))
+
+## [4.3.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.1...v4.3.2) (2025-06-19)
+
+
+### Bug Fixes
+
+* Remove unused applications ([#163](https://github.com/streamnative/terraform-aws-cloud/issues/163)) ([2254307](https://github.com/streamnative/terraform-aws-cloud/commit/2254307595ca1d514073aa6f89e105df6a00603a))
+
+## [4.3.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.0...v4.3.1) (2025-05-14)
+
+
+### Bug Fixes
+
+* conditional set env rather than null value ([#159](https://github.com/streamnative/terraform-aws-cloud/issues/159)) ([7a4e9c3](https://github.com/streamnative/terraform-aws-cloud/commit/7a4e9c326a266289b30f2fbfd4005cb938fd84a5))
+
+## [4.3.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.2.1...v4.3.0) (2025-05-13)
+
+
+### Features
+
+* add variable enable_vpc_cni_prefix_delegation ([#157](https://github.com/streamnative/terraform-aws-cloud/issues/157)) ([632789b](https://github.com/streamnative/terraform-aws-cloud/commit/632789bf9edd7a584d08c748e268463b78baa902))
+
+## [4.2.1](https://github.com/streamnative/terraform-aws-cloud/compare/v4.2.0...v4.2.1) (2025-05-07)
+
+
+### Bug Fixes
+
+* **vpc:** region regex validation ([#155](https://github.com/streamnative/terraform-aws-cloud/issues/155)) ([9b5ce47](https://github.com/streamnative/terraform-aws-cloud/commit/9b5ce47e533642fa282554910384fab7af2665de))
+
+## [4.2.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.2...v4.2.0) (2025-03-04)
+
+
+### Features
+
+* take over self-managed add-ons with Amazon EKS add-ons ([#153](https://github.com/streamnative/terraform-aws-cloud/issues/153)) ([60a8b1d](https://github.com/streamnative/terraform-aws-cloud/commit/60a8b1d0a83d03addb664477a6b32c353187d3c9))
+
 ## [4.1.2](https://github.com/streamnative/terraform-aws-cloud/compare/v4.1.1...v4.1.2) (2024-12-12)
 
 

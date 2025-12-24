@@ -15,7 +15,7 @@
 variable "region" {
   type = string
   validation {
-    condition     = can(regex("^(us|af|ap|ca|eu|me|sa|cn)\\-(east|west|south|northeast|southeast|central|north|northwest)\\-(1|2|3)$", var.region))
+    condition     = can(regex("^(us|af|ap|ca|eu|il|mx|me|sa|cn)\\-(east|west|south|northeast|southeast|central|north|northwest)\\-\\d$", var.region))
     error_message = "The region must be a proper AWS region."
   }
 }
@@ -81,4 +81,10 @@ variable "disable_nat_gateway" {
   type        = bool
   default     = false
   description = "If set to true, will not create NAT Gateway and EC2 Nodes should put in public subnets. This could be useful when wanna save costs from nat gateway."
+}
+
+variable "enable_s3_gateway_endpoint" {
+  type        = bool
+  default     = false
+  description = "If set to true, will create S3 VPC Endpoint. This could be useful when wanna save costs from NAT Gateway."
 }
