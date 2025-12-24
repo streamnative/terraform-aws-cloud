@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.5.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.4.0...v4.5.0) (2025-12-24)
+
+
+### Features
+
+* add capacity type node groups to allow for spot nodes ([#152](https://github.com/streamnative/terraform-aws-cloud/issues/152)) ([eb6f292](https://github.com/streamnative/terraform-aws-cloud/commit/eb6f2926d1b2238136bf5f710e585934d470d51a))
+* **iam:** add iam:ListInstanceProfiles permission for karpenter 1.7.0+ ([#171](https://github.com/streamnative/terraform-aws-cloud/issues/171)) ([b49e353](https://github.com/streamnative/terraform-aws-cloud/commit/b49e3534a2f30417d9a69aef87bf18fc9dc103a4))
+
+
+### Bug Fixes
+
+* **iam:** make karpenter and cluster-autoscaler mutual exclusion ([#175](https://github.com/streamnative/terraform-aws-cloud/issues/175)) ([0998bb4](https://github.com/streamnative/terraform-aws-cloud/commit/0998bb479b13ee4e6adb6b42b50916d5632a3112))
+
 ## [4.4.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.3.2...v4.4.0) (2025-07-31)
 
 
