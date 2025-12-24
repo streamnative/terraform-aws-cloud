@@ -333,12 +333,6 @@ variable "node_pool_ebs_optimized" {
   type        = bool
 }
 
-variable "node_pool_block_device_name" {
-  default     = "/dev/nvme0n1"
-  description = "The name of the block device to use for the EKS cluster nodes."
-  type        = string
-}
-
 variable "node_pool_capacity_type" {
   description = "The capacity type for the node group. Defaults to \"ON_DEMAND\". If set to \"SPOT\", the node group will be a spot instance node group."
   type        = string
