@@ -52,3 +52,8 @@ variable "extra_aws_tags" {
   description = "extra aws tags to add to any resources"
   type        = map(string)
 }
+
+variable "loki_bucket" {
+  description = "The name of the AWS S3 bucket to use for Loki"
+  type        = string
+}

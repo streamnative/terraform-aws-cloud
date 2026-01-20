@@ -17,9 +17,17 @@ terraform {
 
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.64.2"
+      source                = "hashicorp/aws"
+      version               = ">= 3.64.2"
+      configuration_aliases = [aws.source, aws.target]
     }
   }
 }
 
+provider "aws" {
+  alias = "source"
+}
+
+provider "aws" {
+  alias = "target"
+}

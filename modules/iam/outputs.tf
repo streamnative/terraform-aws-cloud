@@ -25,3 +25,7 @@ output "karpenter_arn" {
 output "velero_arn" {
   value = try(aws_iam_role.velero[0].arn, null)
 }
+
+output "loki_arn" {
+  value = aws_iam_role.loki.arn
+}

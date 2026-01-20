@@ -1,5 +1,6 @@
 data "aws_iam_policy_document" "cluster_autoscaler_sts" {
-  count = var.enable_karpenter ? 0 : 1
+  count    = var.enable_karpenter ? 0 : 1
+  provider = aws.target
 
   statement {
     actions = [
@@ -24,7 +25,8 @@ data "aws_iam_policy_document" "cluster_autoscaler_sts" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler" {
-  count = var.enable_karpenter ? 0 : 1
+  count    = var.enable_karpenter ? 0 : 1
+  provider = aws.target
 
   name                 = format("%s-ca-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA cluster-autoscaler on StreamNative Cloud EKS cluster %s", var.cluster_name)
@@ -35,7 +37,8 @@ resource "aws_iam_role" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
-  count = var.enable_karpenter ? 0 : 1
+  count    = var.enable_karpenter ? 0 : 1
+  provider = aws.target
 
   policy_arn = local.default_service_policy_arn
   role       = aws_iam_role.cluster_autoscaler.0.name
