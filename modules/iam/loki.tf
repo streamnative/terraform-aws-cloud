@@ -1,5 +1,5 @@
 data "aws_iam_policy_document" "loki_sts" {
-  provider = aws.source
+  provider = aws.target
 
   statement {
     actions = [
@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "loki_sts" {
 }
 
 resource "aws_iam_role" "loki" {
-  provider = aws.source
+  provider = aws.target
 
   name                 = format("%s-loki-s3-role", var.cluster_name)
   description          = format("Role used by IRSA for Loki on StreamNative Cloud EKS cluster %s", var.cluster_name)
@@ -30,7 +30,7 @@ resource "aws_iam_role" "loki" {
 }
 
 resource "aws_iam_role_policy" "irsa_s3_rw" {
-  provider = aws.source
+  provider = aws.target
 
   name = "AllowS3ReadWriteAccess"
   role = aws_iam_role.loki.id
