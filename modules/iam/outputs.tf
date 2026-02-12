@@ -27,5 +27,5 @@ output "velero_arn" {
 }
 
 output "loki_arn" {
-  value = aws_iam_role.loki.arn
+  value = try(aws_iam_role.loki[0].arn, null)
 }

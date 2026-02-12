@@ -1,4 +1,5 @@
 data "aws_iam_policy_document" "loki_sts" {
+  count    = var.enable_loki ? 1 : 0
   provider = aws.target
 
   statement {
@@ -19,6 +20,7 @@ data "aws_iam_policy_document" "loki_sts" {
 }
 
 resource "aws_iam_role" "loki" {
+  count    = var.enable_loki ? 1 : 0
   provider = aws.target
 
   name                 = format("%s-loki-s3-role", var.cluster_name)
@@ -30,6 +32,7 @@ resource "aws_iam_role" "loki" {
 }
 
 resource "aws_iam_role_policy" "irsa_s3_rw" {
+  count    = var.enable_loki ? 1 : 0
   provider = aws.target
 
   name = "AllowS3ReadWriteAccess"
@@ -57,6 +60,7 @@ resource "aws_iam_role_policy" "irsa_s3_rw" {
 }
 
 resource "aws_s3_bucket_policy" "loki_bucket_admin" {
+  count    = var.enable_loki ? 1 : 0
   provider = aws.source
 
   bucket = var.loki_bucket
