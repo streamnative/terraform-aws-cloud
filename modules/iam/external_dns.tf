@@ -1,4 +1,6 @@
 data "aws_iam_policy_document" "external_dns_sts" {
+  provider = aws.target
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -17,6 +19,8 @@ data "aws_iam_policy_document" "external_dns_sts" {
 }
 
 resource "aws_iam_role" "external_dns" {
+  provider             = aws.target
+
   name                 = format("%s-extdns-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA external-dns on StreamNative Cloud EKS cluster %s", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.external_dns_sts.json
@@ -26,6 +30,8 @@ resource "aws_iam_role" "external_dns" {
 }
 
 resource "aws_iam_role_policy_attachment" "external_dns" {
+  provider   = aws.target
+  
   role       = aws_iam_role.external_dns.name
   policy_arn = local.default_service_policy_arn
 }

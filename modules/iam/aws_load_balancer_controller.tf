@@ -1,4 +1,6 @@
 data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
+  provider = aws.target
+  
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -17,6 +19,8 @@ data "aws_iam_policy_document" "aws_load_balancer_controller_sts" {
 }
 
 resource "aws_iam_role" "aws_load_balancer_controller" {
+  provider             = aws.target
+
   name                 = format("%s-lbc-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA aws-load-balancer-controller on StreamNative Cloud EKS cluster %s", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.aws_load_balancer_controller_sts.json
@@ -26,6 +30,8 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
 }
 
 resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
+  provider   = aws.target
+
   role       = aws_iam_role.aws_load_balancer_controller.name
   policy_arn = local.default_lb_policy_arn
 }

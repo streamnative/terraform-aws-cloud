@@ -1,5 +1,6 @@
 data "aws_iam_policy_document" "velero_sts" {
-  count = var.enable_velero ? 1 : 0
+  count    = var.enable_velero ? 1 : 0
+  provider = aws.target
 
   statement {
     actions = [
@@ -19,7 +20,8 @@ data "aws_iam_policy_document" "velero_sts" {
 }
 
 resource "aws_iam_role" "velero" {
-  count = var.enable_velero ? 1 : 0
+  count    = var.enable_velero ? 1 : 0
+  provider = aws.target
 
   name                 = format("%s-velero-backup-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA velero on StreamNative Cloud EKS cluster %s", var.cluster_name)
@@ -30,7 +32,8 @@ resource "aws_iam_role" "velero" {
 }
 
 resource "aws_iam_role_policy_attachment" "velero" {
-  count = var.enable_velero ? 1 : 0
+  count    = var.enable_velero ? 1 : 0
+  provider = aws.target
 
   role       = aws_iam_role.velero.0.name
   policy_arn = local.default_service_policy_arn

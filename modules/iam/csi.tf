@@ -1,4 +1,6 @@
 data "aws_iam_policy_document" "csi_sts" {
+  provider = aws.target
+
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -22,6 +24,8 @@ data "aws_iam_policy_document" "csi_sts" {
 }
 
 resource "aws_iam_role" "csi" {
+  provider             = aws.target
+
   name                 = format("%s-csi-role", var.cluster_name)
   description          = format("Role used by IRSA and the KSA ebs-csi-controller-sa on StreamNative Cloud EKS cluster %s", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.csi_sts.json
@@ -31,11 +35,15 @@ resource "aws_iam_role" "csi" {
 }
 
 resource "aws_iam_role_policy_attachment" "csi" {
+  provider   = aws.target
+
   role       = aws_iam_role.csi.name
   policy_arn = local.default_service_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "csi_managed" {
+  provider   = aws.target
+  
   role       = aws_iam_role.csi.name
   policy_arn = "arn:${local.aws_partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }

@@ -1,5 +1,6 @@
 data "aws_iam_policy_document" "karpenter_sts" {
-  count = var.enable_karpenter ? 1 : 0
+  count    = var.enable_karpenter ? 1 : 0
+  provider = aws.target
 
   statement {
     effect = "Allow"
@@ -27,7 +28,8 @@ data "aws_iam_policy_document" "karpenter_sts" {
 }
 
 resource "aws_iam_role" "karpenter" {
-  count = var.enable_karpenter ? 1 : 0
+  count    = var.enable_karpenter ? 1 : 0
+  provider = aws.target
 
   name                  = format("%s-karpenter", var.cluster_name)
   path                  = "/StreamNative/"
@@ -39,7 +41,8 @@ resource "aws_iam_role" "karpenter" {
 }
 
 data "aws_iam_policy_document" "karpenter" {
-  count = var.enable_karpenter ? 1 : 0
+  count    = var.enable_karpenter ? 1 : 0
+  provider = aws.target
 
   statement {
     sid = "AllowScopedEC2InstanceAccessActions"
@@ -391,7 +394,8 @@ data "aws_iam_policy_document" "karpenter" {
 }
 
 resource "aws_iam_role_policy" "karpenter" {
-  count = var.enable_karpenter ? 1 : 0
+  count    = var.enable_karpenter ? 1 : 0
+  provider = aws.target
 
   name_prefix = "KarpenterController"
   role        = aws_iam_role.karpenter[0].name

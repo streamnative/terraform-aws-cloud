@@ -52,3 +52,14 @@ variable "extra_aws_tags" {
   description = "extra aws tags to add to any resources"
   type        = map(string)
 }
+
+variable "enable_loki" {
+  type        = bool
+  default     = true
+  description = "Enable loki for logging. If set to false, no loki resources will be created."
+}
+
+variable "loki_bucket" {
+  description = "The name of the AWS S3 bucket to use for Loki"
+  type        = string
+}

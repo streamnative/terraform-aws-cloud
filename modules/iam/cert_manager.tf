@@ -1,4 +1,6 @@
 data "aws_iam_policy_document" "cert_manager_sts" {
+  provider = aws.target
+  
   statement {
     actions = [
       "sts:AssumeRoleWithWebIdentity"
@@ -17,6 +19,8 @@ data "aws_iam_policy_document" "cert_manager_sts" {
 }
 
 resource "aws_iam_role" "cert_manager" {
+  provider             = aws.target
+
   name                 = format("%s-cm-role", var.cluster_name)
   description          = format("Role assumed by IRSA and the KSA cert-manager on StreamNative Cloud EKS cluster %s", var.cluster_name)
   assume_role_policy   = data.aws_iam_policy_document.cert_manager_sts.json
@@ -26,6 +30,8 @@ resource "aws_iam_role" "cert_manager" {
 }
 
 resource "aws_iam_role_policy_attachment" "cert_manager" {
+  provider   = aws.target
+
   role       = aws_iam_role.cert_manager.name
   policy_arn = local.default_service_policy_arn
 }
