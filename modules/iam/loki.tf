@@ -28,7 +28,7 @@ resource "aws_iam_role" "loki" {
   tags                 = local.tags
   path                 = "/StreamNative/"
   permissions_boundary = local.permissions_boundary_arn
-  assume_role_policy   = data.aws_iam_policy_document.loki_sts.json
+  assume_role_policy   = data.aws_iam_policy_document.loki_sts[0].json
 }
 
 resource "aws_iam_role_policy" "irsa_s3_rw" {
@@ -36,7 +36,7 @@ resource "aws_iam_role_policy" "irsa_s3_rw" {
   provider = aws.target
 
   name = "AllowS3ReadWriteAccess"
-  role = aws_iam_role.loki.id
+  role = aws_iam_role.loki[0].id
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -72,7 +72,7 @@ resource "aws_s3_bucket_policy" "loki_bucket_admin" {
         Sid    = "AllowCrossAccountIRSAAccessS3",
         Effect = "Allow",
         Principal = {
-          AWS = aws_iam_role.loki.arn
+          AWS = aws_iam_role.loki[0].arn
         },
         Action = [
           "s3:GetObject",
