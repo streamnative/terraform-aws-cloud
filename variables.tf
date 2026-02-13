@@ -321,6 +321,12 @@ variable "node_pool_ami_id" {
   type        = string
 }
 
+variable "node_pool_ami_type" {
+  type        = string
+  default     = null
+  description = "Type of Amazon Machine Image (AMI) associated with the EKS Node Group. See the [AWS documentation](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) for valid values"
+}
+
 variable "node_pool_disk_iops" {
   default     = 3000
   description = "The amount of provisioned IOPS for the worker node root EBS volume."
