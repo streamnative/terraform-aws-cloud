@@ -72,8 +72,23 @@ locals {
   node_group_iam_role_arn = replace(aws_iam_role.ng.arn, replace(var.iam_path, "/^//", ""), "") # Work around for https://github.com/kubernetes-sigs/aws-iam-authenticator/issues/153
 
   node_group_defaults = {
-    create_security_group = false
-    ami_id                = var.node_pool_ami_id
+    create_iam_role = false # We create the IAM role ourselves to reduce complexity in managing the aws-auth configmap
+    iam_role_arn    = local.node_group_iam_role_arn
+
+    ami_type      = var.node_pool_ami_type
+    capacity_type = var.node_pool_capacity_type
+    desired_size  = var.node_pool_desired_size
+    min_size      = var.node_pool_min_size
+    max_size      = var.node_pool_max_size
+    update_config = {
+      max_unavailable = 1
+    }
+
+    create_launch_template  = true
+    ami_id                  = var.node_pool_ami_id
+    ebs_optimized           = var.node_pool_ebs_optimized
+    pre_bootstrap_user_data = var.node_pool_pre_userdata
+    enable_monitoring       = var.enable_node_pool_monitoring
     block_device_mappings = {
       xvda = {
         device_name = "/dev/xvda"
@@ -87,20 +102,8 @@ locals {
         }
       }
     }
-    update_config = {
-      max_unavailable = 1
-    }
-    create_iam_role         = false # We create the IAM role ourselves to reduce complexity in managing the aws-auth configmap
-    iam_role_arn            = local.node_group_iam_role_arn
-    create_launch_template  = true
-    desired_size            = var.node_pool_desired_size
-    ebs_optimized           = var.node_pool_ebs_optimized
-    enable_monitoring       = var.enable_node_pool_monitoring
-    capacity_type           = var.node_pool_capacity_type
-    min_size                = var.node_pool_min_size
-    max_size                = var.node_pool_max_size
-    pre_bootstrap_user_data = var.node_pool_pre_userdata
-    taints                  = local.node_pool_taints
+
+    taints = local.node_pool_taints
     tags = merge(var.node_pool_tags, local.tags, {
       "k8s.io/cluster-autoscaler/enabled"                      = "true",
       format("k8s.io/cluster-autoscaler/%s", var.cluster_name) = "owned",
@@ -138,15 +141,11 @@ locals {
 
   v3_node_groups = {
     "snc-core" = {
-      subnet_ids      = local.node_group_subnet_ids
-      instance_types  = [var.v3_node_group_core_instance_type]
-      capacity_type   = var.node_pool_capacity_type
       name            = "snc-core"
       use_name_prefix = true
+      instance_types  = [var.v3_node_group_core_instance_type]
+      subnet_ids      = local.node_group_subnet_ids
       taints          = local.v3_node_taints
-      desired_size    = var.node_pool_desired_size
-      min_size        = var.node_pool_min_size
-      max_size        = var.node_pool_max_size
       labels = tomap(merge(var.node_pool_labels, {
         "cloud.streamnative.io/instance-type"  = "Small"
         "cloud.streamnative.io/instance-group" = "Core"
@@ -155,12 +154,12 @@ locals {
   }
 
   node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
-  defaulted_node_groups = var.node_groups != null ? {
-    for k, v in var.node_groups : k => merge(
-      v,
-      contains(keys(v), "subnet_ids") ? {} : { "subnet_ids" = local.node_group_subnet_ids },
+  defaulted_node_groups = {
+    for k in try(keys(var.node_groups), []) : k => merge(
+      lookup(local.v3_node_groups, k, {}),
+      var.node_groups[k]
     )
-  } : {}
+  }
   eks_managed_node_groups = [local.defaulted_node_groups, local.node_groups][var.node_groups != null ? 0 : 1]
 
   ## Node Security Group Configuration
