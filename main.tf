@@ -112,7 +112,7 @@ locals {
   }
 
   ## Create the node groups, one for each instance type AND each availability zone/subnet
-  v2_node_groups = {
+  v2_node_groups = !var.enable_v3_node_groups || var.enable_v3_node_migration ? {
     for node_group in flatten([
       for instance_type in var.node_pool_instance_types : [
         for i, j in data.aws_subnet.private_subnets : {
@@ -129,7 +129,7 @@ locals {
         }
       ]
     ]) : "${node_group.name}" => node_group
-  }
+  } : {}
 
   v3_node_taints = var.enable_v3_node_taints ? {
     "core" = {
@@ -139,7 +139,7 @@ locals {
     }
   } : {}
 
-  v3_node_groups = {
+  v3_node_groups = var.enable_v3_node_groups || var.enable_v3_node_migration ? {
     "snc-core" = {
       name            = "snc-core"
       use_name_prefix = true
@@ -151,9 +151,9 @@ locals {
         "cloud.streamnative.io/instance-group" = "Core"
       }))
     }
-  }
+  } : {}
 
-  node_groups = var.enable_v3_node_migration ? merge(local.v3_node_groups, local.v2_node_groups) : var.enable_v3_node_groups ? local.v3_node_groups : local.v2_node_groups
+  node_groups = merge(local.v2_node_groups, local.v3_node_groups)
   defaulted_node_groups = {
     for k in try(keys(var.node_groups), []) : k => merge(
       lookup(local.v3_node_groups, k, {}),
