@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.6.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.5.0...v4.6.0) (2026-02-25)
+
+
+### Features
+
+* **iam:** support loki s3 iam role ([#176](https://github.com/streamnative/terraform-aws-cloud/issues/176)) ([4af4853](https://github.com/streamnative/terraform-aws-cloud/commit/4af48535efed0ec65e72e957388da3dbee82b9ec))
+* support node_pool_ami_type ([#178](https://github.com/streamnative/terraform-aws-cloud/issues/178)) ([d93c41b](https://github.com/streamnative/terraform-aws-cloud/commit/d93c41b0bf7d69bea8043583d4577a2320876367))
+
+
+### Bug Fixes
+
+* potential inconsistent conditional result types ([#179](https://github.com/streamnative/terraform-aws-cloud/issues/179)) ([20d6310](https://github.com/streamnative/terraform-aws-cloud/commit/20d631018e9556c8a11ecd7b65088c65437299c9))
+
 ## [4.5.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.4.0...v4.5.0) (2025-12-24)
 
 
