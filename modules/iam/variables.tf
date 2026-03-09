@@ -43,7 +43,7 @@ variable "cluster_node_group_iam_role_arn" {
 
 variable "enable_velero" {
   type        = bool
-  default     = true
+  default     = false 
   description = "Enable velero for backups. If set to false, no velero resources will be created."
 }
 
