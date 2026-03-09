@@ -13,6 +13,7 @@
 # limitations under the License.
 
 resource "aws_s3_bucket" "velero" {
+  count         = var.enable_velero ? 1 : 0
   provider      = aws.target
   bucket        = format("%s-cluster-backup-snc", var.pm_name)
   tags          = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
@@ -43,7 +44,8 @@ locals {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
-  bucket = aws_s3_bucket.velero.bucket
+  count  = var.enable_velero ? 1 : 0
+  bucket = aws_s3_bucket.velero[0].bucket
 
   rule {
     apply_server_side_encryption_by_default {
