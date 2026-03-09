@@ -78,7 +78,7 @@ No modules.
 | <a name="input_cluster_node_group_iam_role_arn"></a> [cluster\_node\_group\_iam\_role\_arn](#input\_cluster\_node\_group\_iam\_role\_arn) | n/a | `string` | n/a | yes |
 | <a name="input_enable_karpenter"></a> [enable\_karpenter](#input\_enable\_karpenter) | Enable karpenter for autoscaling. If set to false, no karpenter resources will be created. | `bool` | `false` | no |
 | <a name="input_enable_loki"></a> [enable\_loki](#input\_enable\_loki) | Enable loki for logging. If set to false, no loki resources will be created. | `bool` | `true` | no |
-| <a name="input_enable_velero"></a> [enable\_velero](#input\_enable\_velero) | Enable velero for backups. If set to false, no velero resources will be created. | `bool` | `true` | no |
+| <a name="input_enable_velero"></a> [enable\_velero](#input\_enable\_velero) | Enable velero for backups. If set to false, no velero resources will be created. | `bool` | `false` | no |
 | <a name="input_extra_aws_tags"></a> [extra\_aws\_tags](#input\_extra\_aws\_tags) | extra aws tags to add to any resources | `map(string)` | `{}` | no |
 | <a name="input_load_balancer_policy_arn_override"></a> [load\_balancer\_policy\_arn\_override](#input\_load\_balancer\_policy\_arn\_override) | Override the runtime policy arn, otherwise will construct an arn | `string` | `""` | no |
 | <a name="input_loki_bucket"></a> [loki\_bucket](#input\_loki\_bucket) | The name of the AWS S3 bucket to use for Loki | `string` | n/a | yes |
