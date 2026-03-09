@@ -28,9 +28,9 @@ A basic module used to create Route53 Zone and S3 Buckets.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.75.0 |
-| <a name="provider_aws.source"></a> [aws.source](#provider\_aws.source) | 5.75.0 |
-| <a name="provider_aws.target"></a> [aws.target](#provider\_aws.target) | 5.75.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.76.0 |
+| <a name="provider_aws.source"></a> [aws.source](#provider\_aws.source) | 5.76.0 |
+| <a name="provider_aws.target"></a> [aws.target](#provider\_aws.target) | 5.76.0 |
 
 ## Modules
 
@@ -53,10 +53,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bucket_location"></a> [bucket\_location](#input\_bucket\_location) | The location of the bucket | `string` | n/a | yes |
 | <a name="input_custom_dns_zone_id"></a> [custom\_dns\_zone\_id](#input\_custom\_dns\_zone\_id) | if specified, then a streamnative zone will not be created, and this zone will be used instead. Otherwise, we will provision a new zone and delegate access | `string` | `""` | no |
 | <a name="input_custom_dns_zone_name"></a> [custom\_dns\_zone\_name](#input\_custom\_dns\_zone\_name) | must be passed if custom\_dns\_zone\_id is passed, this is the zone name to use | `string` | `""` | no |
 | <a name="input_enable_loki"></a> [enable\_loki](#input\_enable\_loki) | Enable loki storage bucket creation | `bool` | `false` | no |
+| <a name="input_enable_velero"></a> [enable\_velero](#input\_enable\_velero) | Enable velero for backups. If set to false, no velero resources will be created. | `bool` | `false` | no |
 | <a name="input_extra_aws_tags"></a> [extra\_aws\_tags](#input\_extra\_aws\_tags) | Additional to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended. | `map(string)` | `{}` | no |
 | <a name="input_parent_zone_name"></a> [parent\_zone\_name](#input\_parent\_zone\_name) | The parent zone in which we create the delegation records | `string` | n/a | yes |
 | <a name="input_pm_name"></a> [pm\_name](#input\_pm\_name) | The name of the poolmember, for new clusters, this should be like `pm-<xxxxx>` | `string` | n/a | yes |
