@@ -62,3 +62,9 @@ variable "enable_loki" {
   default     = false
   description = "Enable loki storage bucket creation"
 }
+
+variable "enable_velero" {
+  type        = bool
+  default     = false
+  description = "Enable velero for backups. If set to false, no velero resources will be created."
+}

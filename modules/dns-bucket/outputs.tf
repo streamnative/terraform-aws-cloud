@@ -21,11 +21,11 @@ output "zone_name" {
 }
 
 output "backup_bucket" {
-  value = aws_s3_bucket.velero.bucket
+  value = var.enable_velero ? aws_s3_bucket.velero[0].bucket : ""
 }
 
 output "backup_bucket_kms_key_id" {
-  value = local.s3_kms_key
+  value = var.enable_velero ? local.s3_kms_key : ""
 }
 
 output "tiered_storage_bucket" {
