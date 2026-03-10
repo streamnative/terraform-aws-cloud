@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.7.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.6.0...v4.7.0) (2026-03-10)
+
+
+### Features
+
+* **bucket:** make velero bucket optional ([#180](https://github.com/streamnative/terraform-aws-cloud/issues/180)) ([61833d5](https://github.com/streamnative/terraform-aws-cloud/commit/61833d5ee10b5df4259bc5e9dfa1ffe537b708bf))
+* **iam:** disable velero iam role by default ([#181](https://github.com/streamnative/terraform-aws-cloud/issues/181)) ([b65f251](https://github.com/streamnative/terraform-aws-cloud/commit/b65f251ca62c4d055c133fa6fd46df58e99886e0))
+
 ## [4.6.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.5.0...v4.6.0) (2026-02-25)
 
 
