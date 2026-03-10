@@ -25,7 +25,7 @@ output "backup_bucket" {
 }
 
 output "backup_bucket_kms_key_id" {
-  value = local.s3_kms_key
+  value = var.enable_velero ? local.s3_kms_key : ""
 }
 
 output "tiered_storage_bucket" {
