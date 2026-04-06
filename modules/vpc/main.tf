@@ -152,6 +152,8 @@ resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
   route_table_ids   = aws_route_table.private_route_table[*].id
   vpc_endpoint_type = "Gateway"
 
+  tags              = merge({ "Vendor" = "StreamNative", Name = "${var.vpc_name}-s3-gateway-endpoint" }, var.tags)
+
   policy = <<POLICY
 {
   "Version": "2008-10-17",
@@ -166,8 +168,4 @@ resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
 }
 POLICY
 
-  tags = {
-    Name   = "${var.vpc_name}-s3-gateway-endpoint"
-    Vendor = "StreamNative"
-  }
 }
