@@ -19,13 +19,14 @@ data "aws_availability_zones" "available" {
 locals {
   azs     = length(var.availability_zones) > 0 ? var.availability_zones : data.aws_availability_zones.available.names
   num_azs = length(var.availability_zones) > 0 ? length(var.availability_zones) : var.num_azs
+  tags = merge(var.tags, var.additional_tags)
 }
 
 resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags                 = merge({ "Vendor" = "StreamNative", Name = format("%s-vpc", var.vpc_name) }, var.tags)
+  tags                 = merge({ "Vendor" = "StreamNative", Name = format("%s-vpc", var.vpc_name) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -39,7 +40,7 @@ resource "aws_subnet" "public" {
   cidr_block              = cidrsubnet(var.vpc_cidr, var.public_subnet_newbits, var.public_subnet_start + count.index)
   availability_zone       = local.azs[count.index]
   map_public_ip_on_launch = var.disable_nat_gateway ? true : var.public_subnet_auto_ip
-  tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, var.tags)
+  tags                    = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-sbn-%s", var.vpc_name, count.index) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -52,7 +53,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.private_subnet_newbits, var.private_subnet_start + count.index)
   availability_zone = local.azs[count.index]
-  tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, var.tags)
+  tags              = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-sbn-%s", var.vpc_name, count.index) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -61,7 +62,7 @@ resource "aws_subnet" "private" {
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-igw", var.vpc_name) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-igw", var.vpc_name) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -72,7 +73,7 @@ resource "aws_eip" "eip" {
   count = var.disable_nat_gateway ? 0 : local.num_azs
 
   domain = "vpc"
-  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-eip-%s", var.vpc_name, count.index) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", Name = format("%s-eip-%s", var.vpc_name, count.index) }, local.tags)
 
   depends_on = [aws_internet_gateway.gw]
   lifecycle {
@@ -85,7 +86,7 @@ resource "aws_nat_gateway" "nat_gw" {
 
   allocation_id = aws_eip.eip[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
-  tags          = merge({ "Vendor" = "StreamNative", Name = format("%s-ngw-%s", var.vpc_name, count.index) }, var.tags)
+  tags          = merge({ "Vendor" = "StreamNative", Name = format("%s-ngw-%s", var.vpc_name, count.index) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -96,7 +97,7 @@ resource "aws_route_table" "public_route_table" {
   count = 1
 
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-rtb", var.vpc_name) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", "Type" = "public", Name = format("%s-public-rtb", var.vpc_name) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -122,7 +123,7 @@ resource "aws_route_table" "private_route_table" {
   count = var.disable_nat_gateway ? 0 : local.num_azs
 
   vpc_id = aws_vpc.vpc.id
-  tags   = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }, var.tags)
+  tags   = merge({ "Vendor" = "StreamNative", "Type" = "private", Name = format("%s-private-rtb-%s", var.vpc_name, count.index) }, local.tags)
 
   lifecycle {
     ignore_changes = [tags]
@@ -166,8 +167,5 @@ resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
 }
 POLICY
 
-  tags = {
-    Name   = "${var.vpc_name}-s3-gateway-endpoint"
-    Vendor = "StreamNative"
-  }
+  tags = merge({ "Vendor" = "StreamNative", Name = "${var.vpc_name}-s3-gateway-endpoint" }, local.tags)
 }
