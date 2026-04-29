@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.8.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.7.0...v4.8.0) (2026-04-29)
+
+
+### Features
+
+* Migrate to a standard name for adding extra tags ([#186](https://github.com/streamnative/terraform-aws-cloud/issues/186)) ([1c0c27d](https://github.com/streamnative/terraform-aws-cloud/commit/1c0c27d8ecd8e71d4ca4df1efaaa79e64d35c18a))
+
 ## [4.7.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.6.0...v4.7.0) (2026-03-10)
 
 
