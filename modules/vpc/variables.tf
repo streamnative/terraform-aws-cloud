@@ -73,7 +73,13 @@ variable "public_subnet_auto_ip" {
 
 variable "tags" {
   default     = {}
-  description = "Additional to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
+  description = "Deprecated: use additional_tags instead."
+  type        = map(string)
+}
+
+variable "additional_tags" {
+  default     = {}
+  description = "Additional tags to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
   type        = map(string)
 }
 

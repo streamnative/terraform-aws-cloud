@@ -47,14 +47,20 @@ variable "s3_encryption_kms_key_arn" {
 
 variable "extra_aws_tags" {
   default     = {}
-  description = "Additional to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
+  description = "Deprecated: use additional_tags instead."
+  type        = map(string)
+}
+
+variable "additional_tags" {
+  default     = {}
+  description = "Additional tags to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended."
   type        = map(string)
 }
 
 locals {
   tags = merge({
     "Vendor" = "StreamNative"
-  }, var.extra_aws_tags)
+  }, var.extra_aws_tags, var.additional_tags)
 }
 
 variable "enable_loki" {
