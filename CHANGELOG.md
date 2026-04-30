@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.8.0...v4.9.0) (2026-04-30)
+
+
+### Features
+
+* **iam:** manage AWS Load Balancer Controller policy inline ([#188](https://github.com/streamnative/terraform-aws-cloud/issues/188)) ([682e686](https://github.com/streamnative/terraform-aws-cloud/commit/682e68689ddb409ce2eb0475c72cc81ffcb30c9d))
+
 ## [4.8.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.7.0...v4.8.0) (2026-04-29)
 
 
