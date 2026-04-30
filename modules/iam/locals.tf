@@ -14,7 +14,6 @@ locals {
 
   permissions_boundary_arn   = var.permissions_boundary_arn_override != "" ? var.permissions_boundary_arn_override : "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudPermissionBoundary"
   default_service_policy_arn = var.runtime_policy_arn_override != "" ? var.runtime_policy_arn_override : "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudRuntimePolicy"
-  default_lb_policy_arn      = var.load_balancer_policy_arn_override != "" ? var.load_balancer_policy_arn_override : "arn:${local.aws_partition}:iam::${local.account_id}:policy/StreamNative/StreamNativeCloudLBPolicy"
 
   tags = merge({
     "Vendor"       = "StreamNative"

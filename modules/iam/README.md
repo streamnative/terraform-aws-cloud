@@ -48,6 +48,7 @@ No modules.
 | [aws_iam_role.karpenter](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.loki](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.velero](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.irsa_s3_rw](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.karpenter](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.aws_load_balancer_controller](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -80,7 +81,7 @@ No modules.
 | <a name="input_enable_loki"></a> [enable\_loki](#input\_enable\_loki) | Enable loki for logging. If set to false, no loki resources will be created. | `bool` | `true` | no |
 | <a name="input_enable_velero"></a> [enable\_velero](#input\_enable\_velero) | Enable velero for backups. If set to false, no velero resources will be created. | `bool` | `false` | no |
 | <a name="input_extra_aws_tags"></a> [extra\_aws\_tags](#input\_extra\_aws\_tags) | extra aws tags to add to any resources | `map(string)` | `{}` | no |
-| <a name="input_load_balancer_policy_arn_override"></a> [load\_balancer\_policy\_arn\_override](#input\_load\_balancer\_policy\_arn\_override) | Override the runtime policy arn, otherwise will construct an arn | `string` | `""` | no |
+| <a name="input_load_balancer_policy_arn_override"></a> [load\_balancer\_policy\_arn\_override](#input\_load\_balancer\_policy\_arn\_override) | Optional additional managed policy ARN to attach to the AWS Load Balancer Controller role. The default controller policy is managed inline by bootstrap. | `string` | `""` | no |
 | <a name="input_loki_bucket"></a> [loki\_bucket](#input\_loki\_bucket) | The name of the AWS S3 bucket to use for Loki | `string` | n/a | yes |
 | <a name="input_oidc_issuer"></a> [oidc\_issuer](#input\_oidc\_issuer) | The oidc issuer for the cluster | `string` | n/a | yes |
 | <a name="input_permissions_boundary_arn_override"></a> [permissions\_boundary\_arn\_override](#input\_permissions\_boundary\_arn\_override) | Override the permission boundary arn, otherwise will construct an arn | `string` | `""` | no |

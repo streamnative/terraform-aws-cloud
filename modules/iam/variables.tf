@@ -27,7 +27,7 @@ variable "runtime_policy_arn_override" {
 
 variable "load_balancer_policy_arn_override" {
   default     = ""
-  description = "Override the runtime policy arn, otherwise will construct an arn"
+  description = "Optional additional managed policy ARN to attach to the AWS Load Balancer Controller role. The default controller policy is managed inline by bootstrap."
   type        = string
 }
 
@@ -43,7 +43,7 @@ variable "cluster_node_group_iam_role_arn" {
 
 variable "enable_velero" {
   type        = bool
-  default     = false 
+  default     = false
   description = "Enable velero for backups. If set to false, no velero resources will be created."
 }
 
