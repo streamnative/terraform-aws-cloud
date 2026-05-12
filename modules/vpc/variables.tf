@@ -94,3 +94,9 @@ variable "enable_s3_gateway_endpoint" {
   default     = false
   description = "If set to true, will create S3 VPC Endpoint. This could be useful when wanna save costs from NAT Gateway."
 }
+
+variable "enable_s3tables_endpoint" {
+  type        = bool
+  default     = true
+  description = "If set to true, will create an Interface VPC Endpoint for the S3 Tables service so S3 Tables traffic stays on the AWS private network. Set to false in regions where S3 Tables is not yet available (apply will fail with InvalidServiceName otherwise)."
+}
