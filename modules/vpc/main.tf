@@ -19,7 +19,7 @@ data "aws_availability_zones" "available" {
 locals {
   azs     = length(var.availability_zones) > 0 ? var.availability_zones : data.aws_availability_zones.available.names
   num_azs = length(var.availability_zones) > 0 ? length(var.availability_zones) : var.num_azs
-  tags = merge(var.tags, var.additional_tags)
+  tags    = merge(var.tags, var.additional_tags)
 }
 
 resource "aws_vpc" "vpc" {
@@ -168,4 +168,59 @@ resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
 POLICY
 
   tags = merge({ "Vendor" = "StreamNative", Name = "${var.vpc_name}-s3-gateway-endpoint" }, local.tags)
+}
+
+# S3 Tables traffic (s3tables.<region>.amazonaws.com) is not routed through
+# the S3 gateway endpoint above. AWS publishes the s3tables service as an
+# Interface VPC endpoint only, so provision one in the private subnets and
+# enable private DNS to keep the traffic on the AWS private network. Set
+# `enable_s3tables_endpoint = false` in regions where S3 Tables is not yet
+# available (terraform apply will otherwise fail with InvalidServiceName).
+resource "aws_security_group" "s3tables_endpoint" {
+  count = var.enable_s3tables_endpoint ? 1 : 0
+
+  name        = "${var.vpc_name}-s3tables-endpoint"
+  description = "Allow HTTPS to the S3 Tables VPC interface endpoint"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.vpc.cidr_block]
+  }
+
+  tags = merge({ "Vendor" = "StreamNative", Name = "${var.vpc_name}-s3tables-endpoint-sg" }, local.tags)
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
+}
+
+resource "aws_vpc_endpoint" "s3tables_endpoint" {
+  count = var.enable_s3tables_endpoint ? 1 : 0
+
+  vpc_id              = aws_vpc.vpc.id
+  service_name        = format("com.amazonaws.%s.s3tables", var.region)
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.s3tables_endpoint[0].id]
+  private_dns_enabled = true
+
+  policy = <<POLICY
+{
+  "Version": "2008-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": "*"
+    }
+  ]
+}
+POLICY
+
+  tags = merge({ "Vendor" = "StreamNative", Name = "${var.vpc_name}-s3tables-endpoint" }, local.tags)
 }
