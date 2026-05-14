@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.9.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.8.0...v4.9.0) (2026-05-14)
+
+
+### Features
+
+* allow overriding S3 bucket names in dns-bucket module ([#185](https://github.com/streamnative/terraform-aws-cloud/issues/185)) ([bcd1546](https://github.com/streamnative/terraform-aws-cloud/commit/bcd154652752c70751a31c77d3f99f84b4f40679))
+* **iam:** manage AWS Load Balancer Controller policy inline ([#188](https://github.com/streamnative/terraform-aws-cloud/issues/188)) ([682e686](https://github.com/streamnative/terraform-aws-cloud/commit/682e68689ddb409ce2eb0475c72cc81ffcb30c9d))
+* **vpc:** add Interface VPC endpoint for S3 Tables ([#190](https://github.com/streamnative/terraform-aws-cloud/issues/190)) ([a1436d8](https://github.com/streamnative/terraform-aws-cloud/commit/a1436d8d718df50c8109ef0b4bec016553703eae))
+
 ## [4.8.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.7.0...v4.8.0) (2026-04-29)
 
 
