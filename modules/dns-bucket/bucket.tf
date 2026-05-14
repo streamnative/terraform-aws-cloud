@@ -15,14 +15,14 @@
 resource "aws_s3_bucket" "velero" {
   count         = var.enable_velero ? 1 : 0
   provider      = aws.target
-  bucket        = format("%s-cluster-backup-snc", var.pm_name)
+  bucket        = coalesce(var.velero_bucket_name, format("%s-cluster-backup-snc", var.pm_name))
   tags          = merge({ "Attributes" = "backup", "Name" = "velero-backups" }, local.tags)
   force_destroy = true
 }
 
 resource "aws_s3_bucket" "tiered_storage" {
   provider      = aws.target
-  bucket        = format("%s-tiered-storage-snc", var.pm_name)
+  bucket        = coalesce(var.tiered_storage_bucket_name, format("%s-tiered-storage-snc", var.pm_name))
   tags          = merge({ "Attributes" = "tiered-storage" }, local.tags)
   force_destroy = true
 }
@@ -30,7 +30,7 @@ resource "aws_s3_bucket" "tiered_storage" {
 resource "aws_s3_bucket" "loki" {
   count         = var.enable_loki ? 1 : 0
   provider      = aws.source
-  bucket        = format("loki-%s-%s", var.pm_namespace, var.pm_name)
+  bucket        = coalesce(var.loki_bucket_name, format("loki-%s-%s", var.pm_namespace, var.pm_name))
   tags          = merge({ "Attributes" = "loki" }, local.tags)
   force_destroy = true
 }

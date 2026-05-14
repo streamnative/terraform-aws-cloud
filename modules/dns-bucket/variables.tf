@@ -74,3 +74,21 @@ variable "enable_velero" {
   default     = false
   description = "Enable velero for backups. If set to false, no velero resources will be created."
 }
+
+variable "velero_bucket_name" {
+  type        = string
+  default     = ""
+  description = "Override the generated name if specified"
+}
+
+variable "tiered_storage_bucket_name" {
+  type        = string
+  default     = ""
+  description = "Override the generated name if specified"
+}
+
+variable "loki_bucket_name" {
+  type        = string
+  default     = ""
+  description = "Override the generated name if specified"
+}
