@@ -75,6 +75,12 @@ variable "enable_velero" {
   description = "Enable velero for backups. If set to false, no velero resources will be created."
 }
 
+variable "enable_sqlworkspace" {
+  type        = bool
+  default     = false
+  description = "Enable sqlworkspace storage bucket creation"
+}
+
 variable "velero_bucket_name" {
   type        = string
   default     = ""
@@ -88,6 +94,12 @@ variable "tiered_storage_bucket_name" {
 }
 
 variable "loki_bucket_name" {
+  type        = string
+  default     = ""
+  description = "Override the generated name if specified"
+}
+
+variable "sqlworkspace_bucket_name" {
   type        = string
   default     = ""
   description = "Override the generated name if specified"
