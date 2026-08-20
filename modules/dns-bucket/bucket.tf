@@ -37,8 +37,8 @@ resource "aws_s3_bucket" "loki" {
 
 resource "aws_s3_bucket" "sqlworkspace" {
   count         = var.enable_sqlworkspace ? 1 : 0
-  provider      = aws.source
-  bucket        = coalesce(var.sqlworkspace_bucket_name, format("sqlworkspace-%s-%s", var.pm_namespace, var.pm_name))
+  provider      = aws.target
+  bucket        = coalesce(var.sqlworkspace_bucket_name, format("%s-sqlworkspace-snc", var.pm_name))
   tags          = merge({ "Attributes" = "sqlworkspace" }, local.tags)
   force_destroy = true
 }
