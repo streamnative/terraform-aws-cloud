@@ -43,6 +43,7 @@ No modules.
 | [aws_route53_record.delegate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_zone.zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) | resource |
 | [aws_s3_bucket.loki](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket.sqlworkspace](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.tiered_storage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.velero](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_server_side_encryption_configuration.velero](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration) | resource |
@@ -56,6 +57,7 @@ No modules.
 | <a name="input_custom_dns_zone_id"></a> [custom\_dns\_zone\_id](#input\_custom\_dns\_zone\_id) | if specified, then a streamnative zone will not be created, and this zone will be used instead. Otherwise, we will provision a new zone and delegate access | `string` | `""` | no |
 | <a name="input_custom_dns_zone_name"></a> [custom\_dns\_zone\_name](#input\_custom\_dns\_zone\_name) | must be passed if custom\_dns\_zone\_id is passed, this is the zone name to use | `string` | `""` | no |
 | <a name="input_enable_loki"></a> [enable\_loki](#input\_enable\_loki) | Enable loki storage bucket creation | `bool` | `false` | no |
+| <a name="input_enable_sqlworkspace"></a> [enable\_sqlworkspace](#input\_enable\_sqlworkspace) | Enable sqlworkspace storage bucket creation | `bool` | `false` | no |
 | <a name="input_enable_velero"></a> [enable\_velero](#input\_enable\_velero) | Enable velero for backups. If set to false, no velero resources will be created. | `bool` | `false` | no |
 | <a name="input_extra_aws_tags"></a> [extra\_aws\_tags](#input\_extra\_aws\_tags) | Additional to apply to the resources. Note that this module sets the tags Name, Type, and Vendor by default. They can be overwritten, but it is not recommended. | `map(string)` | `{}` | no |
 | <a name="input_loki_bucket_name"></a> [loki\_bucket\_name](#input\_loki\_bucket\_name) | Override the generated name if specified | `string` | `""` | no |
@@ -63,6 +65,7 @@ No modules.
 | <a name="input_pm_name"></a> [pm\_name](#input\_pm\_name) | The name of the poolmember, for new clusters, this should be like `pm-<xxxxx>` | `string` | n/a | yes |
 | <a name="input_pm_namespace"></a> [pm\_namespace](#input\_pm\_namespace) | The namespace of the poolmember | `string` | n/a | yes |
 | <a name="input_s3_encryption_kms_key_arn"></a> [s3\_encryption\_kms\_key\_arn](#input\_s3\_encryption\_kms\_key\_arn) | KMS key ARN to use for S3 encryption. If not set, the default AWS S3 key will be used. | `string` | `""` | no |
+| <a name="input_sqlworkspace_bucket_name"></a> [sqlworkspace\_bucket\_name](#input\_sqlworkspace\_bucket\_name) | Override the generated name if specified | `string` | `""` | no |
 | <a name="input_tiered_storage_bucket_name"></a> [tiered\_storage\_bucket\_name](#input\_tiered\_storage\_bucket\_name) | Override the generated name if specified | `string` | `""` | no |
 | <a name="input_velero_bucket_name"></a> [velero\_bucket\_name](#input\_velero\_bucket\_name) | Override the generated name if specified | `string` | `""` | no |
 
@@ -73,6 +76,7 @@ No modules.
 | <a name="output_backup_bucket"></a> [backup\_bucket](#output\_backup\_bucket) | n/a |
 | <a name="output_backup_bucket_kms_key_id"></a> [backup\_bucket\_kms\_key\_id](#output\_backup\_bucket\_kms\_key\_id) | n/a |
 | <a name="output_loki_bucket"></a> [loki\_bucket](#output\_loki\_bucket) | n/a |
+| <a name="output_sqlworkspace_bucket"></a> [sqlworkspace\_bucket](#output\_sqlworkspace\_bucket) | n/a |
 | <a name="output_tiered_storage_bucket"></a> [tiered\_storage\_bucket](#output\_tiered\_storage\_bucket) | n/a |
 | <a name="output_zone_id"></a> [zone\_id](#output\_zone\_id) | n/a |
 | <a name="output_zone_name"></a> [zone\_name](#output\_zone\_name) | n/a |

@@ -35,3 +35,7 @@ output "tiered_storage_bucket" {
 output "loki_bucket" {
   value = var.enable_loki ? aws_s3_bucket.loki[0].bucket : ""
 }
+
+output "sqlworkspace_bucket" {
+  value = var.enable_sqlworkspace ? aws_s3_bucket.sqlworkspace[0].bucket : ""
+}

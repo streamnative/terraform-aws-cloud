@@ -35,6 +35,14 @@ resource "aws_s3_bucket" "loki" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket" "sqlworkspace" {
+  count         = var.enable_sqlworkspace ? 1 : 0
+  provider      = aws.target
+  bucket        = coalesce(var.sqlworkspace_bucket_name, format("%s-sqlworkspace-snc", var.pm_name))
+  tags          = merge({ "Attributes" = "sqlworkspace" }, local.tags)
+  force_destroy = true
+}
+
 data "aws_kms_key" "s3_default" {
   key_id = "alias/aws/s3"
 }
