@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.10.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.9.0...v4.10.0) (2026-08-26)
+
+
+### Features
+
+* **dns-bucket:** add optional sqlworkspace S3 bucket ([#191](https://github.com/streamnative/terraform-aws-cloud/issues/191)) ([ae77276](https://github.com/streamnative/terraform-aws-cloud/commit/ae77276ca8fc05c71906df01cf6fcd427a4e6346))
+* **rds:** add private PostgreSQL module ([#193](https://github.com/streamnative/terraform-aws-cloud/issues/193)) ([020ae0c](https://github.com/streamnative/terraform-aws-cloud/commit/020ae0cbfb688fe14151c4baf235cc29ef39337f))
+
 ## [4.9.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.8.0...v4.9.0) (2026-05-14)
 
 
