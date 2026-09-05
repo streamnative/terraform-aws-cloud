@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.11.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.10.0...v4.11.0) (2026-09-05)
+
+
+### Features
+
+* **iam:** grant karpenter ec2 instance-status and capacity-reservation reads ([#194](https://github.com/streamnative/terraform-aws-cloud/issues/194)) ([2265e5f](https://github.com/streamnative/terraform-aws-cloud/commit/2265e5f00fca39576313d5432b94f6959e0c8b52))
+
 ## [4.10.0](https://github.com/streamnative/terraform-aws-cloud/compare/v4.9.0...v4.10.0) (2026-08-26)
 
 
