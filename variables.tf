@@ -218,6 +218,12 @@ variable "manage_aws_auth_configmap" {
   type        = bool
 }
 
+variable "authentication_mode" {
+  default     = "API_AND_CONFIG_MAP"
+  description = "The authentication mode for the cluster. Valid values are `CONFIG_MAP`, `API` or `API_AND_CONFIG_MAP`"
+  type        = string
+}
+
 variable "map_additional_iam_roles" {
   default     = []
   description = "A list of IAM role bindings to add to the aws-auth ConfigMap."
